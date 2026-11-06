@@ -107,6 +107,8 @@ One append-only audit log per app: who (person, staff member, or AI agent for a 
 
 ## Known differences today
 
+> Existing apps are left as they are (owner's decision, 2026-11-06). This list is a record, not a to-do: new applications follow the standard and must not repeat these. See [the new-project checklist](../docs-and-ai/new-project-checklist.md), section 11.
+
 | App | Differs from the standard |
 |---|---|
 | CRM | No tenancy (visibility by department); Sanctum cookie login via `POST /api/login`; custom `EnsureRoleHasPermission` instead of Spatie; no 2FA |

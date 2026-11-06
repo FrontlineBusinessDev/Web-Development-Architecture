@@ -170,6 +170,8 @@ Pick one style per project and write it in the project's `CLAUDE.md`.
 
 ## Known differences today
 
+> Existing apps are left as they are (owner's decision, 2026-11-06). This list is a record, not a to-do: new applications follow the standard and must not repeat these. See [the new-project checklist](../docs-and-ai/new-project-checklist.md), section 11.
+
 | App | Differs from the standard |
 |---|---|
 | People, Learn | `store` / `update` return the raw model, not the Resource (Learn keeps it on purpose: pages read `total_fee` as `'250.00'`); new modules pass the Resource |

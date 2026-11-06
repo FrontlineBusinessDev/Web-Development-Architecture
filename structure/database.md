@@ -102,6 +102,8 @@ Bulk inserts and `DB::table()` writes skip model events, so they must set the te
 
 ## Known differences today
 
+> Existing apps are left as they are (owner's decision, 2026-11-06). This list is a record, not a to-do: new applications follow the standard and must not repeat these. See [the new-project checklist](../docs-and-ai/new-project-checklist.md), section 11.
+
 | App | Differs from the standard |
 |---|---|
 | CRM, Connect | `'prefix' => env('DB_PREFIX', 'app_')` on every connection; migrations use bare names |

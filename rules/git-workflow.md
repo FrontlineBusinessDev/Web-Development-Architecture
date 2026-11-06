@@ -105,10 +105,12 @@ type(scope): what changed, in plain words (rules 51, 57)
 
 ## Known differences today
 
-- **Default branch:** FBS CRM, FBS Work and FCA-SMS use `main`, and FBS Connect deploys from `feat/multi-tenant`. They move to `master` when the owner schedules it: rename the branch on GitHub, then update `publish.sh`, `DEPLOY.md`, Coolify's branch setting and any workflow file in the same change.
+> Existing apps are left as they are (owner's decision, 2026-11-06). This list is a record, not a to-do: new applications follow the standard and must not repeat these. See [the new-project checklist](../docs-and-ai/new-project-checklist.md), section 11.
+
+- **Default branch:** FBS CRM, FBS Work and FCA-SMS use `main`, and FBS Connect deploys from `feat/multi-tenant`.
 - **Workflows on the wrong branch:** FBS People's and FBS Suites' `.github/workflows/tests.yml` trigger on `main` while they deploy from `master` (rule 49 says workflows are not the gate anyway).
-- **Databases in git:** FBS Stock tracks three SQLite files (`database_backup.sqlite`, `database/database.sqlite`, `database/database.backup-before-purge.sqlite`) and FBS Work tracks sixteen (`database-backup/**` and `database/database.sqlite`). They may hold real people's data: remove them from the tree, add `*.sqlite` to `.gitignore`, and let the owner decide whether to purge history.
-- **A real server address in git:** FBS Stock's `.env.example.deploy` names its server in a comment. Replace it with a placeholder; the example file's name should also become `.env.deploy.example`, as in FBS Work and FBS Suites.
-- **`Claude outputs/` is tracked** in FBS CRM (13 files), Connect (10) and Pay (15), although CRM's `HANDOFF.md` says not to stage it. Untrack it and add it to `.gitignore`.
-- **`graphify-out/` is tracked** in FBS Learn, CRM, Connect, Pay, Stock and FCA-SMS (only FBS Work ignores it). Untrack it in its own `chore(graphify)` commit.
+- **Databases in git:** FBS Stock tracks three SQLite files (`database_backup.sqlite`, `database/database.sqlite`, `database/database.backup-before-purge.sqlite`) and FBS Work tracks sixteen (`database-backup/**` and `database/database.sqlite`). They may hold real people's data.
+- **A real server address in git:** FBS Stock's `.env.example.deploy` names its server in a comment. Its example file is also named `.env.example.deploy`, not `.env.deploy.example`.
+- **`Claude outputs/` is tracked** in FBS CRM (13 files), Connect (10) and Pay (15), although CRM's `HANDOFF.md` says not to stage it.
+- **`graphify-out/` is tracked** in FBS Learn, CRM, Connect, Pay, Stock and FCA-SMS (only FBS Work ignores it).
 - **Commit style:** FBS People writes `Area: subject (rules 51, 57)`, and FCA-SMS mostly free-form lower-case subjects. New commits use section 2's format; old history stays as it is.

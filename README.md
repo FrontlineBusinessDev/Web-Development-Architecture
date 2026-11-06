@@ -58,10 +58,11 @@ Agreed with the owner when the docs were first consolidated:
 | Working rules | Keep rules 56 (stop at 93%), 57 (tidy first), 58 (frontend first). Rule 59 (Claude Design canvas) is retired. |
 | Design | Same token names everywhere; each app keeps its own brand colours and font. |
 | Runtime and rollout | FrankenPHP + Octane, a pinned image tag, and a Coolify deployer that replaces web containers one at a time. |
+| Existing apps | Left as they are; their problems are recorded, not fixed. New applications follow these docs and avoid them ([checklist, section 11](docs-and-ai/new-project-checklist.md)). |
 
 ## How to use these docs
 
 - **People:** read the file for the task in front of you, not the whole repo.
 - **AI assistants:** a project's `CLAUDE.md` points here. Before structural work (a CRUD module, shared component, migration, Docker or deploy change, PHP dependency, hub event), read the matching file above.
-- **Apps that differ today:** most files end with "Known differences today". These are gaps to close over time, not new rules.
+- **Apps that differ today:** most files end with "Known differences today". They record how existing apps differ. Existing apps are left as they are (owner's decision, 2026-11-06); new applications follow the standard and must not repeat them.
 - **Changing a rule:** edit the file here first, in its own commit, then change the apps. Never renumber system rules; add new ones at the end.

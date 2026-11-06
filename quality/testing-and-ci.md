@@ -138,12 +138,14 @@ A change is done when every item of [rule 22](../rules/system-rules.md#rule-22-d
 
 ## Known differences today
 
+> Existing apps are left as they are (owner's decision, 2026-11-06). This list is a record, not a to-do: new applications follow the standard and must not repeat these. See [the new-project checklist](../docs-and-ai/new-project-checklist.md), section 11.
+
 | App | Differs |
 | --- | --- |
 | People | `ci:check` has no audits; the checks are not in the image build; 3,489-error PHPStan baseline (shrinks only); the 300-line rule is not enforced; GitHub workflows on `main` while it deploys from `master`. |
 | CRM | Closest to the standard (audits, no PHPStan baseline, both 300-line checks), but `vp check` fails repo-wide, so it runs `vp lint` only; checks run in GitHub Actions, not the build. |
 | Connect | No audits in `ci:check`; no 300-line check; GitHub Actions only. |
-| Pay | 300-line rule turned **off** for files over it (should be capped); no PHP size test; `resources/js/ops/**` outside the formatter. |
+| Pay | 300-line rule turned **off** for files over it; no PHP size test; `resources/js/ops/**` outside the formatter. |
 | Learn, FCA-SMS | `ci:check` calls npm scripts that do not exist (`lint:check`, `format:check`); oxlint, not `vp`; FCA-SMS `types:check` checks nothing (`tsc --noEmit` on an empty root config). Learn's build runs only its demo checks. FCA-SMS is the only app testing on PostgreSQL today (GitHub Actions). |
 | FBS Suites MCP | `ci:check` calls PHPStan, which is not installed; workflow on `main`, deploys from `master`. |
 | Stock, Work | PHPUnit, not Pest; no `ci:check`, no Larastan, no JS linter (Work has `tsc`). Stock is JavaScript. |

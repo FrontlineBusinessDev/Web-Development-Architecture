@@ -134,6 +134,8 @@ WCAG 2.2 AA: contrast 4.5:1 for text, keyboard reachable everything (Esc closes,
 
 ## Known differences today
 
+> Existing apps are left as they are (owner's decision, 2026-11-06). This list is a record, not a to-do: new applications follow the standard and must not repeat these. See [the new-project checklist](../docs-and-ai/new-project-checklist.md), section 11.
+
 | App | Differs from the standard |
 |---|---|
 | People | Token names `bg`, `panel`, `side`, `sub`, `line2`, `ink2`, `ink3`, `chip`; card radius 14 px in CSS vs 16 px in D2 |

@@ -144,6 +144,8 @@ Details: [../structure/backend-patterns.md](../structure/backend-patterns.md) an
 
 ## Known differences today
 
+> Existing apps are left as they are (owner's decision, 2026-11-06). This list is a record, not a to-do: new applications follow the standard and must not repeat these. See [the new-project checklist](../docs-and-ai/new-project-checklist.md), section 11.
+
 - **FBS Stock** is plain JavaScript (`.jsx`, `vite.config.js`), with PascalCase pages, relative imports and a single-file UI kit (`components/ui.jsx`). New code there still follows sections 4, 6–9; moving to TypeScript is a planned change, not a side task.
 - **FBS Learn and FCA-SMS** have no `"strict"` in `tsconfig.app.json`. FCA-SMS's `npm run types:check` runs `tsc --noEmit` on a root `tsconfig.json` with no files, so it checks nothing; use `npx tsc -p tsconfig.app.json --noEmit` there (Learn's runs `tsc -b`).
 - **FBS CRM and Connect** use a custom `fetch` wrapper (`lib/api/client.ts`) instead of axios; FBS People uses a `fetch` wrapper in `lib/api.ts` (rule 38 lists the move).

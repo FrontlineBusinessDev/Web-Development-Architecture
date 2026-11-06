@@ -121,6 +121,8 @@ Rules:
 
 ## Known differences today
 
+> Existing apps are left as they are (owner's decision, 2026-11-06). This list is a record, not a to-do: new applications follow the standard and must not repeat these. See [the new-project checklist](../docs-and-ai/new-project-checklist.md), section 11.
+
 | App | Differs from the standard |
 |---|---|
 | CRM, Connect, Pay, Stock, Work, MCP | No `ext-*` entries in `composer.json` |
@@ -128,5 +130,5 @@ Rules:
 | All but Learn and People | No `.php-version`; all but Learn have no `.nvmrc` |
 | Stock, Pay | Session, cache and queue on the `database` driver, not Redis |
 | People, FCA-SMS | Deploy env example is named `.envdeploy.example`; Stock and Pay use `.env.example.deploy`; the standard name is `.env.deploy.example` (MCP, Work) |
-| Stock | `.env.example.deploy` contains a real server address in a comment: remove it |
+| Stock | `.env.example.deploy` contains a real server address in a comment |
 | CRM, Connect | No deploy env example committed |

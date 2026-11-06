@@ -191,7 +191,7 @@ Use the template in [`templates/hub/`](../templates/hub/). It already does all o
 
 Optional, from Learn: keep the last result on the tenant (`hub_sent_at`, `hub_error` in plain words) and give staff a **Send to CRM** button plus an Artisan command for tenants made before the hub existed.
 
-**Known drift to fix:** Pay's `SendSuiteHubEvent` follows redirects and accepts any 2xx without checking `success: true`. Bring it in line with the template.
+**Known drift (left as is):** Pay's `SendSuiteHubEvent` follows redirects and accepts any 2xx without checking `success: true`. New apps copy the template, which does both checks.
 
 ### Environment
 

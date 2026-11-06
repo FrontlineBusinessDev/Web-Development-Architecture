@@ -85,6 +85,27 @@ Tick each box in the project's first plan, or name why it does not apply.
 - [ ] Tidy first, in its own commit (rule 57). Frontend first, then its backend (rule 58).
 - [ ] Rule 22's definition of done: designed, built, feature and unit tests, browser check, accessibility and privacy, performance, docs and the "as built" note, shipped through the pipeline.
 
+### 11. Do not repeat the existing apps' problems
+
+The existing apps are left as they are (owner's decision, 2026-11-06). A new application gets each of these right from the first commit.
+
+- [ ] **No data in git:** no `*.sqlite`, SQL dumps or backup folders, ever. `.gitignore` has them before the first commit. *(Stock and Work track SQLite copies.)*
+- [ ] **No real addresses or secrets in example files:** only placeholders in `.env.example` and `.env.deploy.example` (named exactly that). *(Stock's example names its server.)*
+- [ ] **No tool output in git:** `Claude outputs/` and `graphify-out/` are git-ignored from the start. *(Tracked in several apps.)*
+- [ ] **`composer ci:check` really runs:** every npm script and tool it calls exists (PHPStan installed with a `phpstan.neon`). Run it once from a fresh clone. *(MCP calls PHPStan without it; Learn and FCA-SMS call missing npm scripts; Stock and Work have no gate.)*
+- [ ] **One branch name everywhere:** `master` in `publish.sh`, `DEPLOY.md`, Coolify and any workflow file. *(People and MCP test `main` but deploy `master`.)*
+- [ ] **One PHP version everywhere:** `composer.json`, `.php-version`, the Dockerfile and any CI agree. *(Apps mix 8.3, 8.4 and 8.5.)*
+- [ ] **Exact image tags:** FrankenPHP pinned to an exact tag, `composer:2`, never `latest` or `1-php8.4`.
+- [ ] **Literal `app_` tables only:** no `DB_PREFIX`, and no app table without the prefix. *(CRM and Connect use `DB_PREFIX`; Stock has unprefixed tables.)*
+- [ ] **Tenant scope is global and fails closed:** never filter the tenant id by hand in controllers. *(Stock.)*
+- [ ] **Migrations run once per deploy** in the one-off `migrate` service, never on every container start. *(CRM and FCA-SMS.)*
+- [ ] **The image ships only what runs:** no `COPY . .` into the final stage. *(Stock.)*
+- [ ] **Compose has caps, Redis and health checks** for every service. *(FCA-SMS has none.)*
+- [ ] **TypeScript only**, no `.jsx`. *(Stock.)*
+- [ ] **`CLAUDE.md` committed**, with the pointer to this repo. *(CRM, Connect, Pay and People ignore theirs.)*
+- [ ] **Hub sender copied from the template:** no redirects followed; only a JSON 2xx with `success: true` counts as sent. *(Pay.)*
+- [ ] **The 300-line rule is never switched off for a file.** *(Pay.)*
+
 ## Part B: a new developer
 
 ### Day one
