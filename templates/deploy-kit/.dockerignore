@@ -1,0 +1,67 @@
+.git
+.github
+
+# Dependencies: reinstalled inside the image, never a local copy.
+/vendor
+/node_modules
+
+# Build output: the image builds its own.
+/public/build
+/public/hot
+/public/storage
+/bootstrap/ssr
+/bootstrap/cache/*.php
+
+# Secrets and local env files.
+.env
+.env.*
+!.env.example
+
+# Local databases and backups.
+*.sqlite
+*.sqlite-*
+*.bak
+*.dump
+*.sql
+*.sql.gz
+
+# Local runtime files. Their .gitignore files stay, so the folder skeleton exists in the image.
+/storage/app/**
+/storage/framework/**
+/storage/logs/**
+/storage/pail
+!/storage/**/.gitignore
+
+# Docs and generated output: nothing here runs or is checked.
+# tests/, phpunit.xml, phpstan.neon and pint.json stay: the `checks` stage runs them. The final
+# stage copies only the runtime folders, so they never ship.
+/docs
+/graphify-out
+/Claude outputs
+/.phpunit.cache
+.phpunit.result.cache
+*.tsbuildinfo
+npm-debug.log
+*.log
+
+# docker-compose.yml is the copy Coolify saved on the server, never the image's.
+# deploy/*.sh stay: the deployer image (deploy/Dockerfile.deployer) runs them from its copy.
+/deploy
+!/deploy/*.sh
+/docker-compose.yml
+
+# Editor, agent and repo meta files.
+/.claude
+/.superpowers
+/CLAUDE.md
+/AGENTS.md
+/README.md
+/DEPLOY.md
+/.editorconfig
+/.gitattributes
+.DS_Store
+/.idea
+/.vscode
+/.zed
+/.fleet
+/.nova

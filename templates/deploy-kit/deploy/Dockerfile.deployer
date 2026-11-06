@@ -1,0 +1,18 @@
+# The deployer: a second Coolify resource (Dockerfile build pack, manual deploys, started by
+# scripts/publish.sh through Coolify's API). Each deploy of it starts one container that uses the
+# image a PC sent (or builds it on the host's Docker) and runs deploy/rolling-deploy.sh against
+# the app's stack. The app resource itself is never deployed from Coolify: its Redeploy isn't rolling.
+FROM docker:27-cli
+
+# aws-cli uploads the Vite build to the app's bucket; jq reads Coolify's API and the compose config.
+RUN apk add --no-cache bash curl aws-cli jq
+
+# The commit being deployed (Coolify: Source commit "Available during build"). It names the image a
+# PC sent (scripts/publish.sh). Empty means the server builds the image itself.
+ARG SOURCE_COMMIT=""
+ENV SOURCE_COMMIT=${SOURCE_COMMIT}
+
+# The app's source, filtered by the root .dockerignore like the app build itself.
+COPY . /src
+
+CMD ["bash", "/src/deploy/coolify-deploy.sh"]
