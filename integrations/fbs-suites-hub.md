@@ -227,6 +227,8 @@ Both are secrets in Coolify. Never commit them, log them or put them in an audit
 
 - `Router::route()` makes one `app_deliveries` row per **active** destination whose `events` list has the event. It is idempotent (`firstOrCreate` on event + destination).
 - `DeliverEvent` POSTs the stored payload to `{destination url}{path}` with `Authorization: Bearer <destination token>` and `X-FBS-Event-Id`.
+- **Lead department.** A destination may name the department each app's leads are filed under (`app_destinations.departments`: a default plus per-app choices, `Destination::departmentFor($app)`). `DeliverEvent` sends it as `X-FBS-Department: <department key>`. With no choice it sends no header. The body is never changed: the department is the hub's routing, not the sender's data.
+- **Test connection** (Platform › Destinations, `POST /platform/destinations/{id}/test`) is `GET {url}/api/v1/intake/ping` with the token. It audits `destination.tested` and keeps the departments the ping lists (`offered_departments`), which fill the department choices. The answer says where each app's leads go, and names any chosen department the CRM no longer lists.
 - **2xx** = `sent`.
 - **408, 429, 5xx, connection error** = retry on the same backoff `[60, 300, 1800, 7200, 43200]`, then `dead`.
 - **Any other 4xx** = `failed` at once. Retrying won't fix it.
@@ -236,6 +238,9 @@ Both are secrets in Coolify. Never commit them, log them or put them in an audit
 ## 8. Leg 3: the CRM intake
 
 - `POST /api/v1/intake/signups` (and `GET /api/v1/intake/ping`).
+- `ping` answers `{"success":true,"message":"pong","data":{"departments":[{"key":"WebSolutions","name":"Web Solutions"}]}}`. Those are the departments the hub may file leads under: active ones with a Leads board (`IntakeDepartments::offered()`).
+- Department of a new lead: the `X-FBS-Department` header when it names one of those, else `INTAKE_DEAL_DEPARTMENT`, else none. Any other key is ignored. An open lead with no department takes the hub's department on its next event. `data.department` in the answer says which department was used.
+- A lead with no client and no department shows on every department's Leads board, and Admin and Developer see every department's leads (`isUnassignedProspect` in the CRM's `resources/js/lib/prospect.ts`).
 - Middleware: `auth:sanctum`, `token-only` (a browser session is refused), `active`, `abilities:intake.signups`, `throttle:120,1`.
 - The token is made in CRM › Developer › Integrations, stored hashed and shown once. Paste it into the hub's `crm` destination.
 - Validation (`SignupIntakeRequest`): `version` must be 1; `event` must be in `SignupIntake::EVENTS`; `app` must be in `SignupIntake::APPS`; `tenant.type` is `company|school|business|workspace|store`; `signup.method` is `web|google|staff`; `payment.provider` is `stripe|paymongo|manual`.
