@@ -11,10 +11,11 @@ How every FBS project names branches, writes commits, reviews changes, keeps sec
 | Branch | Use |
 |---|---|
 | `master` | The default branch **and** the deploy branch of every project. Always passes `composer ci:check`. `php artisan deploy` refuses any other branch. |
-| `claude/<adjective>-<name>-<id>` | An AI session's branch, named by the tool. One per session. |
+| `claude/<adjective>-<name>-<id>` | Not used. The tool names one for each AI session, but the owner's AI sessions commit to the default branch (below). |
 | `<type>/<short-name>` | A person's branch when the work needs review first: `feat/locker-requests`, `fix/payslip-rounding`. Same types as commits. |
 
 - Work lands on `master` in one of two ways: committed straight to `master` (the owner's own sessions, as FBS People does, rule 56), or through a pull request from a branch. Either way every commit on `master` passes the checks.
+- **AI sessions commit and push straight to the project's default branch** (`master`, or the one named under "Known differences today"). They never create a branch, not even the `claude/...` branch the tool gives a session (owner's decision, 2026-11-07). Each project's `CLAUDE.md` repeats this with its own default branch.
 - Keep branches short-lived. Merge `master` into your branch, or rebase your own unshared branch onto it, before asking for review.
 - Delete a branch once it is merged. A merged pull request is finished: follow-up work starts a new branch from the latest `master`.
 - CI or tooling that names a branch (a GitHub workflow, a deploy script, `DEPLOY_BRANCH`) names `master`.
