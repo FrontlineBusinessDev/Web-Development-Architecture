@@ -54,7 +54,7 @@ Values from each app's CSS on 2026-11-06. Keep them, but move them onto the shar
 
 | App | Brand / primary | Page | Font (body / display) | Card radius |
 |---|---|---|---|---|
-| People | ink primary `#16191f`; accent coral `#cf3f28` (HR), green `#1d8048` (Time & Pay); logo `#a8362b` | `#f4f6f8` | Inter / Lexend Exa (wordmark) | 14 px (D2 says 16) |
+| People | ink primary `#16191f`; accent coral `#c43a24` (HR; `SYSTEM-RULES.md` D4/D12 and the mail theme still say `#cf3f28`), green `#1d8048` (Time & Pay); logo `#a8362b` | `#f4f6f8` | Inter / Lexend Exa (wordmark) | 14 px (D2 says 16) |
 | CRM | blue `#2f6be0`, gold `#d9a62e`, text `#162141` | white, tint `#ebf5ff` | Instrument Sans / Space Grotesk (D3 says Inter) | 8 px |
 | Connect | blue `#2f6be0`, gold `#d9a62e`, text `#162141` | white, tint `#ebf5ff` | Inter / Space Grotesk | 8 px |
 | Pay | green `#2d9450` | `#f6fbf8` | Plus Jakarta Sans / Poppins | soft cards |

@@ -177,7 +177,7 @@ Pick one style per project and write it in the project's `CLAUDE.md`.
 | People, Learn | `store` / `update` return the raw model, not the Resource (Learn keeps it on purpose: pages read `total_fee` as `'250.00'`); new modules pass the Resource |
 | Learn, FCA-SMS | `per_page` default 10, clamped to 1..1000 |
 | CRM, Connect | No base CRUD controller: `Controller::listResponse()`, `App\Support\Pagination` (default 10, cap 2,000), data endpoints under `/api/*` |
-| Pay | Laravel `{data, links, meta}` lists with `sort` / `direction` and camelCase keys |
+| Pay | Laravel `{data, links, meta}` lists with `sort` / `direction`; snake_case keys, which the ops UI camelizes (`resources/js/ops/lib/api/case.ts`) |
 | Work | Has a `BaseController` that no controller extends |
 | Stock | Empty base controller, tenant filtered by hand in each controller |
 | People | `ListQuery` still accepts the old `filter[…]` and `sort=-col` names for one release |

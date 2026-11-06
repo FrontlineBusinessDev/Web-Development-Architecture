@@ -147,7 +147,7 @@ A tenant's payment was settled or approved: first payment, upgrade, renewal or o
 - `payment.reference` is at most 120 characters.
 - **No console skip:** a payment is real wherever it is settled. Demo sandboxes are still skipped.
 - **Never let the hub fail the payment.** Send after the commit (the job does this), and wrap any lookup in the sender in `try` / `report()` (Work does).
-- **Sent by:** People (`Ledger::settle`), Stock (admin approval of a payment), Work (Stripe webhook, card payment, staff marking an invoice paid).
+- **Sent by:** People (`Ledger::settle`), Stock (admin approval of a payment), Work (Stripe webhook, card payment, staff marking an invoice paid), Pay (`OnboardCompany`, and plan changes approved in `PlatformController`).
 - **Routed to:** `crm` (migration `2026_11_12_000100_route_subscription_paid_to_crm`).
 - The hub spec does not list this event yet. This section is the contract.
 
@@ -166,7 +166,7 @@ A live-demo visitor left their details and agreed to be contacted. There is no t
 - `demo.visits` is at least 1.
 - Send once per lead. Later page views or beacons send nothing.
 - Does not make an FBS ID.
-- **Sent by:** People, Connect, Learn, Stock, Work. Pay has it on an unmerged branch.
+- **Sent by:** People, Connect, Learn, Stock, Work and Pay (`DemoController`).
 - **Routed to:** `crm` (migration `2026_11_10_000100_route_demo_opened_to_crm`).
 
 ### Planned, not built
