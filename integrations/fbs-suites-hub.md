@@ -4,8 +4,8 @@ How an FBS app tells the rest of the suite that something happened (a sign-up, a
 
 - **Applies to:** every FBS app that sends events (People, Pay, Learn, Connect, Work, Stock), the hub (`fbs-suites-mcp`) and the receiver (`laravel-fbs-crm`).
 - **Sources:**
-  - `fbs-suites-mcp`: `docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Webhook hub), `app/Hub/{Signature,Router}.php`, `app/Http/Controllers/HookController.php`, `app/Jobs/DeliverEvent.php`, migrations `2026_11_10_000100_route_demo_opened_to_crm` and `2026_11_12_000100_route_subscription_paid_to_crm`.
-  - The senders `app/Support/SuiteHub.php` and `app/Jobs/SendSuiteHubEvent.php` in People, Stock, Work, Learn, Pay and Connect.
+  - `fbs-suites-mcp`: `docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Webhook hub), `app/Hub/{Signature,Router,HookRefusal,HookCheck}.php`, `app/Http/Controllers/HookController.php`, `app/Jobs/DeliverEvent.php`, `app/Coolify/*` (Platform › Coolify), migrations `2026_11_10_000100_route_demo_opened_to_crm` and `2026_11_12_000100_route_subscription_paid_to_crm`.
+  - The senders `app/Support/SuiteHub.php`, `app/Jobs/SendSuiteHubEvent.php` and `app/Http/Controllers/SuiteHubCheckController.php` in People, Stock, Work, Learn, Pay and Connect.
   - `laravel-fbs-crm`: `routes/api.php`, `app/Http/Requests/Api/SignupIntakeRequest.php`, `app/Support/Intake/*`.
 - **Last updated:** 2026-11-06
 
@@ -73,11 +73,23 @@ Rules:
 |---|---|---|
 | 202 | `{"success":true,"message":"Accepted","data":{"id":…,"duplicate":false}}` | Stored and queued for routing. |
 | 202 | same, with `"duplicate":true` | Already stored under the same `(app, event_id)`. Treat it as done. |
-| 401 | `{"success":false,"message":"Unauthorized"}` | App disabled, app has no secret, bad timestamp or bad signature. |
+| 200 | `{"success":true,"message":"Signature OK: …","data":{"ping":true,"app":…}}` | A verified `hub.ping` (section 2.1). Not stored, not routed. |
+| 401 | `{"success":false,"message":"<the reason in words>","data":{"reason":…}}` | `reason` is `app_disabled`, `no_secret`, `bad_timestamp`, `stale_timestamp` (more than 300 s off) or `bad_signature`. |
 | 404 | | No app with that key on Platform › Apps. |
-| 422 | `{"success":false,"message":"Invalid event"}` | Body is not a JSON object, `id` is not a UUID or does not match the header, or `event` is missing or over 60 characters. |
+| 422 | same shape | `reason` is `not_json` (not a JSON object), `id_mismatch` (`id` not a UUID or not the header's) or `no_event` (missing or over 60 characters). |
 
-The hub audits every refusal with the app and the reason only. It never audits the body.
+- The `message` says what to fix (`App\Hub\HookRefusal`), so a sender can put it in its own error: the job's log then reads "the app's FBS_HUB_SECRET is not the secret on Platform › Apps", not a bare 401.
+- The hub audits every refusal with the app and the reason only, and keeps the last one on the app (`hook_refused_at`, `hook_refusal`; the last accepted hook in `hook_ok_at`), shown on Platform › Apps. It never audits the body.
+
+### 2.1 Checking the connection
+
+Platform › Apps › **Test connection** (`App\Hub\HookCheck`) proves both settings of one app in one round trip, from the hub's screen:
+
+1. The hub POSTs `{"id":<uuid>,"event":"hub.check","version":1,"app":<key>,"hub_url":<hub address>}` to `{app base_url}/api/fbs-hub/check`, signed with that app's webhook secret (same headers and signature as section 2).
+2. The app verifies it with its `FBS_HUB_SECRET`. A mismatch answers 401 with `data.reason` and `data.fingerprint` (the first 8 hex characters of `sha256(secret)`, never the secret), so the hub can show both fingerprints.
+3. On a match the app sends a signed `hub.ping` to its `FBS_HUB_URL` exactly as its queued events go, and answers 200 with `data.hub_url` and `data.hub_reply` (`status`, `success`, `message`: what the hub said).
+
+The result is kept on the app (`hook_test_*`). No session, API key or database is involved on the app's side. Locally the hub must serve more than one request at a time, because the app calls back during the test.
 
 ## 3. The envelope
 
@@ -188,6 +200,13 @@ Use the template in [`templates/hub/`](../templates/hub/). It already does all o
 7. **Retries.** `$tries = 6`, `$timeout = 20`, `backoff() = [60, 300, 1800, 7200, 43200]` (1 min, 5 min, 30 min, 2 h, 12 h).
 8. **The queue can hold a job for 12 hours.** Redis runs with `appendonly yes`, and the queue's `retry_after` is longer than the job timeout.
 9. **Never break the user's action.** The hub is a side effect. A sign-up or a payment succeeds even if the hub is down.
+10. **Say why it failed.** A refusal's error carries the hub's `message` (the template does this).
+11. **Answer the hub's check.** Copy `SuiteHubCheckController` from the template and route it outside the `api` / `web` group, with a throttle, because the signature is the credential (no session, key or CSRF):
+
+    ```php
+    // routes/api.php (or routes/web.php as 'api/fbs-hub/check' with ->withoutMiddleware('web'))
+    Route::post('fbs-hub/check', SuiteHubCheckController::class)->withoutMiddleware('api')->middleware('throttle:30,1')->name('api.fbs-hub.check');
+    ```
 
 Optional, from Learn: keep the last result on the tenant (`hub_sent_at`, `hub_error` in plain words) and give staff a **Send to CRM** button plus an Artisan command for tenants made before the hub existed.
 
@@ -201,6 +220,8 @@ Optional, from Learn: keep the last result on the tenant (`hub_sent_at`, `hub_er
 | `FBS_HUB_SECRET` | This app's webhook secret from FBS Suites › Platform › Apps. Shown once on create; Rotate makes a new one. |
 
 Both are secrets in Coolify. Never commit them, log them or put them in an audit row.
+
+**Set them from FBS Suites:** Platform › Coolify reads the server (address and an API token with `read`, `write` and `deploy`, saved encrypted in the hub's database and tested before it is saved, rule 12), matches each app to its Coolify resource by domain or name, and **Connect** writes `FBS_HUB_URL` and a new `FBS_HUB_SECRET` into that resource's env (Coolify first, so a refused write changes nothing), then sets the app's Base URL and MCP path in the hub. The apps load their env with `env_file: .env`, which Coolify writes when it deploys the resource, so **Restart** (asked first: Coolify's restart is not the rolling deploy, a short downtime) applies the values, and the page runs Test connection until the app is back.
 
 ## 7. Leg 2: hub → destinations
 
@@ -228,6 +249,8 @@ Both are secrets in Coolify. Never commit them, log them or put them in an audit
 3. **Receiver:** add it to the CRM's `SignupIntake::EVENTS` and its fields to `SignupIntakeRequest`, with a test.
 4. **Route:** add it to the destination's `events` with an add-only, idempotent data migration in the hub (like `2026_11_12_000100_route_subscription_paid_to_crm`), with a test. Deploy the hub and the CRM **before** any app sends it.
 5. Update this file and, if needed, [`templates/hub/`](../templates/hub/).
+
+`hub.check` and `hub.ping` are connection checks, not events: the hub never stores or routes them, and a sender never sends them from its own code.
 
 ## 10. FBS ID (single sign-on)
 

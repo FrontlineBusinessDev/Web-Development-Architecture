@@ -73,7 +73,9 @@ class SendSuiteHubEvent implements ShouldQueue
             throw new RuntimeException("The hub address redirected (HTTP {$response->status()}). Set FBS_HUB_URL to the exact FBS Suites address, https and no path.");
         }
         if (! $response->successful() || $response->json('success') !== true) {
-            throw new RuntimeException("The FBS Suites hub answered HTTP {$response->status()}, not its own success JSON.");
+            // The hub says why in plain words (e.g. a wrong FBS_HUB_SECRET); Platform › Apps › Test connection checks it too.
+            $said = is_string($response->json('message')) ? ': '.mb_substr((string) $response->json('message'), 0, 300) : ', not its own success JSON.';
+            throw new RuntimeException("The FBS Suites hub answered HTTP {$response->status()}{$said}");
         }
     }
 }

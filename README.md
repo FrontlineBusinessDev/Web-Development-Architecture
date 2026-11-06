@@ -41,7 +41,7 @@ Copy these into a project and replace the placeholders.
 | [templates/CLAUDE.md](templates/CLAUDE.md) | Starting `CLAUDE.md`, with the pointer back to this repo |
 | [templates/spec-template.md](templates/spec-template.md), [templates/plan-template.md](templates/plan-template.md) | Design spec and implementation plan |
 | [templates/deploy-kit/](templates/deploy-kit/) | `Dockerfile`, `.dockerignore`, `docker-compose.yml`, `scripts/`, `deploy/`, `DEPLOY.md`, `.env.deploy.example` |
-| [templates/hub/](templates/hub/) | The FBS Suites hub sender (`SuiteHub`, `SendSuiteHubEvent`) |
+| [templates/hub/](templates/hub/) | The FBS Suites hub sender (`SuiteHub`, `SendSuiteHubEvent`) and its connection check (`SuiteHubCheckController`) |
 
 ## Decisions behind these docs (2026-11-06)
 
