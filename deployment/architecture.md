@@ -67,6 +67,22 @@ The default stack stays near 1.7 CPU and 2.4 GB in total. On a shared VPS, add u
 
 The `http` router redirects to `https`. **Every product redirects `www.`:** `migrate.sh` also writes routers for the other name (`www.<host>`, or `<host>` without `www.` when `APP_URL` is the `www.` one) that answer with a permanent redirect to `APP_URL`'s host, path kept (`https://www.pay.example.com/login` goes to `https://pay.example.com/login`). Traefik gets that name its own certificate, so it needs a DNS record pointing at the server; without one, only the redirect fails. Without this router a `www.` visit gets Coolify's own 503 page ("This site is not available at the moment"), because Coolify's **Domains** fields stay empty in the stack.
 
+## No go-live switch
+
+A stack has no variable that takes it off its own domain. `migrate.sh` writes the route on every deploy, always.
+
+- **Why:** FBS CRM and FBS Connect (`TRAEFIK_ROUTE=off|on`) and FBS Pay (`STACK_LIVE=false|true`) moved off their old single-container app with such a switch: deploy the stack with it off, check it, flip it on, deploy again. It took a domain down more than once:
+    - Coolify writes a changed variable to the server's `.env` only on the next deploy. A saved-but-pending `on` looked done and wasn't.
+    - Every deploy rewrites `.env` from Coolify's saved values, so a fix made on the server (`sed` in `.env`, a hand-written route file) is undone by the next deploy while the switch reads `off`.
+    - With the switch `off` and the old app stopped or converted in place, nothing holds the domain: every visit, `www.` included, gets Coolify's own 503 page ("This site is not available at the moment").
+    - It doubles the deploys and the steps of a cutover, and a forgotten flip has no error, only a dead site.
+- **Do:**
+    - Check a new stack before it goes live through `php artisan deploy` on your PC (the gate) and the containers' own `/up` on the `coolify` network, not by keeping it off the domain.
+    - Cut over in one sitting: **Stop** the old app (not Delete, it is the way back), then deploy the stack. The maintenance page answers until `web-1` passes `/up`.
+    - Roll back by starting the old app and stopping the stack, not by a variable.
+- **Don't:** add a variable whose wrong value leaves the domain without a route.
+- **Known differences today:** FBS CRM and FBS Connect still read `TRAEFIK_ROUTE` and FBS Pay `STACK_LIVE`. Once each is live on its stack, set it to `on` / `true` and delete the switch from `scripts/migrate.sh`, `docker-compose.yml` and DEPLOY.md.
+
 ## Health and drain
 
 `/up` is Laravel's health route. The app adds a listener on `DiagnosingHealth` that fails when:
