@@ -23,7 +23,7 @@ Pin the version in the file named in the last column. A version change is its ow
 | Server | FrankenPHP with Laravel Octane | `Dockerfile` `ARG FRANKENPHP_IMAGE` |
 | Image tag | An exact tag, for example `dunglas/frankenphp:1.13.4-php8.4-bookworm`. Never `1-php8.4` or `latest` | `Dockerfile` |
 | Composer image | `composer:2` (major pinned, never `latest`) | `Dockerfile` |
-| Database | PostgreSQL 17 in production, SQLite in memory for tests | Coolify resource, `phpunit.xml` |
+| Database | PostgreSQL 18 in production, SQLite in memory for tests | Coolify resource, `phpunit.xml` |
 | Cache, session, queue | Redis 7 (phpredis client), persistence on | `docker-compose.yml` |
 | Tests | Pest (with `pest-plugin-laravel`) | `composer.json` |
 | Static analysis | Larastan, level 7 | `phpstan.neon` |

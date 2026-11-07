@@ -64,7 +64,7 @@ Without `read:sensitive`, Coolify hides the bucket settings and the build stops.
 
 | Resource | Settings |
 | --- | --- |
-| **PostgreSQL 17** | A Coolify database. Copy its internal hostname into the app's `DB_HOST`. Turn on scheduled backups to the bucket. |
+| **PostgreSQL 18** | A Coolify database. Copy its internal hostname into the app's `DB_HOST`. Turn on scheduled backups to the bucket. |
 | **App** | Docker Compose, `docker-compose.yml`. Manual deploys. Leave every **Domains** field empty: `migrate` writes the Traefik route from `APP_URL`. |
 | **Deployer** | Dockerfile, `deploy/Dockerfile.deployer`. Manual deploys. Storages: `/var/run/docker.sock` and `/data/coolify/applications/<app-uuid>`, each mounted at the same path. Env: `COOLIFY_UUID=<app-uuid>`, `COOLIFY_API_TOKEN` (read, read:sensitive), `COOLIFY_URL=http://coolify:8080`. Source commit: **Available during build**. |
 

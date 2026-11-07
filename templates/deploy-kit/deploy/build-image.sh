@@ -5,7 +5,7 @@
 #   bash /src/deploy/build-image.sh <image:tag>
 #
 #   1. checks:  the Dockerfile's `checks` stage (composer ci:check). A failure stops everything.
-#   2. pgsql:   the same test suite against a throwaway PostgreSQL 17 (production's database).
+#   2. pgsql:   the same test suite against a throwaway PostgreSQL 18 (production's database).
 #   3. assets:  when ASSET_URL is set, the Vite build goes to the bucket before the image is built.
 #   4. image:   the final image (with ASSETS_UPLOADED=1 it keeps only the Vite manifest).
 # Exits non-zero, with the reason as the last line, when it fails.
@@ -49,10 +49,10 @@ docker build --target checks -t "${work}:checks" /src || { echo "composer ci:che
 if [ "${SKIP_PGSQL_TESTS:-0}" = 1 ]; then
     echo "SKIP_PGSQL_TESTS=1: the PostgreSQL test run was skipped."
 else
-    echo "Running the tests against PostgreSQL 17..."
+    echo "Running the tests against PostgreSQL 18..."
     docker network create "$work" >/dev/null
     docker run -d --name "${work}-db" --network "$work" -e POSTGRES_DB=testing \
-        -e POSTGRES_USER=testing -e POSTGRES_PASSWORD=testing postgres:17-alpine >/dev/null
+        -e POSTGRES_USER=testing -e POSTGRES_PASSWORD=testing postgres:18-alpine >/dev/null
     for _ in $(seq 1 30); do
         docker exec "${work}-db" pg_isready -U testing -d testing >/dev/null 2>&1 && break
         sleep 1

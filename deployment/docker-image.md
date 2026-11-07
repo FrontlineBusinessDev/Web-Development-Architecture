@@ -34,7 +34,7 @@ Old images and build cache are what fill the VPS disk. A small image deploys fas
 
 FBS People does the same with `ARG ASSETS=image|bucket` (`bucket` fetches the manifests and SSR bundle by `ASSET_HASH`).
 
-**The PostgreSQL run.** A Docker build cannot start a database. `deploy/build-image.sh` builds the `checks` stage, starts a throwaway `postgres:17-alpine`, and runs `php artisan test` from the `checks` image against it before the final build ([testing-and-ci.md](../quality/testing-and-ci.md#the-postgresql-run)).
+**The PostgreSQL run.** A Docker build cannot start a database. `deploy/build-image.sh` builds the `checks` stage, starts a throwaway `postgres:18-alpine`, and runs `php artisan test` from the `checks` image against it before the final build ([testing-and-ci.md](../quality/testing-and-ci.md#the-postgresql-run)).
 
 ## What ships
 
@@ -61,7 +61,7 @@ Inertia SSR is off, so `resources/js` and Node are not needed at runtime. If a p
 | Composer | `composer:2` (major pinned) |
 | Node | `NODE_MAJOR=22`, the same major as `.nvmrc` |
 | Redis | `redis:7.4-alpine` |
-| PostgreSQL (test run) | `postgres:17-alpine`, the production major |
+| PostgreSQL (test run) | `postgres:18-alpine`, the production major |
 | Deployer | `docker:27-cli` |
 
 ## PHP extensions

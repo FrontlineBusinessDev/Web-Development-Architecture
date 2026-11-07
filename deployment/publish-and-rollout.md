@@ -43,7 +43,7 @@ Never point a resource at an image only a PC provides (`FROM <slug>-pc:latest`),
 
 ### On the server (once per server)
 
-1. **PostgreSQL 17** as a Coolify database resource. Scheduled backups on.
+1. **PostgreSQL 18** as a Coolify database resource. Scheduled backups on.
 2. **App** resource: Docker Compose, `docker-compose.yml`, manual deploys, every Domains field empty. Fill in its variables ([architecture.md](architecture.md#environment-variables-names-only)), then deploy it **once** from Coolify: that writes `/data/coolify/applications/<app-uuid>/docker-compose.yaml` and `.env`.
 3. **Deployer** resource: Dockerfile, `deploy/Dockerfile.deployer`, same repository and branch `master`, manual deploys.
     - Storages: `/var/run/docker.sock` and `/data/coolify/applications/<app-uuid>`, each mounted at the same path.
@@ -79,7 +79,7 @@ What `scripts/publish.sh` does:
 4. Names the image `<slug>-pc:<first 12 characters of the commit>`. If the server already has it, skips to step 7.
 5. Builds it: `git archive HEAD` into the deployer image, which runs `deploy/build-image.sh` against the PC's Docker:
     1. the `checks` stage (`composer ci:check`);
-    2. the test suite on a throwaway PostgreSQL 17;
+    2. the test suite on a throwaway PostgreSQL 18;
     3. when `ASSET_URL` is set, the Vite build, uploaded to `{bucket}/{AWS_BUCKET_FOLDER}/build` (new files only);
     4. the final image (with only the Vite manifest when the files went to the bucket).
 

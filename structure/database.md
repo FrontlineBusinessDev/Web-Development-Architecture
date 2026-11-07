@@ -2,7 +2,7 @@
 
 How tables, columns, keys and migrations are named and written, so every app's schema reads the same and deploys without downtime.
 
-- **Applies to:** every FBS Laravel app. PostgreSQL 17 in production, SQLite in memory for tests.
+- **Applies to:** every FBS Laravel app. PostgreSQL 18 in production, SQLite in memory for tests.
 - **Sources:** People migrations and People `SYSTEM-RULES.md` rules 7, 21, 23 and 44; Learn `docs/reusable-components-in-all-projects.md` section 11; MCP `CLAUDE.md`; Pay `docs/PLAN.md` section 4.
 - **Last updated:** 2026-11-07
 

@@ -14,7 +14,7 @@ Related: [rule 22 (definition of done)](../rules/system-rules.md#rule-22-definit
 | --- | --- | --- |
 | Your PC, before each commit | `composer ci:check` | Habit. A red run is not committed. |
 | The Docker build (`checks` stage) | `composer ci:check` | **Yes.** A failure fails the image build; nothing deploys. |
-| `deploy/build-image.sh`, after `checks` | the test suite on PostgreSQL 17 | **Yes.** A failure stops the deploy. |
+| `deploy/build-image.sh`, after `checks` | the test suite on PostgreSQL 18 | **Yes.** A failure stops the deploy. |
 | GitHub Actions | optional quick feedback on a push | **No.** The deploy never waits for it. If a workflow stays, it watches `master` and runs the same `composer ci:check`. |
 
 The build runs on whichever machine runs `php artisan deploy` (or on the server when it builds), so the same code always meets the same checks.
@@ -99,21 +99,21 @@ Run the formatter over the whole repo once, in its own commit, before turning th
 | Run | Database |
 | --- | --- |
 | Local and in the `checks` stage | SQLite in memory (`phpunit.xml`: `DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`), array cache, session and mail, sync queue. Fast. |
-| Before every deploy | The same suite on PostgreSQL 17 (below). |
+| Before every deploy | The same suite on PostgreSQL 18 (below). |
 
 ### The PostgreSQL run
 
 Production is PostgreSQL, and SQLite accepts queries PostgreSQL refuses (aliases in `HAVING`, loose types, case-insensitive `LIKE`). So `deploy/build-image.sh` runs the whole suite on PostgreSQL before the image is built:
 
 1. builds the `checks` stage (already passed `composer ci:check`);
-2. starts `postgres:17-alpine` on a private Docker network;
+2. starts `postgres:18-alpine` on a private Docker network;
 3. runs `php artisan test` from the `checks` image with `DB_CONNECTION=pgsql` and the test database's settings (they override `phpunit.xml`, whose `<env>` lines do not use `force`);
 4. removes the database and the network.
 
 To run it on your PC (Docker Desktop):
 
 ```bash
-docker run -d --rm --name pgtest -p 55432:5432 -e POSTGRES_DB=testing -e POSTGRES_USER=testing -e POSTGRES_PASSWORD=testing postgres:17-alpine
+docker run -d --rm --name pgtest -p 55432:5432 -e POSTGRES_DB=testing -e POSTGRES_USER=testing -e POSTGRES_PASSWORD=testing postgres:18-alpine
 ```
 
 ```bash

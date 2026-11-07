@@ -25,7 +25,7 @@ Related: [docker-image.md](docker-image.md) (what the image holds), [publish-and
                         |
      queue, <name>-queue, scheduler   (same image, no traffic)
                         |
-   __APP__-redis (stack)        PostgreSQL 17 (Coolify resource)     Bucket (DigitalOcean Spaces)
+   __APP__-redis (stack)        PostgreSQL 18 (Coolify resource)     Bucket (DigitalOcean Spaces)
    cache, sessions, queue       backed up by Coolify                 {AWS_BUCKET_FOLDER}/...
 ```
 
@@ -35,7 +35,7 @@ Every name on Coolify's shared network starts with the app slug (`fbs-people-web
 
 | Resource | Build pack | Deploys | Notes |
 | --- | --- | --- | --- |
-| PostgreSQL 17 | Coolify database | n/a | Its internal hostname is the app's `DB_HOST`. Scheduled backups on. |
+| PostgreSQL 18 | Coolify database | n/a | Its internal hostname is the app's `DB_HOST`. Scheduled backups on. |
 | App | Docker Compose (`docker-compose.yml`) | **Manual.** Deployed from Coolify once, to write its compose file and `.env`. | Every **Domains** field empty. Its Redeploy works (rule 67: the image builds its own Vite files) but restarts every container at once: for repairs, not releases. |
 | Deployer | Dockerfile (`deploy/Dockerfile.deployer`) | Manual, started by `php artisan deploy` through Coolify's API | Mounts the Docker socket and the app's folder. Runs the rollout. Its Redeploy rolls the commit out again. |
 
@@ -88,7 +88,7 @@ Draining a container: the rollout touches the flag, Traefik's next check (within
 
 ## PostgreSQL
 
-- PostgreSQL 17 as a separate Coolify database resource, on Coolify's network, so Coolify backs it up and an app redeploy never touches it.
+- PostgreSQL 18 as a separate Coolify database resource, on Coolify's network, so Coolify backs it up and an app redeploy never touches it.
 - `scripts/wait-for-db.sh` waits for it before `migrate` and the workers start.
 - Migrations must work with the release still running: [database.md](../structure/database.md#migrations).
 
