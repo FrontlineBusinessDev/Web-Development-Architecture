@@ -4,7 +4,7 @@ How tables, columns, keys and migrations are named and written, so every app's s
 
 - **Applies to:** every FBS Laravel app. PostgreSQL 17 in production, SQLite in memory for tests.
 - **Sources:** People migrations and People `SYSTEM-RULES.md` rules 7, 21, 23 and 44; Learn `docs/reusable-components-in-all-projects.md` section 11; MCP `CLAUDE.md`; Pay `docs/PLAN.md` section 4.
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-07
 
 ## Table names: literal `app_`
 
@@ -45,7 +45,7 @@ Why literal names: the prefix shows in every query, migration and raw SQL; frame
 | Booleans | `boolean(...)->default(false)`, named as a fact (`is_demo`, `requires_review`) |
 | Enums | short `string` columns validated against a PHP enum or constant list; no database enum types |
 | JSON | `json` for loose settings only; never for data you filter or join on |
-| Names of people | `first_name`, `last_name` (required, 80 chars); a full name is an accessor, not a column |
+| Names of people | `first_name`, `last_name` (required, 80 chars), optional `middle_name`; a person inside another record gets prefixed parts (`contact_first_name`). The full name is an accessor, never a column, and never stored next to the parts ([rule 68](../rules/system-rules.md)) |
 
 ## Keys and indexes
 
@@ -108,7 +108,12 @@ Bulk inserts and `DB::table()` writes skip model events, so they must set the te
 |---|---|
 | CRM, Connect | `'prefix' => env('DB_PREFIX', 'app_')` on every connection; migrations use bare names |
 | Pay | `app_` prefix only on the SQLite connection, so production tables have no prefix |
-| Work | Renames the users table to `app_users`; not the standard. Users keep a single `name` column |
+| Work | Renames the users table to `app_users`; not the standard. Users keep a single `name` column (rule 68); `staff_name` snapshots in audit tables are allowed |
+| People | Rule 68: `users` keeps `name` next to the parts (rewritten on save); single-name `app_employees.emergency_name`, `app_agencies.contact_name`, `app_companies.dpo_name` |
+| Pay | Rule 68: `employees` has a single `name` column |
+| Learn | Rule 68: `full_name` (`applicant_name` on applications) kept next to the parts on students, guardians, applications and staff; single-name `drivers.name`, `sponsors.contact_person`, `requested_documents.requester_name` |
+| CRM, Connect | Rule 68: `campaign_contacts.name`; CRM also `activity_email_recipients.name` |
+| Stock | Rule 68: `app_suppliers.contact_person` |
 | Stock | `demo_leads`, `push_subscriptions` without the prefix; tenant id filtered by hand in controllers, no global scope |
 | Learn, FCA-SMS | Plain table names (`students`, `rooms`), no prefix; do not retrofit without a decision (a rename touches about 50 tables and every raw query) |
 | Learn | Scopes by `school_id` with its own `BelongsToSchool` trait (same pattern, different name) |

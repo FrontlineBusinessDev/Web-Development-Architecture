@@ -87,6 +87,7 @@ Search for `## Rule N.` to jump to a rule.
 65. A card's content fits it: nothing scrolls sideways, nothing is cut off, nothing is stretched thin
 66. This repo is the source of truth
 67. Every Coolify resource can be redeployed
+68. People's names are stored as first_name and last_name
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -1774,6 +1775,24 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Reference:** FBS Pay (`laravel-fbs-pay/DEPLOY.md`, `scripts/publish.sh`) for a Dockerfile app; FBS People (`Dockerfile` `ASSETS`, `config/app.php` `asset_url`, `deploy/coolify-deploy.sh`) for a compose app with a deployer. The runbook: [../deployment/publish-and-rollout.md](../deployment/publish-and-rollout.md#redeploy-in-coolify).
 - **Check:** With no PC involved, click Redeploy on each resource of the app: each deployment ends healthy, and the site answers `/up` with its pages and assets. Then run `php artisan deploy`: the log shows the PC image used ("Build step skipped", or "already on this server").
 
+## Rule 68. People's names are stored as first_name and last_name
+
+- **Rule:** Every table that holds a person (users, employees, contacts, students, guardians, applicants, leads, a company's contact person) stores the name as `first_name` and `last_name` (required, 80 characters), with `middle_name` optional. A person never gets a single `name`, `full_name` or `contact_name` column.
+- **Why:** A single name column can't be sorted by surname, greeted by first name ("Hi Maria"), matched against another app or the CRM (hub events carry `contact.first_name` / `last_name`), or split reliably later ("Dela Cruz, Juan Jr."). Every app that started with `name` had to migrate later (FBS CRM, FBS Stock, FBS People, FBS Learn), and the ones that kept both a whole name and the parts now keep two copies that drift.
+- **Do:**
+    - **Columns:** `first_name`, `last_name`, optional `middle_name`. The model's `name` is a read-only accessor (`trim("{$this->first_name} {$this->last_name}")`), never a column and never in `$fillable`.
+    - **A person inside another record** gets prefixed parts: `contact_first_name` / `contact_last_name`, `admin_first_name` (FBS Pay's access requests), `prospect_first_name` (FBS CRM's deals).
+    - **Forms** ask First name and Last name in two fields; **imports and exports** carry two columns; **tables of people** show the parts in separate columns, sorted by `last_name`, then `first_name`; **search** matches either part and "first last".
+    - **Factories and seeders** fill `fake()->firstName()` and `fake()->lastName()`.
+    - **Moving off a single column** follows rule 23: add the parts and backfill them with a splitter that knows "Last, First", suffixes and particles (FBS Learn's `App\Support\PersonName::split`), switch the code, then drop the old column in a later release.
+- **Don't:**
+    - Store a whole name next to the parts.
+    - Split a name at display time, or join the parts into a stored column.
+    - Use `fake()->name()` for a person.
+- **Allowed as one column:** a label that is not a person record: an email's display "from" name, a name typed onto a signature line, a copy of a name kept in an audit row for history, a free-text customer note.
+- **Reference:** FBS Suites `users` (`first_name` / `last_name`, `User::name` accessor, the factory); FBS CRM's `2026_10_04_000001_drop_name_from_users_table` as the way off a `name` column.
+- **Check:** A new person table has `first_name` and `last_name` and no `name` column; the model has no `name` in `$fillable`; `grep -rn "string('name')\|full_name" database/migrations` finds no person table.
+
 ---
 
 ## Design profile
@@ -1904,3 +1923,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
     - Rule 66 added: this repo is the source of truth, linked from every project's `CLAUDE.md`.
     - Design profile: brand values moved out; D1–D11 are brand-neutral, and D12 is each app's own profile.
 - **2026-11-07:** Rule 67 added: every Coolify resource can be redeployed (after Redeploy failed in FBS Connect and FBS People). The runbook drops "never press Redeploy on the app"; FBS Connect moves to FBS Pay's `<app uuid>:<commit>` pattern and FBS People's image builds its own static files when it gets no bucket args. The same day FBS CRM moved to Pay's pattern, and FBS Learn's and FBS Suites' deployers run once per container, so every app follows rule 67.
+- **2026-11-07:** Rule 68 added: people's names are stored as `first_name` and `last_name`, never one `name` column; each app's gaps are listed in [../structure/database.md](../structure/database.md#known-differences-today).

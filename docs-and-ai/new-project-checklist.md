@@ -4,7 +4,7 @@ Step by step from an empty repo to the first deploy, and what a new developer do
 
 - **Applies to:** every new FBS app, and every person joining a project.
 - **Sources:** People `SYSTEM-RULES.md` rules 6, 22 and 55; section 15 of the old `reusable-components-in-all-projects.md`; how MCP was started (Laravel React starter kit, registration removed); the deploy and hub setup in People, Learn, Stock, Work and MCP.
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-07
 
 Tick each box in the project's first plan, or name why it does not apply.
 
@@ -129,6 +129,7 @@ The existing apps are left as they are (owner's decision, 2026-11-06). A new app
 
 - [ ] Commit to `master` in the format of [rules/git-workflow.md](../rules/git-workflow.md).
 - [ ] New table: `app_` name, `$table` on the model, full names in `exists:` / `unique:` and raw SQL.
+- [ ] A person's name: `first_name` + `last_name` columns, `name` only as an accessor (rule 68).
 - [ ] New CRUD screen: follow the CRUD pattern; never write a list page from scratch.
 - [ ] Loading data: skeletons. Questions: the app's modal, never `alert` or `window.confirm`.
 - [ ] Octane-safe code: no per-request state in statics or singletons; cache arrays, not models.

@@ -4,7 +4,7 @@ How code is named, sized, formatted and written in every FBS project, backend an
 
 - **Applies to:** every FBS Laravel + Inertia + React project, and new code in older ones (rule 57: tidy what you touch, don't rewrite what you don't).
 - **Sources:** `laravel-fbs-people` (reference), `laravel-fbs-crm` (`HANDOFF.md`, `.ai/rules/`, the enforced line limit), `laravel-fbs-learn` and `laravel-fca-sms` (`CLAUDE.md`, `reusable-components-in-all-projects.md`), `fbs-suites-mcp` (`CLAUDE.md` global constraints), the `.editorconfig`, `pint.json`, `tsconfig.json` and `vite.config.ts` files of each repo.
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-07
 
 The numbered rules in [system-rules.md](system-rules.md) win when this file and a rule disagree. Patterns with code (CRUD, client layer) are in [../structure/backend-patterns.md](../structure/backend-patterns.md) and [../structure/frontend-patterns.md](../structure/frontend-patterns.md).
 
@@ -42,7 +42,7 @@ Formatting is never argued about in review: the tools decide, and the build chec
 
 - **Every model sets `protected $table`**, and foreign keys pass the table: `->constrained('app_organizations')` (FBS Suites `CLAUDE.md`).
 - **Fields never fillable:** tenant ids (`company_id`, `school_id`, `org_id`), roles and `status`. They are set by the scope, the action or a dedicated method.
-- **People's names** are stored in parts (`first_name`, `last_name`, optional `middle_name`); `name` is a read-only accessor, and tables of people show the parts in separate columns (FBS Suites, FBS Learn).
+- **People's names** are stored in parts (`first_name`, `last_name`, optional `middle_name`; a person inside another record gets prefixed parts such as `contact_first_name`); `name` is a read-only accessor, never a column or stored next to the parts, and tables of people show the parts in separate columns ([rule 68](system-rules.md)).
 
 ### TypeScript and React
 
