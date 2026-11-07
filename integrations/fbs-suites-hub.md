@@ -7,7 +7,7 @@ How an FBS app tells the rest of the suite that something happened (a sign-up, a
   - `fbs-suites-mcp`: `docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Webhook hub), `app/Hub/{Signature,Router,HookRefusal,HookCheck}.php`, `app/Http/Controllers/HookController.php`, `app/Jobs/DeliverEvent.php`, `app/Coolify/*` (Platform › Coolify), migrations `2026_11_10_000100_route_demo_opened_to_crm` and `2026_11_12_000100_route_subscription_paid_to_crm`.
   - The senders `app/Support/SuiteHub.php`, `app/Jobs/SendSuiteHubEvent.php` and `app/Http/Controllers/SuiteHubCheckController.php` in People, Stock, Work, Learn, Pay and Connect.
   - `laravel-fbs-crm`: `routes/api.php`, `app/Http/Requests/Api/SignupIntakeRequest.php`, `app/Support/Intake/*`.
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-07
 
 Copy the sender from [`templates/hub/`](../templates/hub/). When you add or change an event, update this file in the same piece of work.
 
@@ -263,3 +263,32 @@ Both are secrets in Coolify. Never commit them, log them or put them in an audit
 - Google and Microsoft sign-in go through it. Staff need two-step login or a passkey.
 - `tenant.signed_up` gives the sign-up's contact an FBS ID.
 - The apps' side ("Sign in with FBS", `/api/fbs/*`) is Phase 2 and not built in any app yet. See [`structure/tenancy-and-auth.md`](../structure/tenancy-and-auth.md).
+
+## 11. AI keys for the MCP gateway
+
+FBS Suites is also the MCP gateway: Claude (or another MCP client) calls `POST /mcp` with one `fbsm_` key, and the gateway calls each FBS app's own MCP endpoint with a key the person pasted on **App links**. Only FBS staff sign in to FBS Suites, so App links hold staff keys; customer keys stay for organizations that still have FBS Suites logins. Spec: `fbs-suites-mcp/docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Per-app contract); plan for Pay, People and Connect: `fbs-suites-mcp/docs/superpowers/plans/2026-11-07-staff-ai-keys-pay-people-connect.md`.
+
+**Every app's MCP endpoint:**
+
+- Answers `initialize`, `tools/list` and `tools/call` (JSON-RPC 2.0, plain JSON, no sessions) with a bearer key, never a browser session.
+- Always lists and answers `whoami`: `{kind: 'tenant', tenant_ref: <tenant id>, tenant_name, user_name}` for a customer key, `{kind: 'staff', tenant_ref: null, …}` for a staff key. The gateway refuses a staff key pasted by a customer and the other way round.
+- Marks each tool with `annotations.readOnlyHint` (a tool without `true` is a write).
+- Refuses one call inside MCP (a JSON-RPC error in a 200: -32001 not allowed, -32602 bad arguments). An HTTP 401 or 403 makes the gateway mark the link failed, so keep those for a key that no longer works; a plan without AI access answers inside MCP too (empty tool list, -32001 on calls).
+- Writes every tool call to the app's own audit trail (rule 31).
+
+**A staff key:**
+
+- Is the staff member's own platform account's key, made on a page in the app's platform console (and `php artisan mcp:staff-key {email} --days=` for developers): read only, abilities `mcp.read` + `mcp.staff` (People: its own staff token), always expires (1, 7 or 30 days), shown once, listed with last used, revocable.
+- Offers `list_tenants` (no arguments needed; `search`, `page`), and every other tool takes `tenant` (the account id, sent as a string; the gateway adds it to each tool's schema).
+- Runs each call inside that tenant under the app's own staff rule, read tools only, and audits it in that tenant.
+
+| App | MCP path | Customer key | Staff key | Staff rule |
+|---|---|---|---|---|
+| Work | `/api/mcp` | Settings › API keys | Platform › View as a user › Staff AI keys | `tenant` + `reason`, as View as |
+| Stock | `/api/mcp` | none (staff only) | Account Settings › Staff AI keys | `tenant` + `reason` |
+| People | `/mcp` | Me › Settings › Connected assistants | Console › My settings › AI keys for FBS Suites | `tenant` + `reason`, as Console › Tenants › Enter |
+| Pay | `/api/v1/mcp` | Integrations › API keys ("AI assistants (MCP)") | Platform › Security › Staff AI keys | a live support access to that company, covering the tool's module; masked |
+| Connect | `/api/integrations/mcp` | Settings › API keys | Platform › Security › Staff AI keys | as Platform › Enter (the business's Developer role) |
+| Learn | `/api/mcp` | Settings › School › API Keys | Platform › Settings › Staff AI keys | as Enter school |
+
+The hub shows where to make the key in the Paste key dialog (`SuiteApp::KEY_PAGES` in `fbs-suites-mcp`): keep that list in step when a key page moves.

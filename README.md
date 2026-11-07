@@ -27,7 +27,7 @@ This repo is the source of truth. Every project's `CLAUDE.md` links here. When a
 | What goes in the Docker image? | [deployment/docker-image.md](deployment/docker-image.md) |
 | How do I deploy and roll back? | [deployment/publish-and-rollout.md](deployment/publish-and-rollout.md) |
 | Which checks must pass before a deploy? | [quality/testing-and-ci.md](quality/testing-and-ci.md) |
-| How does an app talk to the FBS Suites hub and the CRM? | [integrations/fbs-suites-hub.md](integrations/fbs-suites-hub.md) |
+| How does an app talk to the FBS Suites hub and the CRM, and where are its AI (MCP) keys made? | [integrations/fbs-suites-hub.md](integrations/fbs-suites-hub.md) |
 | How are `docs/`, specs and plans organised? | [docs-and-ai/docs-and-specs.md](docs-and-ai/docs-and-specs.md) |
 | What goes in a project's `CLAUDE.md`? | [docs-and-ai/claude-md-template.md](docs-and-ai/claude-md-template.md) |
 | How do I start a new project or onboard a developer? | [docs-and-ai/new-project-checklist.md](docs-and-ai/new-project-checklist.md) |
