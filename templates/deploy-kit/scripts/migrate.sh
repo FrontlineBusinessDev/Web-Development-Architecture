@@ -30,6 +30,9 @@ if [ -n "${PROXY_ROUTES_FILE:-}" ]; then
     https="${TRAEFIK_HTTPS_ENTRYPOINT:-https}"
     http="${TRAEFIK_HTTP_ENTRYPOINT:-http}"
     resolver="${TRAEFIK_CERT_RESOLVER:-letsencrypt}"
+    # The other name (www.<host>, or <host> without www.) answers with a permanent redirect to <host>.
+    www="www.${host#www.}"
+    [ "$www" = "$host" ] && www="${host#www.}"
     # Write then rename: Traefik never reads a half-written file.
     cat > "${PROXY_ROUTES_FILE}.tmp" <<YAML
 # Written by scripts/migrate.sh on every deploy. Do not edit: the next deploy overwrites it.
@@ -46,10 +49,27 @@ http:
       entryPoints: [${http}]
       service: __APP_SLUG__
       middlewares: [__APP_SLUG__-https]
+    __APP_SLUG__-www:
+      rule: "Host(\`${www}\`)"
+      entryPoints: [${https}]
+      service: __APP_SLUG__
+      middlewares: [__APP_SLUG__-to-host]
+      tls:
+        certResolver: ${resolver}
+    __APP_SLUG__-www-http:
+      rule: "Host(\`${www}\`)"
+      entryPoints: [${http}]
+      service: __APP_SLUG__
+      middlewares: [__APP_SLUG__-to-host]
   middlewares:
     __APP_SLUG__-https:
       redirectScheme:
         scheme: https
+        permanent: true
+    __APP_SLUG__-to-host:
+      redirectRegex:
+        regex: "^https?://[^/]+(.*)"
+        replacement: "https://${host}\${1}"
         permanent: true
   services:
     # No healthCheck on the failover itself: Traefik would then want one on the fallback too.
@@ -73,6 +93,6 @@ http:
           - url: http://__APP_SLUG__-maintenance:8080
 YAML
     mv "${PROXY_ROUTES_FILE}.tmp" "$PROXY_ROUTES_FILE"
-    echo "migrate.sh: Traefik route for ${host} written to ${PROXY_ROUTES_FILE}."
+    echo "migrate.sh: Traefik route for ${host} (and ${www}, redirected) written to ${PROXY_ROUTES_FILE}."
 fi
 echo "migrate.sh: done."

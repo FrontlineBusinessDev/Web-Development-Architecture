@@ -65,7 +65,7 @@ The default stack stays near 1.7 CPU and 2.4 GB in total. On a shared VPS, add u
 4. Octane serves it from a long-lived worker. Code must be Octane-safe: no per-request state in statics or singletons, caches hold arrays, URLs come from `config('app.url')` ([Octane-safe code](../rules/coding-standards.md#8-octane-safe-code)).
 5. Trusted proxies are `*`: safe only because the app publishes no port and Traefik is the only way in.
 
-The `http` router redirects to `https`. A `www.` host needs its own router and a redirect (in Traefik or in the app); add it to `migrate.sh` when a product wants one.
+The `http` router redirects to `https`. **Every product redirects `www.`:** `migrate.sh` also writes routers for the other name (`www.<host>`, or `<host>` without `www.` when `APP_URL` is the `www.` one) that answer with a permanent redirect to `APP_URL`'s host, path kept (`https://www.pay.example.com/login` goes to `https://pay.example.com/login`). Traefik gets that name its own certificate, so it needs a DNS record pointing at the server; without one, only the redirect fails. Without this router a `www.` visit gets Coolify's own 503 page ("This site is not available at the moment"), because Coolify's **Domains** fields stay empty in the stack.
 
 ## Health and drain
 
