@@ -33,6 +33,7 @@ Tick each box in the project's first plan, or name why it does not apply.
 - [ ] `ext-*` entries in `composer.json` for every extension the app uses; `composer check-platform-reqs` passes.
 - [ ] `.editorconfig` (UTF-8, LF, 4 spaces; YAML 2).
 - [ ] Details: [stack/tech-stack.md](../stack/tech-stack.md), [stack/environment-setup.md](../stack/environment-setup.md).
+- [ ] Install the AI skills and plugins every project uses, plus the ones for its areas (web, legal, security, deployment, mobile). See [docs-and-ai/ai-skills-and-plugins.md](ai-skills-and-plugins.md).
 
 ### 4. Set up the checks
 
@@ -116,6 +117,7 @@ The existing apps are left as they are (owner's decision, 2026-11-06). A new app
 - [ ] Clone the project and Web-Development-Architecture side by side.
 - [ ] `composer install`, `npm install`, `cp .env.example .env`, `php artisan key:generate`, `php artisan migrate --seed`.
 - [ ] `composer run dev` (not Octane) and open the app.
+- [ ] Install the project's AI skills and plugins ([ai-skills-and-plugins.md](ai-skills-and-plugins.md), section 2).
 - [ ] `composer ci:check` and `php artisan test` are green before your first commit.
 
 ### Read, in this order

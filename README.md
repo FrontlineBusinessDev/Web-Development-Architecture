@@ -31,6 +31,7 @@ This repo is the source of truth. Every project's `CLAUDE.md` links here. When a
 | How are `docs/`, specs and plans organised? | [docs-and-ai/docs-and-specs.md](docs-and-ai/docs-and-specs.md) |
 | What goes in a project's `CLAUDE.md`? | [docs-and-ai/claude-md-template.md](docs-and-ai/claude-md-template.md) |
 | How do I start a new project or onboard a developer? | [docs-and-ai/new-project-checklist.md](docs-and-ai/new-project-checklist.md) |
+| Which AI skills and plugins does a project use? | [docs-and-ai/ai-skills-and-plugins.md](docs-and-ai/ai-skills-and-plugins.md) |
 
 ## Templates
 
