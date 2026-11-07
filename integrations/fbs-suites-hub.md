@@ -286,9 +286,9 @@ FBS Suites is also the MCP gateway: Claude (or another MCP client) calls `POST /
 |---|---|---|---|---|
 | Work | `/api/mcp` | Settings › API keys | Platform › View as a user › Staff AI keys | `tenant` + `reason`, as View as |
 | Stock | `/api/mcp` | none (staff only) | Account Settings › Staff AI keys | `tenant` + `reason` |
-| People | `/mcp` | Me › Settings › Connected assistants | Console › My settings › AI keys for FBS Suites | `tenant` + `reason`, as Console › Tenants › Enter |
-| Pay | `/api/v1/mcp` | Integrations › API keys ("AI assistants (MCP)") | Platform › Security › Staff AI keys | a live support access to that company, covering the tool's module; masked |
-| Connect | `/api/integrations/mcp` | Settings › API keys | Platform › Security › Staff AI keys | as Platform › Enter (the business's Developer role) |
+| People | `/mcp` | Me › Settings › Connected assistants | Console › My settings › AI keys for FBS Suites (roles that may enter companies) | `tenant` + `reason`, as Console › Tenants › Enter; never a Test Drive sandbox |
+| Pay | `/api/v1/mcp` | Integrations › API keys ("AI assistants (MCP)") | Platform › Security › Staff AI keys (super admins, two-factor on) | a live support access to that company, covering the tool's module; masked |
+| Connect | `/api/integrations/mcp` | Settings › API keys | Platform › Security › Staff AI keys (two-factor on) | as Platform › Enter (the business's Developer role); the key reaches only MCP |
 | Learn | `/api/mcp` | Settings › School › API Keys | Platform › Settings › Staff AI keys | as Enter school |
 
 The hub shows where to make the key in the Paste key dialog (`SuiteApp::KEY_PAGES` in `fbs-suites-mcp`): keep that list in step when a key page moves.
