@@ -19,6 +19,8 @@ Related: [rule 22 (definition of done)](../rules/system-rules.md#rule-22-definit
 
 The build runs on whichever machine runs `php artisan deploy` (or on the server when it builds), so the same code always meets the same checks.
 
+**Test on your PC, not on the server.** Run `composer ci:check` before each commit, then `php artisan deploy`, which builds the image, and so runs the gate, on your PC. Don't use a server build (Coolify's Redeploy of the app) to find out whether the tests pass: it takes CPU and memory from the live apps on the same VPS, and Coolify puts the app's production variables into the build ([docker-image.md](../deployment/docker-image.md)). A server build still runs the gate as the fallback (rule 67), but it should only ever see code that already passed on a PC.
+
 ## `composer ci:check`
 
 One command, the same everywhere. Order: fast and cheap first, tests last.
