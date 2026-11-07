@@ -81,7 +81,7 @@ A stack has no variable that takes it off its own domain. `migrate.sh` writes th
     - Cut over in one sitting: **Stop** the old app (not Delete, it is the way back), then deploy the stack. The maintenance page answers until `web-1` passes `/up`.
     - Roll back by starting the old app and stopping the stack, not by a variable.
 - **Don't:** add a variable whose wrong value leaves the domain without a route.
-- **Known differences today:** FBS CRM and FBS Connect still read `TRAEFIK_ROUTE` and FBS Pay `STACK_LIVE`. Once each is live on its stack, set it to `on` / `true` and delete the switch from `scripts/migrate.sh`, `docker-compose.yml` and DEPLOY.md.
+- **Known differences today:** FBS CRM and FBS Connect still read `TRAEFIK_ROUTE`. Once each is live on its stack, set it to `on` and delete the switch from `scripts/migrate.sh`, `docker-compose.yml` and DEPLOY.md, as FBS Pay did (it read `STACK_LIVE`).
 
 ## Health and drain
 
