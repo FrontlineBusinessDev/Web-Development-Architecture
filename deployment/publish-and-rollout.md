@@ -34,7 +34,7 @@ Every resource can be deployed or redeployed from Coolify at any time, with or w
 | --- | --- | --- |
 | Compose app + deployer (the standard, FBS People) | **Deployer** | Rolls the branch's commit out again, one web container at a time: the PC's `<slug>-pc:<commit>` when it is there, else the image it built last time, else a build on the server. |
 | | **App** | Builds the `Dockerfile` with no build args: the image builds its own Vite files (`ASSETS=image` in FBS People, `ASSETS_UPLOADED=0` in the template) and marks them (`public/build/.in-image`), so the app serves them itself. Restarts every container at once. |
-| Dockerfile app + Coolify's rolling update (FBS Pay, FBS Connect) | **App** | Finds the PC's `<app uuid>:<full commit>` ("Build step skipped") or builds the full `Dockerfile` on the server ("Image not found ... Building new image"), then Coolify's rolling update. |
+| Dockerfile app + Coolify's rolling update (FBS Pay, FBS Connect, FBS CRM) | **App** | Finds the PC's `<app uuid>:<full commit>` ("Build step skipped") or builds the full `Dockerfile` on the server ("Image not found ... Building new image"), then Coolify's rolling update. |
 | Either | **Worker** resource | Builds from source and restarts the workers. |
 
 Never point a resource at an image only a PC provides (`FROM <slug>-pc:latest`), and never let a build refuse to run without values only `scripts/publish.sh` passes: Docker cleanup or a fresh server then leaves the button broken.
