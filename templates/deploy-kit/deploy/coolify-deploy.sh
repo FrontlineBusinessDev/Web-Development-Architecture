@@ -21,11 +21,12 @@ fi
 exec 9>"$dir/.deploy.lock"
 flock 9
 
-# Run once per deployer image: a VPS reboot or container restart doesn't deploy again.
-# A Coolify rollback starts an older deployer image, which rolls that version out again.
-id=$(docker inspect -f '{{.Image}}' "$(hostname)" | sed 's/^sha256://' | cut -c1-12)
-if [ -n "$id" ] && [ "$(cat "$dir/.deployed" 2>/dev/null)" = "$id" ]; then
-    echo "Build ${id} is already deployed."
+# Run once per deployer container (rule 67): a VPS reboot or a container restart keeps the container, so it
+# doesn't deploy again; every Coolify deploy, Redeploy or rollback starts a new container, which rolls out (again).
+container=$(hostname)
+id=$(docker inspect -f '{{.Image}}' "$container" | sed 's/^sha256://' | cut -c1-12)
+if [ -n "$container" ] && [ "$(cat "$dir/.deployed" 2>/dev/null)" = "$container" ]; then
+    echo "This deployer container already deployed build ${id}. Redeploy the deployer in Coolify to roll out again."
     flock -u 9
     exec sleep infinity
 fi
@@ -42,13 +43,17 @@ elif docker image inspect "$pc_image" >/dev/null 2>&1; then
     echo "${pc_image} is already on this server (sent from a PC): nothing to build here."
     image="$pc_image"
     built=1
+elif docker image inspect "$image" >/dev/null 2>&1; then
+    # A Redeploy of the same commit: the image this deployer built last time is still here (the one running).
+    echo "${image} was built here before: rolling it out again."
+    built=1
 else
     echo "No ${pc_image} on this server (not sent with php artisan deploy): building here."
 fi
 
 if { [ -n "$built" ] || bash /src/deploy/build-image.sh "$image"; } \
     && APP_IMAGE="$image" COMPOSE_ARGS="-p ${COOLIFY_UUID} -f ${dir}/docker-compose.yaml" bash /src/deploy/rolling-deploy.sh; then
-    echo "$id" > "$dir/.deployed"
+    echo "$container" > "$dir/.deployed"
     echo "Deploy succeeded: ${image}."
 else
     echo "Deploy FAILED: ${image}. The site keeps serving the containers that were healthy."

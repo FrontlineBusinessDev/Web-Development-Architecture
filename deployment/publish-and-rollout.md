@@ -4,7 +4,7 @@ How a change gets from a developer's PC to production with no downtime, and how 
 
 - **Applies to:** every FBS Laravel app on the standard deploy. Each project's own steps live in its `DEPLOY.md` ([template](../templates/deploy-kit/DEPLOY.md)).
 - **Sources:** People `DEPLOY.md`, `scripts/publish.sh`, `deploy/*`; MCP `scripts/publish.sh` (lock, image-arrived check), `deploy/rolling-deploy.sh` (keep 3 builds); Learn `scripts/publish.sh` (docs-only retag); Work `deploy/rolling-deploy.sh` (env sync).
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-07
 
 Related: [architecture.md](architecture.md), [docker-image.md](docker-image.md), [git-workflow.md](../rules/git-workflow.md), [rule 23](../rules/system-rules.md#rule-23-safe-deploys-and-migrations).
 
@@ -21,10 +21,23 @@ php artisan deploy (your PC, on master, clean tree)
 
 Rules:
 
-- Only `php artisan deploy` deploys. A plain `git push` deploys nothing: the deployer and the app are on manual deploys in Coolify.
+- A plain `git push` deploys nothing: the deployer and the app are on manual deploys in Coolify. Releases go out with `php artisan deploy`.
 - Deploys go from `master`, from a commit: the image is built from `git archive HEAD`, never the working tree.
-- Never press Redeploy on the **app** resource. It restarts every container at once. Redeploy on the **deployer** is safe.
+- Redeploy in Coolify works on every resource (rule 67, [below](#redeploy-in-coolify)). On the **deployer** it is a zero-downtime rollout; on the **app** it rebuilds and restarts every container at once, so keep it for repairs.
 - Migrations must work with the release still running ([database.md](../structure/database.md#migrations)).
+
+## Redeploy in Coolify
+
+Every resource can be deployed or redeployed from Coolify at any time, with or without a PC (rule 67).
+
+| Pattern | Resource | Redeploy does |
+| --- | --- | --- |
+| Compose app + deployer (the standard, FBS People) | **Deployer** | Rolls the branch's commit out again, one web container at a time: the PC's `<slug>-pc:<commit>` when it is there, else the image it built last time, else a build on the server. |
+| | **App** | Builds the `Dockerfile` with no build args: the image builds its own Vite files (`ASSETS=image` in FBS People, `ASSETS_UPLOADED=0` in the template) and marks them (`public/build/.in-image`), so the app serves them itself. Restarts every container at once. |
+| Dockerfile app + Coolify's rolling update (FBS Pay, FBS Connect) | **App** | Finds the PC's `<app uuid>:<full commit>` ("Build step skipped") or builds the full `Dockerfile` on the server ("Image not found ... Building new image"), then Coolify's rolling update. |
+| Either | **Worker** resource | Builds from source and restarts the workers. |
+
+Never point a resource at an image only a PC provides (`FROM <slug>-pc:latest`), and never let a build refuse to run without values only `scripts/publish.sh` passes: Docker cleanup or a fresh server then leaves the button broken.
 
 ## One-time setup
 
@@ -80,8 +93,8 @@ What `scripts/publish.sh` does:
 `deploy/coolify-deploy.sh` (the deployer container's entry) then `deploy/rolling-deploy.sh`:
 
 1. Takes a `flock` on the app folder: one rollout at a time on the server.
-2. Skips when this deployer image already deployed (`.deployed`), so a VPS reboot never redeploys.
-3. Uses `<slug>-pc:<SOURCE_COMMIT>` when a PC sent it; otherwise builds on the server with the same `build-image.sh` (slower, same checks).
+2. Skips when this deployer **container** already deployed (`.deployed` holds its hostname), so a VPS reboot or a container restart never redeploys, while every Coolify Deploy, Redeploy or rollback (a new container) rolls out.
+3. Uses `<slug>-pc:<SOURCE_COMMIT>` when a PC sent it; else the image it built last time for this commit (`<slug>-build:<id>`); otherwise builds on the server with the same `build-image.sh` (slower, same checks).
 4. Copies the app's Coolify variables into its `.env` (keys defined in Coolify only; the old file stays as `.env.bak`). So "Save in Coolify, then `php artisan deploy`" applies a variable change.
 5. Checks the compose file runs exactly one app image, creates any missing external network, and tags the new image as `<slug>-app:latest`.
 6. `compose run --rm migrate`: migrations, reference seeders and the Traefik route file, while the old containers keep serving.

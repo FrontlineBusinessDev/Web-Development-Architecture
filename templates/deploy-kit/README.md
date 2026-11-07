@@ -4,7 +4,7 @@ Ready-to-copy files for the standard deploy: FrankenPHP + Octane on one Coolify 
 
 Applies to: every new Laravel app, and any app moving onto the standard deploy.
 Sources: FBS People (reference), with fixes proved in FBS Suites MCP, FBS Learn and FBS Work.
-Last updated: 2026-11-06
+Last updated: 2026-11-07
 
 Read first: [deployment/architecture.md](../../deployment/architecture.md), [deployment/docker-image.md](../../deployment/docker-image.md), [deployment/publish-and-rollout.md](../../deployment/publish-and-rollout.md).
 

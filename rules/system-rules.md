@@ -4,7 +4,7 @@ The numbered rules every FBS web app follows when it plans, builds or reviews a 
 
 - **Applies to:** every FrontlineBusinessDev web app: FBS People, FBS CRM, FBS Connect, FBS Pay, FBS Learn, FCA-SMS, FBS Stock, FBS Work and FBS Suites (MCP), and every new project.
 - **Sources:** `laravel-fbs-people/SYSTEM-RULES.md` (rules 1–65 and design profile D1–D12, the base of this file), `laravel-fbs-crm/SYSTEM-RULES.md` (rules 1–62, aligned to the CRM on 2026-11-02), `laravel-fbs-pay/docs/SYSTEM-RULES.md` (an older copy of People's), and the owner's decisions of 2026-11-06.
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-07
 
 ## How to read this file
 
@@ -86,6 +86,7 @@ Search for `## Rule N.` to jump to a rule.
 64. Labels never wrap: they move to a menu, or become an icon
 65. A card's content fits it: nothing scrolls sideways, nothing is cut off, nothing is stretched thin
 66. This repo is the source of truth
+67. Every Coolify resource can be redeployed
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -1756,6 +1757,23 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Reference:** this repo's [README](../README.md) and [../docs-and-ai/claude-md-template.md](../docs-and-ai/claude-md-template.md).
 - **Check:** Every project's `CLAUDE.md` links this repo. A search of the projects finds no copied rule text that disagrees with it. The latest change to a shared convention in any project has a matching commit here.
 
+## Rule 67. Every Coolify resource can be redeployed
+
+- **Rule:** Clicking **Deploy** or **Redeploy** in Coolify on any resource of an app (the app, the deployer, a worker) succeeds at any time, on any commit, with or without a PC having sent an image first. `php artisan deploy` is the fast and zero-downtime path; Coolify's buttons are the always-working path.
+- **Why:** A Redeploy is what people reach for when something looks wrong, and Docker cleanup can remove a PC-sent image at any time. On 2026-11-07 a Redeploy failed in two apps: FBS Connect's app built a one-line `FROM <slug>-pc:latest` that wasn't on the server ("pull access denied"), and FBS People's app refused to build without the `ASSET_URL` / `ASSET_HASH` that only the PC passes. A button that fails leaves no way back except a PC.
+- **Do:**
+    - **Dockerfile app with Coolify's rolling update** (no deployer; FBS Pay, FBS Connect): the app builds the full `Dockerfile` (Dockerfile location `/Dockerfile`). `scripts/publish.sh` builds the image as `<app uuid>:<full commit>`, the tag Coolify gives its own build, so Coolify finds it and skips its build ("Build step skipped"); with no such image, Coolify builds the same `Dockerfile` on the server. Leave the app's registry image name empty and "Disable build cache" off. Build variables the bundle reads (`VITE_*`) are declared as `ARG` and the PC reads the same values from Coolify, so both builds match.
+    - **Compose app with a deployer** (FBS People, FBS Learn, FBS Suites; [the template](../templates/deploy-kit/)): the `Dockerfile` builds a working image with no build args. When the static files normally come from the bucket, a plain build makes them inside the image, marks it (`public/build/.in-image`) and serves them itself; only the deployer and the PC say the files are in the bucket (the template: `ASSETS_UPLOADED=1`; FBS People: `ASSETS=bucket` with `ASSET_URL` and `ASSET_HASH`). A Redeploy of the app works but restarts every container at once: use it to repair the stack, not for releases.
+    - **Deployer:** uses `<slug>-pc:<commit>` when a PC sent it, else the image it built last time for this commit, else builds on the server (`build-image.sh`). It runs once per **container**, not per image: a reboot or restart keeps the container and doesn't deploy again, while every Deploy, Redeploy or rollback starts a new container and rolls out.
+    - **Workers on their own resource** build from source and redeploy on their own.
+    - Say in the app's `DEPLOY.md` what a Redeploy of each resource does and which log lines show it.
+- **Don't:**
+    - Point a Coolify resource at an image only a PC can provide (`FROM <slug>-pc:latest`, a "Docker Image" resource with no registry).
+    - Make a build refuse to run without values only `scripts/publish.sh` passes.
+    - Guard the deployer per image, so a Redeploy of the same commit silently does nothing.
+- **Reference:** FBS Pay (`laravel-fbs-pay/DEPLOY.md`, `scripts/publish.sh`) for a Dockerfile app; FBS People (`Dockerfile` `ASSETS`, `config/app.php` `asset_url`, `deploy/coolify-deploy.sh`) for a compose app with a deployer. The runbook: [../deployment/publish-and-rollout.md](../deployment/publish-and-rollout.md#redeploy-in-coolify).
+- **Check:** With no PC involved, click Redeploy on each resource of the app: each deployment ends healthy, and the site answers `/up` with its pages and assets. Then run `php artisan deploy`: the log shows the PC image used ("Build step skipped", or "already on this server").
+
 ---
 
 ## Design profile
@@ -1885,3 +1903,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
     - Rule 59 retired: no Claude Design canvas step or source.
     - Rule 66 added: this repo is the source of truth, linked from every project's `CLAUDE.md`.
     - Design profile: brand values moved out; D1–D11 are brand-neutral, and D12 is each app's own profile.
+- **2026-11-07:** Rule 67 added: every Coolify resource can be redeployed (after Redeploy failed in FBS Connect and FBS People). The runbook drops "never press Redeploy on the app"; FBS Connect moves to FBS Pay's `<app uuid>:<commit>` pattern and FBS People's image builds its own static files when it gets no bucket args.

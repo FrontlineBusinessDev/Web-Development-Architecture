@@ -68,11 +68,13 @@ RUN cp .env.example .env \
     && composer ci:check \
     && touch /tmp/ci-passed
 
-# 4. Assets: the Vite build. ASSET_URL becomes Vite's base when the files are served from the bucket.
+# 4. Assets: the Vite build. ASSET_URL becomes Vite's base only when the files go to the bucket
+# (deploy/build-image.sh passes ASSETS_UPLOADED=1). A plain build (Coolify's Redeploy of the app, rule 67)
+# drops it, even if Coolify passes the app's ASSET_URL, so the image serves its own /build files.
 FROM tools AS assets
 ARG ASSET_URL=""
-ENV ASSET_URL=${ASSET_URL}
-RUN npm run build
+ARG ASSETS_UPLOADED=0
+RUN if [ "$ASSETS_UPLOADED" != 1 ]; then unset ASSET_URL; fi; npm run build
 
 # 5. Build: production vendor/ and the runtime files.
 FROM base AS build
@@ -94,11 +96,13 @@ COPY . .
 COPY --from=assets /app/public/build ./public/build
 
 # ASSETS_UPLOADED=1: deploy/build-image.sh already put the files in the bucket, so only the
-# manifest stays in the image (the app serves them from ASSET_URL).
+# manifest stays in the image (the app serves them from ASSET_URL). Otherwise the image keeps them and
+# public/build/.in-image tells config/app.php to serve them itself (asset_url null; docker-image.md).
 ARG ASSETS_UPLOADED=0
 RUN composer dump-autoload --no-interaction --optimize --no-dev \
     && php artisan octane:install --server=frankenphp --no-interaction \
-    && if [ "$ASSETS_UPLOADED" = 1 ]; then find public/build -mindepth 1 ! -name manifest.json -delete; fi
+    && if [ "$ASSETS_UPLOADED" = 1 ]; then find public/build -mindepth 1 ! -name manifest.json -delete; \
+       else touch public/build/.in-image; fi
 
 # 6. Final image: only what runs (deployment/docker-image.md).
 FROM base

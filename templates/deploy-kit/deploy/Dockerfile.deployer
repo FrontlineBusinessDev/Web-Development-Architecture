@@ -1,7 +1,8 @@
 # The deployer: a second Coolify resource (Dockerfile build pack, manual deploys, started by
 # scripts/publish.sh through Coolify's API). Each deploy of it starts one container that uses the
 # image a PC sent (or builds it on the host's Docker) and runs deploy/rolling-deploy.sh against
-# the app's stack. The app resource itself is never deployed from Coolify: its Redeploy isn't rolling.
+# the app's stack. A Redeploy of it rolls the commit out again (rule 67). The app resource's own Redeploy
+# also works but isn't rolling: it restarts every container at once.
 FROM docker:27-cli
 
 # aws-cli uploads the Vite build to the app's bucket; jq reads Coolify's API and the compose config.

@@ -68,7 +68,14 @@ Without `read:sensitive`, Coolify hides the bucket settings and the build stops.
 | **App** | Docker Compose, `docker-compose.yml`. Manual deploys. Leave every **Domains** field empty: `migrate` writes the Traefik route from `APP_URL`. |
 | **Deployer** | Dockerfile, `deploy/Dockerfile.deployer`. Manual deploys. Storages: `/var/run/docker.sock` and `/data/coolify/applications/<app-uuid>`, each mounted at the same path. Env: `COOLIFY_UUID=<app-uuid>`, `COOLIFY_API_TOKEN` (read, read:sensitive), `COOLIFY_URL=http://coolify:8080`. Source commit: **Available during build**. |
 
-Fill in the app's variables (`APP_KEY`, `APP_URL`, `DB_*`, `REDIS_PASSWORD`, `AWS_*`, `ASSET_URL`), then deploy the **app** once from Coolify. That first deploy only writes the compose file and `.env` on the server. After it, never press Redeploy on the app: it restarts every container at once.
+Fill in the app's variables (`APP_KEY`, `APP_URL`, `DB_*`, `REDIS_PASSWORD`, `AWS_*`, `ASSET_URL`), then deploy the **app** once from Coolify. That first deploy writes the compose file and `.env` on the server and builds a self-contained image (the Vite files inside it).
+
+**Redeploy in Coolify always works** (rule 67):
+
+| You press Redeploy on | What happens |
+| --- | --- |
+| the **deployer** | It rolls out the branch's commit again, one web container at a time: with the PC's image when the server has it, else the image it built last time for that commit, else it builds on the server. |
+| the **app** | Coolify builds the `Dockerfile` itself, with the Vite files inside the image (the app serves its own `/build`), and restarts every container at once. Use it to repair the stack, not for releases. |
 
 Point the domain's DNS A record at the server. Traefik gets the certificate.
 
@@ -95,6 +102,8 @@ Coolify → Deployer → **Runtime Logs** (not Deployment Logs):
 | --- | --- |
 | `__APP_SLUG__-pc:<commit> is already on this server` | Working. |
 | `No __APP_SLUG__-pc:<commit> on this server ...: building here.` | Someone pressed Redeploy for a commit no PC sent. It still works, built on the server. Use `php artisan deploy`. |
+| `__APP_SLUG__-build:<id> was built here before: rolling it out again.` | A Redeploy of the deployer on the same commit: nothing is rebuilt. |
+| `This deployer container already deployed build ...` | The deployer restarted (a reboot): it doesn't deploy again. Press Redeploy on the deployer to roll out again. |
 | `SOURCE_COMMIT is empty` | Set Source commit to *Available during build* (step 5). |
 | `Deploy succeeded: ...` | The rollout finished. |
 | `Deploy FAILED: ...` | It stopped. The site keeps serving the old containers. Read the lines above it. |

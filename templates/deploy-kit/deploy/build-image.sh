@@ -80,7 +80,7 @@ if [ -n "$ASSET_URL" ]; then
     echo "Building the Vite files for ${ASSET_URL}..."
     # Names carry a content hash: --size-only uploads only new files. Nothing is deleted, because
     # pages still open on an older deploy (and rollbacks) need their files.
-    if ! { docker build --target assets --build-arg ASSET_URL="$ASSET_URL" -t "${work}:assets" /src \
+    if ! { docker build --target assets --build-arg ASSET_URL="$ASSET_URL" --build-arg ASSETS_UPLOADED=1 -t "${work}:assets" /src \
         && cid=$(docker create "${work}:assets") \
         && docker cp "${cid}:/app/public/build/." "$out" \
         && docker rm "$cid" >/dev/null \

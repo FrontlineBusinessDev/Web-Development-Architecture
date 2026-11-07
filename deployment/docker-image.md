@@ -4,7 +4,7 @@ What the production image holds, how it is built, and how to check it after a ch
 
 - **Applies to:** every FBS Laravel app's `Dockerfile` and `.dockerignore`. Template: [templates/deploy-kit/Dockerfile](../templates/deploy-kit/Dockerfile).
 - **Sources:** MCP and Work `CLAUDE.md` ("Ship only what runs"); MCP `Dockerfile` (exact tag, non-root, runtime-folder copy, strict `.dockerignore`); People `Dockerfile` (phpredis from git, upload limits); People `SYSTEM-RULES.md` rules 22 and 49 (checks in the build).
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-07
 
 Related: [architecture.md](architecture.md), [publish-and-rollout.md](publish-and-rollout.md), [testing-and-ci.md](../quality/testing-and-ci.md), [environment-setup.md](../stack/environment-setup.md).
 
@@ -20,11 +20,19 @@ Old images and build cache are what fill the VPS disk. A small image deploys fas
 | `base` | FrankenPHP (exact tag) | PHP extensions, `php.ini-production`, upload limits | yes, as the final stage's base |
 | `tools` | `base` | Composer 2, Node 22, git, unzip, **dev** dependencies, the whole source, `php.ini-development` | no |
 | `checks` | `tools` | runs `composer ci:check` with a throwaway `.env` | no (only an empty marker file) |
-| `assets` | `tools` | `npm run build` with `ASSET_URL` as Vite's base | `public/build` only |
+| `assets` | `tools` | `npm run build`, with `ASSET_URL` as Vite's base only when the files go to the bucket (`ASSETS_UPLOADED=1`) | `public/build` only |
 | `build` | `base` | `composer install --no-dev`, optimized autoloader, `octane:install`, the marker from `checks` | the runtime folders |
 | final | `base` | the runtime folders, the non-root `app` user | yes |
 
 **The gate.** BuildKit skips any stage the target does not use. The `build` stage copies `/tmp/ci-passed` from `checks`, so the checks always run, and a failing check fails the build: nothing deploys (rule 49). The copy sits after `composer install --no-dev`, so a code change still reuses the vendor layer.
+
+**A plain build works (rule 67).** Coolify's Redeploy of the app builds the `Dockerfile` with no build args (and may pass the app's own variables, `ASSET_URL` among them). So the image never needs a value only `scripts/publish.sh` passes: with no `ASSETS_UPLOADED=1`, the `assets` stage ignores `ASSET_URL`, the image keeps its Vite files and touches `public/build/.in-image`, and the app serves them itself. The app's `config/app.php` reads it:
+
+```php
+'asset_url' => is_file(public_path('build/.in-image')) ? null : env('ASSET_URL'),
+```
+
+FBS People does the same with `ARG ASSETS=image|bucket` (`bucket` fetches the manifests and SSR bundle by `ASSET_HASH`).
 
 **The PostgreSQL run.** A Docker build cannot start a database. `deploy/build-image.sh` builds the `checks` stage, starts a throwaway `postgres:17-alpine`, and runs `php artisan test` from the `checks` image against it before the final build ([testing-and-ci.md](../quality/testing-and-ci.md#the-postgresql-run)).
 

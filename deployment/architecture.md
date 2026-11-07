@@ -4,7 +4,7 @@ How every FBS app runs in production: one Coolify VPS, Traefik in front, two web
 
 - **Applies to:** every FBS Laravel app. New apps start from [templates/deploy-kit/](../templates/deploy-kit/).
 - **Sources:** People (reference) `docker-compose.yml`, `docs/deployment/coolify-single-vps.md`, `deploy/*`; MCP `docs/deployment/zero-downtime.md` (maintenance failover, exact tag, non-root, queue timing); Learn `docs/deployment/coolify-single-vps.md` (route file, CPU and memory caps, assets in the bucket); Work `DEPLOY.md` (`onOneServer()`, env sync).
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-07
 
 Related: [docker-image.md](docker-image.md) (what the image holds), [publish-and-rollout.md](publish-and-rollout.md) (how a deploy runs), [rules 10, 23, 33 and 50](../rules/system-rules.md).
 
@@ -36,8 +36,8 @@ Every name on Coolify's shared network starts with the app slug (`fbs-people-web
 | Resource | Build pack | Deploys | Notes |
 | --- | --- | --- | --- |
 | PostgreSQL 17 | Coolify database | n/a | Its internal hostname is the app's `DB_HOST`. Scheduled backups on. |
-| App | Docker Compose (`docker-compose.yml`) | **Manual.** Deployed from Coolify once, to write its compose file and `.env`. | Every **Domains** field empty. Never press Redeploy: it restarts every container at once. |
-| Deployer | Dockerfile (`deploy/Dockerfile.deployer`) | Manual, started by `php artisan deploy` through Coolify's API | Mounts the Docker socket and the app's folder. Runs the rollout. |
+| App | Docker Compose (`docker-compose.yml`) | **Manual.** Deployed from Coolify once, to write its compose file and `.env`. | Every **Domains** field empty. Its Redeploy works (rule 67: the image builds its own Vite files) but restarts every container at once: for repairs, not releases. |
+| Deployer | Dockerfile (`deploy/Dockerfile.deployer`) | Manual, started by `php artisan deploy` through Coolify's API | Mounts the Docker socket and the app's folder. Runs the rollout. Its Redeploy rolls the commit out again. |
 
 Setup steps: [publish-and-rollout.md](publish-and-rollout.md#one-time-setup).
 
@@ -140,10 +140,10 @@ The full list per environment is in [stack/environment-setup.md](../stack/enviro
 | App | Differs from the standard |
 | --- | --- |
 | People (reference) | Floating `1-php8.4` tag; runs as root; Traefik labels with a hard-coded domain and no maintenance fallback; a `storage-app` volume; a Caddy edge for company domains; checks not in the image build; GitHub workflows on `main`. |
-| Learn | Floating tag; app-written Traefik file for many school hosts (keep it: it needs per-host routes); SSR on, so Node ships; only demo checks in the build; image `sub-sms-app-pc`. |
-| FBS Suites MCP | No Octane (classic `frankenphp php-server`); blue/green `web-blue` / `web-green` instead of two always-on web containers; queue `--tries=6`. |
-| CRM | `Dockerfile.deploy` (`FROM <pc image>`) with migrations and seeders on every container start; floating tag; deploys from `main`; `DB_PREFIX` table prefix. |
-| Connect | As CRM; worker and scheduler are a separate Coolify resource redeployed by hand; deploys from `feat/multi-tenant`. |
+| Learn | Floating tag; app-written Traefik file for many school hosts (keep it: it needs per-host routes); SSR on, so Node ships; only demo checks in the build; image `sub-sms-app-pc`; deployer guarded per image, so a Redeploy of the same commit does nothing (rule 67). |
+| FBS Suites MCP | No Octane (classic `frankenphp php-server`); blue/green `web-blue` / `web-green` instead of two always-on web containers; queue `--tries=6`; deployer guarded per image (rule 67). |
+| CRM | `Dockerfile.deploy` (`FROM <pc image>`) with migrations and seeders on every container start, so a Redeploy fails when the PC image is missing (breaks rule 67: move to Pay's `<app uuid>:<commit>` like Connect); floating tag; deploys from `main`; `DB_PREFIX` table prefix. |
+| Connect | Dockerfile build pack with Coolify's rolling update and Pay's `<app uuid>:<commit>` PC image (rule 67); migrations and seeders on every container start; worker and scheduler are a separate Coolify resource redeployed by hand; deploys from `master` (`feat/multi-tenant`, GitHub's default, has diverged from it). |
 | Pay | `serversideup/php:8.5-fpm-nginx` with s6 workers, no Octane; Coolify's own rolling update; database driver for cache, session and queue. |
 | FCA-SMS | Dockerfile build pack with Coolify's rolling update; migrates and seeds on every boot; no Redis, no caps, no health checks in Compose; deploys from `main`. |
 | Stock | `COPY . .` ships the sources; database driver for cache, session and queue; Traefik labels with a hard-coded domain; PHPUnit; JavaScript, not TypeScript. |

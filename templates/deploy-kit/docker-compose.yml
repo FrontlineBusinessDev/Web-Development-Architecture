@@ -7,7 +7,8 @@
 #
 # Leave every Domains field empty in Coolify: `migrate` writes this app's Traefik route from
 # APP_URL into Traefik's dynamic folder (scripts/migrate.sh). deploy/rolling-deploy.sh replaces
-# web-1 and web-2 one at a time. Never press Redeploy on the app resource: it restarts everything at once.
+# web-1 and web-2 one at a time. A Redeploy of the app resource in Coolify also works (rule 67: the
+# Dockerfile builds the Vite files into the image), but restarts everything at once: use it for repairs.
 #
 # Every name on Coolify's shared network is prefixed with __APP_SLUG__: other apps there have a
 # web-1 too, and Coolify's own Redis answers to "redis" (WRONGPASS).

@@ -4,7 +4,7 @@ How every FBS project names branches, writes commits, reviews changes, keeps sec
 
 - **Applies to:** every FrontlineBusinessDev repo, including this one.
 - **Sources:** `laravel-fbs-people` (rules 22, 56, 57; `scripts/publish.sh`), `laravel-fbs-crm` (`HANDOFF.md` §7), `laravel-fbs-learn` (commit history, plan template), the `.gitignore` and `.gitattributes` of all nine apps, and the owner's decisions of 2026-11-06.
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-07
 
 ## 1. Branches
 
@@ -100,7 +100,7 @@ type(scope): what changed, in plain words (rules 51, 57)
 2. Run `php artisan deploy` on the developer's PC. It runs `scripts/publish.sh`, which refuses any branch but `master` and any uncommitted change, builds the image from the committed `HEAD` (the checks run inside that build, rule 49; no project has wired this in yet), sends it to the server over SSH, pushes `master`, and asks Coolify's API to start the deployer.
 3. The deployer replaces the web containers one at a time ([../deployment/publish-and-rollout.md](../deployment/publish-and-rollout.md)).
 
-- A plain `git push` must deploy nothing: keep Coolify's app and deployer resources on manual deploys, so only `php artisan deploy` starts one.
+- A plain `git push` must deploy nothing: keep Coolify's app and deployer resources on manual deploys, so only `php artisan deploy` (or a Redeploy someone clicks) starts one. A Redeploy in Coolify always works (rule 67).
 - Never deploy from a branch, a dirty tree or a commit that isn't on `origin/master`.
 - `.env.deploy` (SSH target, Coolify URL, UUIDs, token) is git-ignored; its example file holds placeholders only.
 
