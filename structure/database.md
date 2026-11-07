@@ -109,7 +109,7 @@ Bulk inserts and `DB::table()` writes skip model events, so they must set the te
 | CRM, Connect | `'prefix' => env('DB_PREFIX', 'app_')` on every connection; migrations use bare names |
 | Pay | `app_` prefix only on the SQLite connection, so production tables have no prefix |
 | Work | Renames the users table to `app_users`; not the standard. Users keep a single `name` column (rule 68); `staff_name` snapshots in audit tables are allowed |
-| People | Rule 68: `users` keeps `name` next to the parts (rewritten on save); single-name `app_employees.emergency_name`, `app_agencies.contact_name`, `app_companies.dpo_name` |
+| People | Rule 68: follows it since Nov 7 (`User::name`, `emergency_name`, `contact_name` and `dpo_name` are read-only accessors over the parts). The old `users.name`, `app_employees.emergency_name`, `app_agencies.contact_name` and `app_companies.dpo_name` columns are nullable, unused and dropped in the next release (rule 23) |
 | Pay | Rule 68: `employees` has a single `name` column |
 | Learn | Rule 68: `full_name` (`applicant_name` on applications) kept next to the parts on students, guardians, applications and staff; single-name `drivers.name`, `sponsors.contact_person`, `requested_documents.requester_name` |
 | CRM, Connect | Rule 68: `campaign_contacts.name`; CRM also `activity_email_recipients.name` |
