@@ -141,7 +141,7 @@ The full list per environment is in [stack/environment-setup.md](../stack/enviro
 | --- | --- |
 | People (reference) | Floating `1-php8.4` tag; runs as root; Traefik labels with a hard-coded domain and no maintenance fallback; a `storage-app` volume; a Caddy edge for company domains; checks not in the image build; GitHub workflows on `main`. |
 | Learn | Floating tag; app-written Traefik file for many school hosts (keep it: it needs per-host routes); SSR on, so Node ships; only demo checks in the build; image `sub-sms-app-pc`; a plain build keeps its Vite files and `scripts/deploy.sh` uploads them at boot (`assets:sync`) instead of rule 67's `.in-image` marker. |
-| FBS Suites MCP | No Octane (classic `frankenphp php-server`); blue/green `web-blue` / `web-green` instead of two always-on web containers; queue `--tries=6`. |
+| FBS Suites MCP | No Octane (classic `frankenphp php-server`); two always-on web containers named `web-blue` / `web-green` (names kept from its older blue/green setup), replaced one at a time; two queue workers (`queue`, `queue-2`), `--tries=6`. |
 | CRM | Dockerfile build pack with Coolify's rolling update and Pay's `<app uuid>:<commit>` PC image (rule 67); migrations and seeders on every container start; floating tag; deploys from `main`; `DB_PREFIX` table prefix. |
 | Connect | As CRM; worker and scheduler are a separate Coolify resource redeployed by hand; deploys from `master` (`feat/multi-tenant` was merged into it on 2026-11-07 and is retired). |
 | Pay | `serversideup/php:8.5-fpm-nginx` with s6 workers, no Octane; Coolify's own rolling update; database driver for cache, session and queue. |
