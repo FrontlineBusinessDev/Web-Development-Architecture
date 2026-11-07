@@ -63,7 +63,13 @@ RUN composer dump-autoload --no-interaction --optimize
 # 3. Checks: the deploy gate (rules/system-rules.md, rules 22 and 49). Format, lint, types,
 #    audits and tests (quality/testing-and-ci.md). The .env exists only in this stage.
 FROM tools AS checks
-RUN cp .env.example .env \
+# Coolify adds an ARG for every app variable after each FROM, so production settings (DB_HOST, APP_ENV, ...) reach
+# this RUN as env vars and win over phpunit.xml: every test then tries the production database. Keep only the
+# image's own variables (PHP_* feeds the image's php.ini).
+RUN for v in $(env | sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p'); do \
+        case "$v" in PATH|HOME|HOSTNAME|PWD|TERM|PHP_*|COMPOSER_*|NODE_*|NPM_*) ;; *) unset "$v" ;; esac; \
+    done \
+    && cp .env.example .env \
     && php artisan key:generate --ansi \
     && composer ci:check \
     && touch /tmp/ci-passed

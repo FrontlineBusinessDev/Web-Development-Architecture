@@ -26,6 +26,8 @@ Old images and build cache are what fill the VPS disk. A small image deploys fas
 
 **The gate.** BuildKit skips any stage the target does not use. The `build` stage copies `/tmp/ci-passed` from `checks`, so the checks always run, and a failing check fails the build: nothing deploys (rule 49). The copy sits after `composer install --no-dev`, so a code change still reuses the vendor layer.
 
+**The checks ignore the app's variables.** Coolify adds an `ARG` for every app variable after each `FROM`, so `DB_HOST`, `APP_ENV` and the rest reach the `checks` `RUN` as env vars, and real env vars win over `phpunit.xml`'s `<env>`: every test then tries the production database ("could not translate host name"). The `checks` `RUN` first unsets every variable except `PATH`, `HOME`, `HOSTNAME`, `PWD`, `TERM` and the image's `PHP_*`, `COMPOSER_*`, `NODE_*` and `NPM_*` (`PHP_*` feeds the image's `php.ini`). The PostgreSQL run is not affected: it passes its `DB_*` with `docker run -e`.
+
 **A plain build works (rule 67).** Coolify's Redeploy of the app builds the `Dockerfile` with no build args (and may pass the app's own variables, `ASSET_URL` among them). So the image never needs a value only `scripts/publish.sh` passes: with no `ASSETS_UPLOADED=1`, the `assets` stage ignores `ASSET_URL`, the image keeps its Vite files and touches `public/build/.in-image`, and the app serves them itself. The app's `config/app.php` reads it:
 
 ```php
