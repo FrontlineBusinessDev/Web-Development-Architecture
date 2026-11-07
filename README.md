@@ -28,6 +28,7 @@ This repo is the source of truth. Every project's `CLAUDE.md` links here. When a
 | How do I deploy and roll back? | [deployment/publish-and-rollout.md](deployment/publish-and-rollout.md) |
 | Which checks must pass before a deploy? | [quality/testing-and-ci.md](quality/testing-and-ci.md) |
 | How does an app talk to the FBS Suites hub and the CRM, and where are its AI (MCP) keys made? | [integrations/fbs-suites-hub.md](integrations/fbs-suites-hub.md) |
+| How does an app have an upload checked for viruses before it stores it? | [integrations/fbs-suites-scanner.md](integrations/fbs-suites-scanner.md) |
 | How are `docs/`, specs and plans organised? | [docs-and-ai/docs-and-specs.md](docs-and-ai/docs-and-specs.md) |
 | What goes in a project's `CLAUDE.md`? | [docs-and-ai/claude-md-template.md](docs-and-ai/claude-md-template.md) |
 | How do I start a new project or onboard a developer? | [docs-and-ai/new-project-checklist.md](docs-and-ai/new-project-checklist.md) |
@@ -43,6 +44,7 @@ Copy these into a project and replace the placeholders.
 | [templates/spec-template.md](templates/spec-template.md), [templates/plan-template.md](templates/plan-template.md) | Design spec and implementation plan |
 | [templates/deploy-kit/](templates/deploy-kit/) | `Dockerfile`, `.dockerignore`, `docker-compose.yml`, `scripts/`, `deploy/`, `DEPLOY.md`, `.env.deploy.example` |
 | [templates/hub/](templates/hub/) | The FBS Suites hub sender (`SuiteHub`, `SendSuiteHubEvent`) and its connection check (`SuiteHubCheckController`) |
+| [templates/scan/](templates/scan/) | The upload virus check against FBS Suites' scanner (`VirusScan`, the `Scanned` rule, `config/scan.php`, the async result callback `SuiteScanResultController`) |
 
 ## Decisions behind these docs (2026-11-06)
 

@@ -11,6 +11,8 @@ How an FBS app tells the rest of the suite that something happened (a sign-up, a
 
 Copy the sender from [`templates/hub/`](../templates/hub/). When you add or change an event, update this file in the same piece of work.
 
+The same FBS Suites also scans uploads for viruses, with its own per-app **scan secret** (`FBS_SCAN_URL` / `FBS_SCAN_SECRET`, written by Platform › Coolify › Connect next to the hub env): [fbs-suites-scanner.md](fbs-suites-scanner.md).
+
 ## 1. The flow
 
 ```text
