@@ -6,7 +6,7 @@ How an FBS app has an upload checked for viruses before it stores it (rule 10): 
 - **Sources:**
   - `fbs-suites-mcp`: `docs/superpowers/specs/2026-11-07-central-malware-scanning-design.md` (decided 2026-11-08), plan `docs/superpowers/plans/2026-11-07-central-malware-scanning.md`, `app/Scanner/*`, `app/Http/Controllers/ScanController.php`, `ScanJobController.php`, `app/Jobs/RunAsyncScan.php`, `SendScanResult.php`.
   - The client: People's `App\Support\VirusScan` (the reference, rules 6 and 17) with the `fbs` driver added.
-- **Last updated:** 2026-11-08
+- **Last updated:** 2026-11-08 (People pilot: the final client API)
 
 Copy the client from [`templates/scan/`](../templates/scan/). When the API changes, update this file and the templates in the same piece of work.
 
@@ -150,7 +150,17 @@ FBS_SCAN_SECRET=<this app's scan secret>      # Platform > Apps > Rotate scan se
 
 ## 8. Adding scanning to an app
 
-1. Copy `templates/scan/VirusScan.php` to `app/Support/`, `Scanned.php` to `app/Rules/`, `config-scan.php` to `config/scan.php` (set `app` and the `policies`), and, only if the app has async uploads, `SuiteScanResultController.php` with its route `POST /api/fbs-scan/result` (outside the session and CSRF, like `/api/fbs-hub/check`).
-2. Call `VirusScan::clean($file, $purpose, $tenantRef)` in the app's shared store method **before** the file is stored (or put `new Scanned($purpose)` on the field's rules where there is no shared method). A `'held'` answer means: store it as pending.
-3. Tests (Pest): `VirusScan::using(fn () => ['verdict' => 'clean'])`; infected is refused and nothing reaches the disk; each policy when the scanner is unavailable; scanning off with empty env; the test vectors above.
-4. Platform › Apps in FBS Suites: Rotate scan secret, then Platform › Coolify › Connect (or paste both env values), restart the app.
+FBS People is the reference (plan Task 9): `App\Support\VirusScan`, `config/scan.php`, and for hold and async `App\Files\ScanOutcome`, the `app_files` columns `scan_status` / `scan_id` / `scan_purpose` and the `files:rescan` command. The template is cut from it.
+
+1. Copy `templates/scan/VirusScan.php` to `app/Support/` and make `tenant()` return the app's current tenant id; `Scanned.php` to `app/Rules/`; `config-scan.php` to `config/scan.php` (set `app` and the `policies`); and, only if the app has async uploads, `SuiteScanResultController.php` with its route `POST /api/fbs-scan/result` (outside the session and CSRF, like `/api/fbs-hub/check`) and a listener for the string event `fbs-scan.result`.
+2. Call it in the app's shared store method **before** the file is stored (or put `new Scanned($purpose)` on the field's rules where there is no shared method):
+
+   ```php
+   $scan = VirusScan::clean($file, $purpose, $field);            // inline, up to 25 MB
+   $scan = VirusScan::clean($file, $purpose, $field, async: true); // a caller that can keep a file pending
+   ```
+
+   It throws a 422 on `$field` when the file must not be stored, and otherwise returns `VirusScan::CLEAN`, `OFF` (no scanner set), `UNCHECKED` (policy open, logged), `HELD` (policy hold: store it **pending**, openable by nobody, and re-check it with `VirusScan::result()` every 5 minutes) or `ASYNC` (over 25 MB: store it pending and send `VirusScan::queue($presignedUrl, $size, $sha256, $purpose)`; the verdict comes to `/api/fbs-scan/result`, or `VirusScan::poll($scanId)` when the callback is lost).
+3. Set `SCAN_REQUIRED=true` in production, so a missing scanner refuses uploads instead of letting them through.
+4. Tests (Pest): `VirusScan::using(fn () => 'stream: OK')` (clamd's reply) or `fn () => ['verdict' => 'unavailable']`; infected is refused and nothing reaches the disk; each policy when the scanner can't answer; scanning off with empty env; the test vectors above (`VirusScan::sign`, `signPoll`); with `Http::fake`, that the request goes to `/scan/{app}` with the file as the body and no file name.
+5. FBS Suites: Platform › Apps › Scan secret (and, for async, the bucket hosts), then Platform › Coolify › Connect (or paste both env values), restart the app.

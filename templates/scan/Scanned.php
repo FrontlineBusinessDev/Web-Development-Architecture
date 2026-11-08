@@ -16,7 +16,7 @@ use Illuminate\Validation\ValidationException;
  */
 final class Scanned implements ValidationRule
 {
-    public function __construct(private string $purpose, private ?string $tenant = null) {}
+    public function __construct(private string $purpose) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -25,7 +25,7 @@ final class Scanned implements ValidationRule
         }
 
         try {
-            VirusScan::clean($value, $this->purpose, $this->tenant, $attribute);
+            VirusScan::clean($value, $this->purpose, $attribute);
         } catch (ValidationException $e) {
             $fail((string) collect($e->errors())->flatten()->first());
         }
