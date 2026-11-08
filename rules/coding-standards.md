@@ -67,7 +67,7 @@ File names follow the project's UI kit (rule 6). Pick one and keep it for the wh
     - PHP: a Pest test (`tests/Unit/PhpFileSizeTest.php`) over `app`, `routes` and `database`, plus `php-max-lines-baseline.json`.
     - Both baselines hold each listed file's size: it may not grow, and its entry is deleted once the file is split. New projects start with both empty. Copy FBS CRM's files as the template.
 - **Split by purpose:** the data hook, the schema, the columns, each dialog and each tab are their own files in the page's folder. Controllers stay thin; queries go to `Support/*Query` classes, rules and calculations to actions or services.
-- **Never** turn the rule off for a file (FBS Pay's lint `overrides` do this today and must move to a baseline).
+- **Never** turn the rule off for a file.
 
 ## 4. PHP
 
