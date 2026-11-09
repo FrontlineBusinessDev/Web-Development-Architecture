@@ -54,9 +54,8 @@ All app services run the same image (`<slug>-app:latest`). Caps are Compose `dep
 | `scheduler` | `php artisan schedule:work` | 0.05 | 192M | `SCHEDULER_*` | |
 | `maintenance` | `php -S 0.0.0.0:8080 scripts/maintenance.php` | 0.02 | 32M | `MAINTENANCE_*` | Static 503, no database. |
 | `redis` | `redis-server` (7.4) | 0.05 | 160M | `REDIS_*` | Not on Coolify's network. |
-| `clamav` | clamd (`clamav/clamav:1.4`) | 0.25 | 1536M | `CLAMAV_*` | Optional: the upload virus check (rule 10) for an app that takes files. Not on Coolify's network; the app uses it once `CLAMAV_HOST` and `SCAN_REQUIRED=true` are set. Holds its signatures in memory (about 1.2 GB). Reference: FBS People. |
 
-The default stack stays near 1.7 CPU and 2.4 GB in total, plus `clamav` where it runs. On a shared VPS, add up every app's caps and keep them under the machine, with room for PostgreSQL and Coolify.
+The default stack stays near 1.7 CPU and 2.4 GB in total. Uploads are scanned by FBS Suites' central scanner, not a clamd per stack. On a shared VPS, add up every app's caps and keep them under the machine, with room for PostgreSQL and Coolify.
 
 ## A request's path
 
@@ -145,7 +144,7 @@ Infrastructure values live in the app resource's variables in Coolify. App-level
 | Storage | `FILESYSTEM_DISK`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`, `AWS_BUCKET`, `AWS_ENDPOINT`, `AWS_URL`, `AWS_BUCKET_FOLDER`, `ASSET_URL` |
 | Mail | `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` |
 | FBS Suites hub | `FBS_HUB_URL`, `FBS_HUB_SECRET` |
-| Virus check | `CLAMAV_HOST`, `CLAMAV_PORT`, `SCAN_REQUIRED` (only where the stack runs `clamav`) |
+| Virus check | `FBS_SCAN_URL`, `FBS_SCAN_SECRET`, `SCAN_REQUIRED` (FBS Suites' central scanner) |
 | Stack | `COOLIFY_NETWORK`, `PROXY_DYNAMIC_DIR`, `TRAEFIK_HTTPS_ENTRYPOINT`, `TRAEFIK_HTTP_ENTRYPOINT`, `TRAEFIK_CERT_RESOLVER`, `*_CPUS`, `*_MEMORY` |
 | Deployer resource | `COOLIFY_UUID`, `COOLIFY_URL`, `COOLIFY_API_TOKEN`, `DRAIN_SECONDS`, `READY_SECONDS`, `SKIP_PGSQL_TESTS` |
 
