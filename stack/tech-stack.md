@@ -59,8 +59,8 @@ Use these before reaching for anything else. Each purpose has one package; a pro
 | Form validation | `zod` |
 | Icons | `lucide-react` |
 | Class names | `clsx` + `tailwind-merge` behind one `cn()` helper |
-| Charts | `recharts` |
-| Animation (optional) | `framer-motion` |
+| Charts | Nivo (`@nivo/*`), animated, themed from the project's colour tokens and redrawn as the box resizes down to 320 px (owner, Nov 12). People's shared layer: `resources/js/components/kit3/charts/nivo.tsx` |
+| Animation (optional) | `motion` (Framer Motion) |
 | UI kit | Kit A: shadcn (new-york) + Radix + `sonner`. Kit B: Learn's own kit + `boneyard-js`. One per project ([frontend patterns](../structure/frontend-patterns.md)) |
 | Forms (kit A) | `@tanstack/react-form` (People) or `react-hook-form` (Pay); one per project |
 | Text in photos and PDFs, read on the device (optional) | `tesseract.js` (OCR, English data from `@tesseract.js-data/eng`) and `pdfjs-dist` (a PDF's text layer). Load them only where a file is attached and serve their worker, engine and data from the app's own host, never a CDN. People uses them so Ask AI files leave the device with ID and bank numbers removed |
@@ -114,7 +114,7 @@ Use these before reaching for anything else. Each purpose has one package; a pro
 | Work | PHPUnit instead of Pest, no Larastan; Node 24 in the build stage for Wayfinder |
 | MCP | No Larastan installed, yet `composer types:check` calls `phpstan` |
 | People, Learn, FCA-SMS, MCP | Pest 4; CRM, Connect, Pay on Pest 5 |
-| CRM, Connect | `formik`, `zod`, `axios` and React Query installed but unused (a `fetch` wrapper is used); charts on nivo, not recharts |
+| CRM, Connect | `formik`, `zod`, `axios` and React Query installed but unused (a `fetch` wrapper is used) |
 | Learn, FCA-SMS | TypeScript `~6.0`, `oxlint` instead of `vp` |
 | All but Learn and People | No `.php-version`; only Learn has `.nvmrc` |
 | FCA-SMS CI | PostgreSQL 16 service, not 17 |

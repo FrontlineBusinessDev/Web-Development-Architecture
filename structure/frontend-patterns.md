@@ -147,7 +147,7 @@ Not installed by default. When a screen needs it: `react-markdown` + `remark-gfm
 | App | Differs from the standard |
 |---|---|
 | Stock | Plain JavaScript, relative imports, one-file kit `components/ui.jsx`, no TanStack Query |
-| CRM, Connect | Own PascalCase kit in `components/ui`, a `fetch` wrapper (`lib/api/client.ts`) instead of axios, custom `ToastContext`, `useState` forms (formik and zod installed but unused), nivo charts |
+| CRM, Connect | Own PascalCase kit in `components/ui`, a `fetch` wrapper (`lib/api/client.ts`) instead of axios, custom `ToastContext`, `useState` forms (formik and zod installed but unused) |
 | Work | Own kit (one file per component, clsx + tailwind-merge), no TanStack Query |
 | People | `lib/api.ts` `fetch` wrapper still used by about 90 files while `lib/api/*` (axios) is adopted; `InputError` renders nothing when empty (rule 37) |
 | Pay | Two Inertia apps (`app.tsx` and `ops-app.tsx`); sonner in one, Radix Toast in the other |
