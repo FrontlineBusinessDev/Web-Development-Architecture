@@ -30,6 +30,7 @@ This repo is the source of truth. Every project's `CLAUDE.md` links here. When a
 | How does an app talk to the FBS Suites hub and the CRM, and where are its AI (MCP) keys made? | [integrations/fbs-suites-hub.md](integrations/fbs-suites-hub.md) |
 | How does an app have an upload checked for viruses before it stores it? | [integrations/fbs-suites-scanner.md](integrations/fbs-suites-scanner.md) |
 | How do FBS People and FBS Pay share people, time, money items and payslips? | [integrations/fbs-people-pay-connector.md](integrations/fbs-people-pay-connector.md) |
+| Who owns client data, what is extracted when a subscription ends, and when is it deleted? | [policies/client-data-ownership-and-extraction.md](policies/client-data-ownership-and-extraction.md) |
 | How are `docs/`, specs and plans organised? | [docs-and-ai/docs-and-specs.md](docs-and-ai/docs-and-specs.md) |
 | What goes in a project's `CLAUDE.md`? | [docs-and-ai/claude-md-template.md](docs-and-ai/claude-md-template.md) |
 | How do I start a new project or onboard a developer? | [docs-and-ai/new-project-checklist.md](docs-and-ai/new-project-checklist.md) |
