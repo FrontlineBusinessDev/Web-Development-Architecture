@@ -63,6 +63,7 @@ Use these before reaching for anything else. Each purpose has one package; a pro
 | Animation (optional) | `framer-motion` |
 | UI kit | Kit A: shadcn (new-york) + Radix + `sonner`. Kit B: Learn's own kit + `boneyard-js`. One per project ([frontend patterns](../structure/frontend-patterns.md)) |
 | Forms (kit A) | `@tanstack/react-form` (People) or `react-hook-form` (Pay); one per project |
+| Text in photos and PDFs, read on the device (optional) | `tesseract.js` (OCR, English data from `@tesseract.js-data/eng`) and `pdfjs-dist` (a PDF's text layer). Load them only where a file is attached and serve their worker, engine and data from the app's own host, never a CDN. People uses them so Ask AI files leave the device with ID and bank numbers removed |
 
 ### Dev tools
 
