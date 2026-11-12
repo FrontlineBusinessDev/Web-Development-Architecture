@@ -539,7 +539,8 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - **The real app looks and works the same as the demo:** same screens, layout, columns, filters, actions, sheets and empty and loading states, for every role. Only the data source differs: the company's own records instead of the snapshot. A page fixed or changed in one is fixed or changed in the other in the same change (owner, Nov 13).
     - **Keep writes local:** creates, updates and deletes go to the browser's own copy (memory or IndexedDB), keyed by snapshot version. Reset wipes it, and so does signing out of the demo.
     - **Shift dates relative to today** when the snapshot loads, so the demo never looks old.
-    - **Simulate side effects:** emails, SMS, payments, uploads, exports and integrations show a "Simulated in the demo" note. AI uses canned answers or a small, rate-limited quota.
+    - **Simulate side effects:** SMS, payments, uploads, exports and integrations show a "Simulated in the demo" note. AI uses canned answers or a small, rate-limited quota.
+    - **Email the visitor a sample:** when a demo action would send an email, the visitor gets that email as a sample at the address they gave when they started the demo, and nobody else does. It is marked as a sample, queued, and limited per visit (10) and per address per day; the demo still writes no business data (owner, Nov 13).
     - **Make it clear it's a demo:** a banner with a "Viewing as" role switcher, Reset, and a sign-up call to action. Role tours (rule 8 and the page tours) start on first visit.
 - **Do, for security:**
     - The demo has no server session and no tenant: every non-demo endpoint answers it 401 or 403, and the snapshot endpoint is GET-only.
@@ -550,7 +551,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - Share one demo tenant that every visitor edits on the server.
     - Hard-code demo data in the frontend, where it drifts from the product.
     - Build a demo-only screen, or let a real page show less, or look different, than its demo page.
-    - Send a real email or charge a real card from the demo.
+    - Send an email from the demo to anyone but the visitor's own address, or charge a real card.
 - **Reference (FBS People):**
     - **Today:** the public Test Drive at `/demo/{role}` (`App\Http\Controllers\DemoController`) renders the real pages with a fake signed-in user, for the Owner, HR Admin, Manager and Employee roles. It keeps records in the visitor's browser (`resources/js/demo`), and they are wiped on sign-out. But the seed data is written in the frontend, not stored in the database.
     - **To meet this rule:**
