@@ -29,6 +29,7 @@ This repo is the source of truth. Every project's `CLAUDE.md` links here. When a
 | Which checks must pass before a deploy? | [quality/testing-and-ci.md](quality/testing-and-ci.md) |
 | How does an app talk to the FBS Suites hub and the CRM, and where are its AI (MCP) keys made? | [integrations/fbs-suites-hub.md](integrations/fbs-suites-hub.md) |
 | How does an app have an upload checked for viruses before it stores it? | [integrations/fbs-suites-scanner.md](integrations/fbs-suites-scanner.md) |
+| How do I add monthly and yearly subscriptions (Stripe outside the Philippines, Xendit inside)? | [integrations/subscriptions-stripe-xendit.md](integrations/subscriptions-stripe-xendit.md) |
 | How are `docs/`, specs and plans organised? | [docs-and-ai/docs-and-specs.md](docs-and-ai/docs-and-specs.md) |
 | What goes in a project's `CLAUDE.md`? | [docs-and-ai/claude-md-template.md](docs-and-ai/claude-md-template.md) |
 | How do I start a new project or onboard a developer? | [docs-and-ai/new-project-checklist.md](docs-and-ai/new-project-checklist.md) |
