@@ -536,6 +536,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - **Let platform staff refresh it** from the console, with the change logged.
 - **Do, in the browser:**
     - **Swap the API, not the screens:** the demo runs the real screens, and only the API client (rule 5) changes, to a local adapter that answers from the snapshot.
+    - **The real app looks and works the same as the demo:** same screens, layout, columns, filters, actions, sheets and empty and loading states, for every role. Only the data source differs: the company's own records instead of the snapshot. A page fixed or changed in one is fixed or changed in the other in the same change (owner, Nov 13).
     - **Keep writes local:** creates, updates and deletes go to the browser's own copy (memory or IndexedDB), keyed by snapshot version. Reset wipes it, and so does signing out of the demo.
     - **Shift dates relative to today** when the snapshot loads, so the demo never looks old.
     - **Simulate side effects:** emails, SMS, payments, uploads, exports and integrations show a "Simulated in the demo" note. AI uses canned answers or a small, rate-limited quota.
@@ -548,6 +549,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - Let the demo write to any database, queue or storage bucket.
     - Share one demo tenant that every visitor edits on the server.
     - Hard-code demo data in the frontend, where it drifts from the product.
+    - Build a demo-only screen, or let a real page show less, or look different, than its demo page.
     - Send a real email or charge a real card from the demo.
 - **Reference (FBS People):**
     - **Today:** the public Test Drive at `/demo/{role}` (`App\Http\Controllers\DemoController`) renders the real pages with a fake signed-in user, for the Owner, HR Admin, Manager and Employee roles. It keeps records in the visitor's browser (`resources/js/demo`), and they are wiped on sign-out. But the seed data is written in the frontend, not stored in the database.
@@ -556,7 +558,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
         2. Serve it from a cached, read-only endpoint.
         3. Have the browser's mock API load it instead of its built-in data.
     - **Requirements:** `docs/subscription/REQUIREMENTS.md` §10.
-- **Check:** Start the demo, change records, approve requests and delete a file. The database, queues and buckets show no change. A second browser sees the untouched snapshot, and Reset brings the first back to it.
+- **Check:** Start the demo, change records, approve requests and delete a file. The database, queues and buckets show no change. A second browser sees the untouched snapshot, and Reset brings the first back to it. Open each demo page beside the same page signed in to a real company: they match except for the data.
 
 ## Rule 15. One reusable billing engine, run from the platform console
 
