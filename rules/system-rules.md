@@ -79,7 +79,7 @@ Search for `## Rule N.` to jump to a rule.
 57. Clean up what a feature touches before adding the feature
 58. Frontend first, then its backend
 59. *(Retired 2026-11-06)* One UI from the Claude Design canvas
-60. No browser dialogs: every question is the app's own modal
+60. No browser dialogs or prompts: every question is the app's own modal
 61. A dialog over a dialog keeps one dim and sits above it
 62. A card's content fills the card
 63. A locked module shows read-only, with the plan that unlocks it
@@ -1611,21 +1611,27 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 
 ---
 
-## Rule 60. No browser dialogs: every question is the app's own modal
+## Rule 60. No browser dialogs or prompts: every question is the app's own modal
 
-- **Rule:** The product never shows the browser's own dialogs: no `alert()`, `confirm()`, `prompt()`, and no "Leave site?" box on closing the tab. A question that needs an answer before something happens is asked in the app's own modal, in the D8 dialog frame.
+- **Rule:** The product never shows the browser's own dialogs: no `alert()`, `confirm()`, `prompt()`, and no "Leave site?" box on closing the tab. A question that needs an answer before something happens is asked in the app's own modal, in the D8 dialog frame. The app also never makes the browser ask on its own: no clipboard prompt, and no camera, microphone, location or notifications prompt the app has not asked about first (owner, Nov 13, 2026).
 - **Why:** The browser's boxes say "localhost:8000 says", can't be styled, themed or translated, ignore dark mode and the design, block the whole tab, and look like a scam warning to the people who use HR software least often. The owner banned them on Oct 31, 2026.
 - **Do:**
     - **Ask in the app:** `askConfirm({ title, description, confirmLabel, destructive })` returns a promise; it renders the D8 confirmation (`ConfirmDialog`) from one host mounted at the app root, so any page, old or new, can use it.
     - **Say what happens:** the title is the question ("Delete this webhook?"), the description names what changes, and the button names the action ("Delete webhook"), never "OK" (D8, rule 8).
     - **Unsaved changes:** closing a dialog, a sheet or moving to another page with unsaved changes asks with `askDiscard()` (rule 45). Closing the tab asks nothing; the form's draft keeps the work and offers it back next time (rule 45).
     - **Messages are toasts or inline errors,** never `alert()` (rules 28 and 37).
+    - **Copy only on a click:** a Copy button copies in its own click. A link the server makes after a request (an offer, a pre-boarding link) opens in the app's modal with a Copy button (`shareLink()`), because copying once a slow request answers makes the browser ask for clipboard access.
+    - **Ask before the browser does:** before the camera, the microphone, the location or notifications, ask in the app's modal what it is for (`askAllow()`), and call the browser API only after Continue. Skip the modal when it is already allowed. When it is blocked, the modal says how to allow it in the site settings, and the API is not called.
+    - **The honest limit:** the browser's own one-time Allow for the camera, the microphone, the location and notifications cannot be removed. The app makes sure it only ever comes right after its own modal, never unexpectedly.
 - **Don't:**
     - Call `window.alert`, `window.confirm` or `window.prompt`, or the bare `alert`, `confirm` or `prompt`.
     - Add a `beforeunload` handler that makes the browser ask.
-- **Reference (FBS People):** `components/kit3/confirm-host.tsx` (`askConfirm`, `askDiscard`, `ConfirmHost` in `app.tsx`). `FormFrame` and `useUnsavedGuard` use it, and every 2.x page that called `window.confirm` was moved to it on Oct 31. The older `components/kit/confirm-dialog.tsx` (`useConfirm`) is an in-app modal too and may stay until its pages move to 3.0. The PWA install prompt (`lib/install.ts`) is the browser's install sheet, opened only when the person taps Install, and is allowed.
+    - Read the clipboard (`navigator.clipboard.read` / `readText`); paste comes in through the paste event (Ctrl V).
+    - Call `navigator.clipboard.writeText` after an `await`.
+    - Request a permission on page load, or before the app's modal asked.
+- **Reference (FBS People):** `components/kit3/confirm-host.tsx` (`askConfirm`, `askDiscard`, `ConfirmHost` in `app.tsx`). `FormFrame` and `useUnsavedGuard` use it, and every 2.x page that called `window.confirm` was moved to it on Oct 31. The older `components/kit/confirm-dialog.tsx` (`useConfirm`) is an in-app modal too and may stay until its pages move to 3.0. The PWA install prompt (`lib/install.ts`) is the browser's install sheet, opened only when the person taps Install, and is allowed. Permissions and links: `components/kit3/ask-allow.tsx` (`askAllow('camera' | 'microphone' | 'geolocation' | 'notifications')`, `shareLink()`), used by `openCamera`, the clock-in location, push alerts and Ask AI's voice input.
 - **Also:** kit B uses `useConfirm` with `components/settings/ConfirmDialog.tsx` (FBS Learn); FBS Suites uses `components/fbs/confirm-dialog.tsx` (`ConfirmDialog`, `tone="danger"` for destructive actions).
-- **Check:** A search of `resources/js` for `confirm(`, `alert(`, `prompt(` outside `askConfirm`/`useConfirm`, and for `beforeunload`, finds nothing. Close a dialog with unsaved changes: the app's modal asks, in the current theme.
+- **Check:** A search of `resources/js` for `confirm(`, `alert(`, `prompt(` outside `askConfirm`/`useConfirm`, and for `beforeunload`, finds nothing. Close a dialog with unsaved changes: the app's modal asks, in the current theme. A search for `clipboard.read`, `getUserMedia`, `getCurrentPosition`, `requestPermission` and speech recognition finds each one only after `askAllow()`; every `writeText` runs in a click. In a fresh browser profile, no browser prompt appears without the app's modal first.
 
 ---
 
@@ -1945,3 +1951,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-07:** Rule 67 added: every Coolify resource can be redeployed (after Redeploy failed in FBS Connect and FBS People). The runbook drops "never press Redeploy on the app"; FBS Connect moves to FBS Pay's `<app uuid>:<commit>` pattern and FBS People's image builds its own static files when it gets no bucket args. The same day FBS CRM moved to Pay's pattern, and FBS Learn's and FBS Suites' deployers run once per container, so every app follows rule 67.
 - **2026-11-07:** Rule 68 added: people's names are stored as `first_name` and `last_name`, never one `name` column; each app's gaps are listed in [../structure/database.md](../structure/database.md#known-differences-today).
 - **2026-11-13:** Rule 69 added (owner): an action opens its form on the page the person is on, never by sending them to another page or telling them to go there (after the hiring board's Move to Offer did both).
+- **2026-11-13:** Rule 60 extended (owner): no browser prompts either. The app never makes the browser ask on its own (clipboard, camera, microphone, location, notifications); it copies only on a click, and asks in its own modal (`askAllow()`) before any permission.
