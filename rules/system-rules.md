@@ -88,6 +88,7 @@ Search for `## Rule N.` to jump to a rule.
 66. This repo is the source of truth
 67. Every Coolify resource can be redeployed
 68. People's names are stored as first_name and last_name
+69. An action opens where you are: no trip to another page to finish it
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -1796,6 +1797,24 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 
 ---
 
+## Rule 69. An action opens where you are: no trip to another page to finish it
+
+- **Rule:** When a person picks an action that needs a form (a dialog or a sheet), the form opens on top of the page they are on, about the record they picked. The app never sends them to another page to open it there, and never answers with a message telling them to go somewhere else and do it.
+- **Why:** On Nov 13, 2026 the owner moved an applicant from Interview to Offer on the hiring board. First the board only said "Make the offer on their page", then it opened the applicant's page with the offer dialog. Both lose the person's place: they leave the board, then have to find their way back. One click should open the offer right there (rule 8, fewest clicks).
+- **Do:**
+    - **Open the form in place:** a board card, a table row or a row menu opens its dialog on the current page, with the record in the URL (`?dialog=<id>&row=<record id>`, rule 36), so Back closes it and a copied link opens the same form.
+    - **Make each dialog work from any page:** it finds its record from the URL's `row` (or its own page's path), loads what it needs itself, and refreshes every list that shows the record when it saves.
+    - **Stay put after saving:** the page the person started on updates (the card moves column, the row changes); a toast says what happened.
+    - **Link to the record's page only to read more:** the name on a card can open the record's page. An action never needs it.
+- **Don't:**
+    - Answer an action with a toast or message that says "do this on the other page".
+    - Navigate to another page so a dialog can open there.
+    - Build a second copy of the form for the other page: one dialog, opened from wherever its action is (rule 51).
+- **Reference (FBS People):** the Openings board's Move to Offer and Move to Hired open the applicant's offer and hire dialogs on the board (`screens/people/hiring-live.tsx`, `setQueryParams('dialog=m-make-offer&row=<id>')`); the dialogs read the applicant from the path or `row` (`screens/dialogs/live-hiring-kit.ts` `applicantId`).
+- **Check:** On every board and list, pick each action of a card, row or row menu: its form opens over the same page, the URL keeps the page's path, and closing or saving leaves the person where they were.
+
+---
+
 ## Design profile
 
 D1–D11 are the shared design system of every FBS app: layout, sizes, controls and behaviour, taken from FBS People UI 3.0 (approved by the owner on Nov 6, 2026). They hold no brand values. Colour token names, the light and dark values each app sets, and the kit components that draw them are in [../structure/design-system.md](../structure/design-system.md). D12 is each app's own product profile and lives in that app's repo.
@@ -1925,3 +1944,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
     - Design profile: brand values moved out; D1–D11 are brand-neutral, and D12 is each app's own profile.
 - **2026-11-07:** Rule 67 added: every Coolify resource can be redeployed (after Redeploy failed in FBS Connect and FBS People). The runbook drops "never press Redeploy on the app"; FBS Connect moves to FBS Pay's `<app uuid>:<commit>` pattern and FBS People's image builds its own static files when it gets no bucket args. The same day FBS CRM moved to Pay's pattern, and FBS Learn's and FBS Suites' deployers run once per container, so every app follows rule 67.
 - **2026-11-07:** Rule 68 added: people's names are stored as `first_name` and `last_name`, never one `name` column; each app's gaps are listed in [../structure/database.md](../structure/database.md#known-differences-today).
+- **2026-11-13:** Rule 69 added (owner): an action opens its form on the page the person is on, never by sending them to another page or telling them to go there (after the hiring board's Move to Offer did both).
