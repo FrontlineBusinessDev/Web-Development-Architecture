@@ -13,7 +13,7 @@ It was written from the FBS Work implementation (Laravel 12, Inertia, React) and
 
 Read sections 1 to 4 for the ideas (any stack). Sections 5 to 9 are the step-by-step flows. Sections 10 and 11 are provider reference. The rest is lessons, tests and a go-live checklist. Code is Laravel, but each snippet is short enough to port.
 
----
+--- 
 
 ## 1. What you are building
 
