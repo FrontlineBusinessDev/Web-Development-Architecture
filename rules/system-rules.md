@@ -90,6 +90,7 @@ Search for `## Rule N.` to jump to a rule.
 68. People's names are stored as first_name and last_name
 69. An action opens where you are: no trip to another page to finish it
 70. Public pages share one look: the best public page is the reference
+71. Coming back to the tab brings fresh data: nobody refreshes the page
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -1841,6 +1842,24 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 
 ---
 
+## Rule 71. Coming back to the tab brings fresh data: nobody refreshes the page
+
+- **Rule:** When the person comes back to the app's tab or window, or back online, every list, card and figure on the page that may have changed reloads by itself. Nobody has to press the browser's refresh to see what others did meanwhile.
+- **Why:** On Nov 13, 2026 the owner switched to an email and back, and the hiring board still showed the old stages until they refreshed the page. HR, managers and employees keep the app open all day in a tab; what they see has to follow what changed while they were away, or they act on old data.
+- **Do:**
+    - **One switch for the whole app:** the shared data client refetches on window focus and on reconnect (TanStack Query `refetchOnWindowFocus` and `refetchOnReconnect`), for every query, not page by page.
+    - **Only what went stale:** keep a short `staleTime` (about 30 s) so a quick look away does not reload everything, and a longer one only where the data rarely changes.
+    - **Keep the person's own work:** a refetch never resets a form being filled in, a dialog's typed values or the list's search, filters and page (rules 36, 45).
+    - **Quietly:** a refetch updates in place, with no skeleton over data already on screen (rule 3) and no jump (rule 37).
+    - **Pages on server props** (an Inertia page that carries its data) reload their props on focus with a partial reload (`router.reload({ only: [...] })`), or move their data to a JSON endpoint (rule 5).
+- **Don't:**
+    - Turn `refetchOnWindowFocus` off globally, or tell people to refresh to see changes.
+    - Poll every few seconds to get the same effect (rule 24): focus and reconnect are enough, plus a push or the bell for what must arrive at once.
+- **Reference (FBS People):** `resources/js/lib/api/query.ts`, the one `QueryClient`: `staleTime: 30_000`, `refetchOnWindowFocus: true`, `refetchOnReconnect: true`. The bell (`components/kit3/shell/bell.tsx`) keeps its own 60 s.
+- **Check:** Open a board, change one of its records in another tab or as another user, come back to the first tab after 30 s: the change shows without a refresh, and a half-filled form on the page keeps what was typed.
+
+---
+
 ## Design profile
 
 D1–D11 are the shared design system of every FBS app: layout, sizes, controls and behaviour, taken from FBS People UI 3.0 (approved by the owner on Nov 6, 2026). They hold no brand values. Colour token names, the light and dark values each app sets, and the kit components that draw them are in [../structure/design-system.md](../structure/design-system.md). D12 is each app's own product profile and lives in that app's repo.
@@ -1973,3 +1992,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-13:** Rule 69 added (owner): an action opens its form on the page the person is on, never by sending them to another page or telling them to go there (after the hiring board's Move to Offer did both).
 - **2026-11-13:** Rule 60 extended (owner): no browser prompts either. The app never makes the browser ask on its own (clipboard, camera, microphone, location, notifications); it copies only on a click, and asks in its own modal (`askAllow()`) before any permission.
 - **2026-11-13:** Rule 70 added (owner): public pages share one look; the best existing public page (People's careers page) is the reference and every other public page is built from its parts through one shared frame.
+- **2026-11-13:** Rule 71 added (owner): coming back to the tab or back online reloads what went stale, through one data client setting, so nobody refreshes the page.
