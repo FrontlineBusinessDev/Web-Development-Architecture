@@ -7,7 +7,7 @@ How an FBS app tells the rest of the suite that something happened (a sign-up, a
   - `fbs-suites-mcp`: `docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Webhook hub), `app/Hub/{Signature,Router,HookRefusal,HookCheck}.php`, `app/Http/Controllers/HookController.php`, `app/Jobs/DeliverEvent.php`, `app/Coolify/*` (Platform › Coolify), migrations `2026_11_10_000100_route_demo_opened_to_crm` and `2026_11_12_000100_route_subscription_paid_to_crm`.
   - The senders `app/Support/SuiteHub.php`, `app/Jobs/SendSuiteHubEvent.php` and `app/Http/Controllers/SuiteHubCheckController.php` in People, Stock, Work, Learn, Pay and Connect.
   - `laravel-fbs-crm`: `routes/api.php`, `app/Http/Requests/Api/SignupIntakeRequest.php`, `app/Support/Intake/*`.
-- **Last updated:** 2026-11-07
+- **Last updated:** 2026-11-10 (only proved emails for `tenant.signed_up` and `demo.opened`)
 
 Copy the sender from [`templates/hub/`](../templates/hub/). When you add or change an event, update this file in the same piece of work.
 
@@ -126,6 +126,7 @@ A new tenant (company, school, business, workspace or store) was created.
 ```
 
 - **Fired from** the tenant model's `created` event, not the sign-up form, so every path is caught (web form, Google sign-up, staff-created tenant).
+- **Only proved emails (owner, 2026-11-10):** the contact's email is proved before the event goes, in every app. A self sign-up waits for the email check and sends then (People: `SuiteHub::ownerVerified` on `Verified`, `companies.owner_verified_at`). A tenant made from a request sends only once the request's email passed an emailed code (Pay: `AccessRequestVerification`). A staff-created tenant counts as proved.
 - `signup.method` is `web`, `google` or `staff`.
 - **Skipped:** demo and sandbox tenants (`SuiteHub::quietly()`), tenants made from the console or seeders (`runningInConsole()` and not unit tests).
 - **Sent by:** all six apps.
@@ -165,6 +166,7 @@ A live-demo visitor left their details and agreed to be contacted. There is no t
 ```
 
 - `contact.email` and `demo.consented_at` are required by the CRM. Send only visitors who ticked the consent box.
+- **Only proved emails (owner, 2026-11-10):** send only after the visitor typed the code emailed to them (6 digits, 10 minutes, 5 tries). Nothing about the visitor is stored before that (People: `App\Demo\LeadVerification`; Pay: its Test Drive code).
 - `demo.visits` is at least 1.
 - Send once per lead. Later page views or beacons send nothing.
 - Does not make an FBS ID.

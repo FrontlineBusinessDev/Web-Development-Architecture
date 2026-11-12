@@ -281,7 +281,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
         3. past due (retries and reminders)
         4. suspended (people can sign in, view and export; nothing new is saved except writes that protect people, such as time punches)
         5. cancelled
-        6. deleted, only after a stated retention period and a final notice
+        6. deleted, only after a stated retention period and a final notice (the client has 30 days after termination to request its data: [client data policy](../policies/client-data-ownership-and-extraction.md))
     - **Reactivating:** paying, or a staff action with a reason, restores the tenant at once.
     - **Trials:** no card needed, a fixed length, reminders before the end, and an extension a staff member can grant with a reason.
 - **Do, for the platform:**
