@@ -1810,7 +1810,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - Answer an action with a toast or message that says "do this on the other page".
     - Navigate to another page so a dialog can open there.
     - Build a second copy of the form for the other page: one dialog, opened from wherever its action is (rule 51).
-- **Reference (FBS People):** the Openings board's Move to Offer and Move to Hired open the applicant's offer and hire dialogs on the board (`screens/people/hiring-live.tsx`, `setQueryParams('dialog=m-make-offer&row=<id>')`); the dialogs read the applicant from the path or `row` (`screens/dialogs/live-hiring-kit.ts` `applicantId`).
+- **Reference (FBS People):** the Openings board's Move to Offer and Move to Hired open the applicant's offer and hire dialogs on the board (`screens/people/hiring-live.tsx`, `setQueryParams('dialog=m-make-offer&row=<id>')`); the dialogs read the applicant from the path or `row` (`screens/dialogs/live-hiring-kit.ts` `applicantId`). Forms several pages offer (File leave, File a claim, Add employee, Import) open over any page from one host in the shell at `?form=<name>` (`screens/forms/forms-here.tsx`, `openForm()`), beside the approvals inbox at `?inbox=1`.
 - **Check:** On every board and list, pick each action of a card, row or row menu: its form opens over the same page, the URL keeps the page's path, and closing or saving leaves the person where they were.
 
 ---
