@@ -89,6 +89,7 @@ Search for `## Rule N.` to jump to a rule.
 67. Every Coolify resource can be redeployed
 68. People's names are stored as first_name and last_name
 69. An action opens where you are: no trip to another page to finish it
+70. Public pages share one look: the best public page is the reference
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -1821,6 +1822,25 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 
 ---
 
+## Rule 70. Public pages share one look: the best public page is the reference
+
+- **Rule:** Every page outside the app (careers, a job post, an offer, a signing link, pre-boarding, interview times, a withdraw or messages link, a public state page) looks like one site. When one public page already has the better design, the others are built from its parts, through one shared frame, never restyled one by one.
+- **Why:** On Nov 13, 2026 the owner opened an offer link: a plain white page with pink boxes next to a careers page in the landing's mesh, glass and display type. An applicant moves from the careers page to the job, the offer and pre-boarding in one hiring journey, and each step looked like a different company. One frame keeps them matching and makes the next change in one place.
+- **Do:**
+    - **Find the reference first:** before building or changing a public page, look at the project's public pages and take the best one's header, hero, cards and footer.
+    - **One frame:** every public page renders through the shared public frame (header with the company and theme, hero with the eyebrow, title and lead, the page's cards, footer). A new page adds only its own content.
+    - **Cards by one rule:** the page's own cards get the reference's card look from the frame's stylesheet, not a copy of its classes on each page.
+    - **Documents look like documents:** a letter, contract or policy to read or sign shows as the paper it prints as, with its signature line, beside the answer form.
+    - **Check it as one journey:** careers, a job, an offer, signing and pre-boarding, in light, dark and at 390 px.
+- **Don't:**
+    - Style a public page on its own, or keep an older public layout beside the new one.
+    - Copy the reference page's markup into another page: reuse its components.
+    - Put an entrance animation on a title that changes once the page's data loads (it can stay hidden).
+- **Reference (FBS People):** the careers page (`screens/public/careers.tsx`) is the reference. `screens/public/public-frame.tsx` (`PublicFrame`) builds every other public page from its parts: `careers/header.tsx` (`CareersHeader`, with `links`, `cta` and `label`), the mesh hero and `careers/sections.tsx` (`CareersFooter`). `.landing .public-body` in `resources/css/app.css` gives a page's own `rounded-2xl bg-u-panel` cards the careers glass. The offer page shows the letter as paper (`screens/public/offer-letter.tsx`) beside the e-signature form (`components/kit3/sign/sign-form.tsx`).
+- **Check:** Open each public page after the careers page: the header, hero type, cards and footer match, in light, dark and at 390 px. `grep -rn "PublicFrame\|CareersHeader" resources/js/screens/public` covers every public screen.
+
+---
+
 ## Design profile
 
 D1–D11 are the shared design system of every FBS app: layout, sizes, controls and behaviour, taken from FBS People UI 3.0 (approved by the owner on Nov 6, 2026). They hold no brand values. Colour token names, the light and dark values each app sets, and the kit components that draw them are in [../structure/design-system.md](../structure/design-system.md). D12 is each app's own product profile and lives in that app's repo.
@@ -1952,3 +1972,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-07:** Rule 68 added: people's names are stored as `first_name` and `last_name`, never one `name` column; each app's gaps are listed in [../structure/database.md](../structure/database.md#known-differences-today).
 - **2026-11-13:** Rule 69 added (owner): an action opens its form on the page the person is on, never by sending them to another page or telling them to go there (after the hiring board's Move to Offer did both).
 - **2026-11-13:** Rule 60 extended (owner): no browser prompts either. The app never makes the browser ask on its own (clipboard, camera, microphone, location, notifications); it copies only on a click, and asks in its own modal (`askAllow()`) before any permission.
+- **2026-11-13:** Rule 70 added (owner): public pages share one look; the best existing public page (People's careers page) is the reference and every other public page is built from its parts through one shared frame.
