@@ -4,7 +4,7 @@ The shared rules, folder structure, tech stack and deployment architecture for e
 
 - **Applies to:** FBS People (the reference project), FBS CRM, FBS Connect, FBS Pay, FBS Learn, FBS Stock, FBS Work, FCA-SMS, FBS Suites (MCP and webhook hub), and every new project.
 - **Repo:** https://github.com/FrontlineBusinessDev/Web-Development-Architecture
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-13
 
 This repo is the source of truth. Every project's `CLAUDE.md` links here. When a shared convention changes, update this repo in the same piece of work (system rule 66).
 
@@ -29,6 +29,7 @@ This repo is the source of truth. Every project's `CLAUDE.md` links here. When a
 | Which checks must pass before a deploy? | [quality/testing-and-ci.md](quality/testing-and-ci.md) |
 | How does an app talk to the FBS Suites hub and the CRM, and where are its AI (MCP) keys made? | [integrations/fbs-suites-hub.md](integrations/fbs-suites-hub.md) |
 | How does an app have an upload checked for viruses before it stores it? | [integrations/fbs-suites-scanner.md](integrations/fbs-suites-scanner.md) |
+| How do I add an in-app AI agent (Ask AI with tools, proposals, credits)? | [integrations/in-app-ai-agent.md](integrations/in-app-ai-agent.md) |
 | How do I add monthly and yearly subscriptions (Stripe outside the Philippines, Xendit inside)? | [integrations/subscriptions-stripe-xendit.md](integrations/subscriptions-stripe-xendit.md) |
 | How do FBS People and FBS Pay share people, time, money items and payslips? | [integrations/fbs-people-pay-connector.md](integrations/fbs-people-pay-connector.md) |
 | Who owns client data, what is extracted when a subscription ends, and when is it deleted? | [policies/client-data-ownership-and-extraction.md](policies/client-data-ownership-and-extraction.md) |

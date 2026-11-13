@@ -272,6 +272,8 @@ Both are secrets in Coolify. Never commit them, log them or put them in an audit
 
 FBS Suites is also the MCP gateway: Claude (or another MCP client) calls `POST /mcp` with one `fbsm_` key, and the gateway calls each FBS app's own MCP endpoint with a key the person pasted on **App links**. Only FBS staff sign in to FBS Suites, so App links hold staff keys; customer keys stay for organizations that still have FBS Suites logins. Spec: `fbs-suites-mcp/docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Per-app contract); plan for Pay, People and Connect: `fbs-suites-mcp/docs/superpowers/plans/2026-11-07-staff-ai-keys-pay-people-connect.md`.
 
+The tools an MCP endpoint lists are the same classes as the app's in-app agent ([in-app-ai-agent.md](in-app-ai-agent.md), section 5).
+
 **Every app's MCP endpoint:**
 
 - Answers `initialize`, `tools/list` and `tools/call` (JSON-RPC 2.0, plain JSON, no sessions) with a bearer key, never a browser session.

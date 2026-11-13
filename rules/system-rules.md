@@ -724,7 +724,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - **Evals:** test each agent against seeded demo users and run the evals before any model or prompt change.
     - **Data:** send the model only what the task needs, and no other tenant's data, ever.
 - **Don't:** let an agent send messages, move money or delete records without a person's approval, or hide that a reply came from AI.
-- **Reference (FBS People):** `app/Ai` (runner, triggers, credits), `config/ai.php`, `tests/Evals`, `docs/subscription/REQUIREMENTS.md` §13, and the console's AI & agents pages on the canvas.
+- **Reference (FBS People):** `app/Ai` (runner, triggers, credits), `config/ai.php`, `tests/Evals`, `docs/subscription/REQUIREMENTS.md` §13, and the console's AI & agents pages on the canvas. How to build it in any app (tools, proposals, switches, credits, prompt caching, evals): [../integrations/in-app-ai-agent.md](../integrations/in-app-ai-agent.md).
 - **Check:** An agent asked to change data returns a proposal, not a change. A turned-off agent doesn't run. Evals pass before a model change.
 
 ## Rule 21. Dates, time zones and money are exact
