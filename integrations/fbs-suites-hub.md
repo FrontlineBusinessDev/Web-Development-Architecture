@@ -266,7 +266,7 @@ Both are secrets in Coolify. Never commit them, log them or put them in an audit
 - FBS Suites is the OpenID Connect provider for every FBS app (Laravel Passport, `App\FbsId\*`). Setup: `fbs-suites-mcp/docs/fbs-id-setup.md`.
 - Google and Microsoft sign-in go through it. Staff need two-step login or a passkey.
 - `tenant.signed_up` gives the sign-up's contact an FBS ID.
-- The apps' side ("Sign in with FBS", `/api/fbs/*`) is Phase 2 and not built in any app yet. See [`structure/tenancy-and-auth.md`](../structure/tenancy-and-auth.md).
+- The apps keep their own sign-in pages with FBS ID behind them (password check, Google / Microsoft through FBS ID, `/api/fbs/*`); built in Pay, the other apps next. See [`structure/tenancy-and-auth.md`](../structure/tenancy-and-auth.md).
 
 ## 11. AI keys for the MCP gateway
 
