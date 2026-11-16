@@ -85,6 +85,9 @@ One account for every FBS app, like a Google account across Gmail and Drive (own
 - **Signed out everywhere:** the app's sign-out goes through `/oauth/logout`; FBS ID's back-channel logout (`POST {app}/auth/fbs/backchannel-logout`) ends that person's sessions in every app.
 - **What FBS ID asks the app** (Basic auth with the app's client id + secret, yes or no only): `POST {app}/api/fbs/verify-password`, `POST {app}/api/fbs/lookup`.
 - **Reference: FBS Pay** (`App\FbsId\*`: `FbsId`, `PasswordSignIn`, `FbsAccounts`, `Jwt`, `SignedOut`; `FbsLoginController`, `FbsApiController`). Its address, client ID and secret are set on the app's platform / developer settings page, encrypted, no restart (rule 12; Pay: Platform › Keys & secrets › FBS ID); `.env` `FBS_ID_*` only as a fallback. None set = the app signs in on its own. Setup: MCP `docs/fbs-id-setup.md`; design: MCP spec `2026-11-05-single-login-and-toggle-mcp-design.md`, "Revision 2026-11-16".
+- **Built in every app** (2026-11-16/17): Pay, Connect, Stock, Work, People, Learn and the CRM (staff and client-portal users; a portal user's `tenant_ref` is the client company id). Each app's settings page is listed in MCP `docs/fbs-id-setup.md`.
+- **Tenant hosts** (a school host, a company's own domain): cookies there don't reach the callback, so the callback stays on `APP_URL`. On a tenant host the password check still goes through FBS ID, but the silent check, the hop and FBS sign-out are skipped; Google / Microsoft come back through the app's own cross-host hand-off (Learn `/auth/google/start` + `/auth/google/complete`).
+- **Never through FBS ID:** demo / test-drive / sandbox accounts, and users of a company that requires SAML SSO (People) — refused with the app's existing SSO message.
 
 ## Roles and permissions
 
@@ -124,4 +127,3 @@ One append-only audit log per app: who (person, staff member, or AI agent for a 
 | Work | Hand-rolled Google OAuth and TOTP (`App\Support\Totp`); custom auth controller |
 | Pay | Capabilities in `App\Support\Capabilities`; `super_admin` sees no company rows |
 | People | Also SAML SSO and SCIM (Enterprise plan); the "sign out everywhere else" device list is not built yet |
-| All apps but Pay | FBS ID behind the app's own sign-in page not built yet (Pay has it, 2026-11-16) |
