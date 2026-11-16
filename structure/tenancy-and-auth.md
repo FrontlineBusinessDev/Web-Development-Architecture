@@ -4,7 +4,7 @@ How an app keeps each customer's data apart, how people sign in, and how roles, 
 
 - **Applies to:** every FBS app. The tenancy half applies to multi-tenant products (People, Pay, Learn, Connect, Work, Stock); single-organisation apps (CRM, FCA-SMS) skip it.
 - **Sources:** People `app/Models/Company.php`, `Models/Scopes/CompanyScope.php`, `Models/Concerns/BelongsToCompany.php`, `Http/Middleware/ResolveCompany.php`, `config/fortify.php`, `config/permission.php`, `SYSTEM-RULES.md` rules 5, 7, 29, 30, 31 and 32; Pay `docs/PLAN.md` section 4; Learn and MCP `CLAUDE.md`.
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-16
 
 ## Tenancy
 
@@ -60,7 +60,7 @@ Other apps use the same pattern under their own names:
 | Web sign-in | Laravel Fortify (session cookie, same origin) | Throttled per account and IP; "Wrong email or password", never "No such user" |
 | Two-step sign-in | Fortify two-factor (authenticator app) | **Required** for owners, admins and platform staff before admin pages |
 | Passkeys | Fortify passkeys | Offered to everyone |
-| Google, Microsoft | Laravel Socialite | Signs in **existing** accounts only, unless the product's sign-up flow says otherwise; a tenant may limit it to its own Workspace domain or Entra tenant |
+| Google, Microsoft | Through FBS ID: one Google client and one Microsoft app registration, in FBS Suites only. The app's buttons send `idp_hint` (below) | Signs in **existing** accounts only, unless the product's sign-up flow says otherwise; a tenant may limit it to its own Workspace domain or Entra tenant. Before an app has its FBS ID side, its own Socialite client |
 | Password reset, invites | Fortify reset links | Expire and work once. An invite is the user row plus a reset link |
 | Sessions | Redis | Ended on password change, role removal or deactivation; `SESSION_SECURE_COOKIE=true` |
 
@@ -74,10 +74,17 @@ Other apps use the same pattern under their own names:
 
 ### FBS ID (single sign-in across the suite)
 
-- FBS Suites MCP is the **OpenID Connect provider** (Laravel Passport, `App\FbsId\*`), with branded login per app and Google / Microsoft behind it.
-- Accounts are made from sign-up events (`OrgProvisioner`).
-- Old passwords move over lazily: the provider asks the app's `POST /api/fbs/verify-password` (Basic auth with the app's OIDC client id and secret) until a cut-off date.
-- The apps' "Sign in with FBS" side is phase 2 and not built yet. Until then each app keeps its own Fortify sign-in. Setup: MCP `docs/fbs-id-setup.md`.
+One account for every FBS app, like a Google account across Gmail and Drive (owner's decision 2026-11-16: each app keeps its own sign-in page, and Google / Microsoft are centralized).
+
+- FBS Suites MCP is the **OpenID Connect provider** (Laravel Passport, `App\FbsId\*`). Accounts are made from sign-up events (`OrgProvisioner`) or when an app vouches for its user.
+- **Each app keeps its own sign-in page** (email + password, Google, Microsoft). There is no "Sign in with FBS" button and `/login` is not redirected.
+- **Password:** the app posts the email, the password and its own verdict on its local copy to `POST {FBS Suites}/api/fbs-id/password` (HTTP Basic with the app's FBS ID client id and secret). On yes it signs the person in, links `users.fbs_sub`, keeps the password as its fallback copy, then sends the browser on a quick hop to `/oauth/authorize?login_ticket=…&prompt=none` so the FBS ID session starts. FBS ID unreachable = the app's own copy. Old app passwords become the FBS ID password once, until a cut-off date (`FBS_ID_VERIFY_PASSWORD_UNTIL`).
+- **Google / Microsoft:** the app's buttons go to `/oauth/authorize?idp_hint=google|microsoft`; the person sees only Google or Microsoft. Discovery lists the providers set up (`fbs_idp_hints_supported`). A refusal comes back to the app's callback as `error=access_denied` with the reason.
+- **Signed in everywhere:** a guest on the app's sign-in page is checked once per browser session with `prompt=none`; an FBS ID session plus an account in that app (linked `fbs_sub`, else the same verified email) signs them in. FBS ID never creates an app account.
+- **Two-step:** the app still asks its own code unless the id_token's `amr` has `otp`.
+- **Signed out everywhere:** the app's sign-out goes through `/oauth/logout`; FBS ID's back-channel logout (`POST {app}/auth/fbs/backchannel-logout`) ends that person's sessions in every app.
+- **What FBS ID asks the app** (Basic auth with the app's client id + secret, yes or no only): `POST {app}/api/fbs/verify-password`, `POST {app}/api/fbs/lookup`.
+- **Reference: FBS Pay** (`App\FbsId\*`: `FbsId`, `PasswordSignIn`, `FbsAccounts`, `Jwt`, `SignedOut`; `FbsLoginController`, `FbsApiController`). Env `FBS_ID_ISSUER`, `FBS_ID_CLIENT_ID`, `FBS_ID_CLIENT_SECRET` (blank = the app signs in on its own). Setup: MCP `docs/fbs-id-setup.md`; design: MCP spec `2026-11-05-single-login-and-toggle-mcp-design.md`, "Revision 2026-11-16".
 
 ## Roles and permissions
 
@@ -117,4 +124,4 @@ One append-only audit log per app: who (person, staff member, or AI agent for a 
 | Work | Hand-rolled Google OAuth and TOTP (`App\Support\Totp`); custom auth controller |
 | Pay | Capabilities in `App\Support\Capabilities`; `super_admin` sees no company rows |
 | People | Also SAML SSO and SCIM (Enterprise plan); the "sign out everywhere else" device list is not built yet |
-| All apps | "Sign in with FBS" (FBS ID client side) not built yet |
+| All apps but Pay | FBS ID behind the app's own sign-in page not built yet (Pay has it, 2026-11-16) |
