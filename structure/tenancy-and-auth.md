@@ -84,7 +84,7 @@ One account for every FBS app, like a Google account across Gmail and Drive (own
 - **Two-step:** the app still asks its own code unless the id_token's `amr` has `otp`.
 - **Signed out everywhere:** the app's sign-out goes through `/oauth/logout`; FBS ID's back-channel logout (`POST {app}/auth/fbs/backchannel-logout`) ends that person's sessions in every app.
 - **What FBS ID asks the app** (Basic auth with the app's client id + secret, yes or no only): `POST {app}/api/fbs/verify-password`, `POST {app}/api/fbs/lookup`.
-- **Reference: FBS Pay** (`App\FbsId\*`: `FbsId`, `PasswordSignIn`, `FbsAccounts`, `Jwt`, `SignedOut`; `FbsLoginController`, `FbsApiController`). Env `FBS_ID_ISSUER`, `FBS_ID_CLIENT_ID`, `FBS_ID_CLIENT_SECRET` (blank = the app signs in on its own). Setup: MCP `docs/fbs-id-setup.md`; design: MCP spec `2026-11-05-single-login-and-toggle-mcp-design.md`, "Revision 2026-11-16".
+- **Reference: FBS Pay** (`App\FbsId\*`: `FbsId`, `PasswordSignIn`, `FbsAccounts`, `Jwt`, `SignedOut`; `FbsLoginController`, `FbsApiController`). Its address, client ID and secret are set on the app's platform / developer settings page, encrypted, no restart (rule 12; Pay: Platform › Keys & secrets › FBS ID); `.env` `FBS_ID_*` only as a fallback. None set = the app signs in on its own. Setup: MCP `docs/fbs-id-setup.md`; design: MCP spec `2026-11-05-single-login-and-toggle-mcp-design.md`, "Revision 2026-11-16".
 
 ## Roles and permissions
 

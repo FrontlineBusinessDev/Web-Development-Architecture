@@ -461,7 +461,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 
 ## Rule 12. Keys and secrets are managed in the platform console, not `.env`
 
-- **Rule:** Every outside credential is added, rotated and revoked by platform Developers or the Platform owner on a console page: AI providers, payment gateways, storage, mail, sign-in providers, chat apps and push. `.env` holds only what the app needs to start.
+- **Rule:** Every outside credential is added, rotated and revoked by platform Developers or the Platform owner on a console page: AI providers, payment gateways, storage, mail, sign-in providers (FBS ID included), chat apps and push. `.env` holds only what the app needs to start. Connecting or reconnecting an app never needs a redeploy or a restart.
 - **Why:** Keys in `.env` need server access and a redeploy to change, get copied between machines, and leave no record of who changed what. A console page makes rotation routine, keeps a history, and limits who can touch keys.
 - **Do:**
     - Keep in `.env` only `APP_KEY` (or a key-management key), the database, the cache or Redis connection, and settings that aren't secret but are needed at start-up, such as the storage root folder (`AWS_BUCKET_FOLDER`, rule 50).
@@ -469,6 +469,8 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - Make values write-only: after saving, show only the last 4 characters. Nobody can read a key back, including staff.
     - Test a new key with one real call before saving. Let the old key keep working for a short overlap (for example 1 hour), then revoke it.
     - Read keys at use time through one secrets service with a short cache that is cleared on save, so a rotation takes effect without a deploy or restart.
+    - The settings that join an app to the rest of the FBS suite are console settings too, not `.env` (owner's decision, 2026-11-16): FBS ID's address, client ID and client secret (from FBS Suites › Platform › Apps › Connect FBS ID) go on the app's own platform or developer settings page (Pay: Platform › Keys & secrets › FBS ID). Non-secret values such as an address sit on the same page so the whole connection is set in one place. A `.env` value may stay as a fallback for an app that has not moved yet, and the page shows which one is in use.
+    - Anything cached from a connection (an FBS ID discovery document or key set) is keyed by the address, so a change takes effect on the next request.
     - Flag keys older than 90 days, and log every add, rotation, reveal attempt and delete in the platform audit log.
     - Limit the page to Developers and the Platform owner, with two-step sign-in required, and re-ask for it before showing or changing a key.
     - Use least-privilege keys: separate keys per environment and per purpose (files and backups apart), with write-only keys where possible.
@@ -476,10 +478,12 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - Put a third-party key in `.env`, in code or config files, in logs or in error reports.
     - Email keys or paste them into tickets.
     - Reuse a production key in staging.
+- **Reference (FBS Pay):** `App\Support\Secrets` (`platform_secrets`, encrypted, last four only, `PlatformAudit` on every change) behind Platform › Keys & secrets, with the FBS ID group (`FBS_ID_ISSUER`, `FBS_ID_CLIENT_ID`, `FBS_ID_CLIENT_SECRET`) read by `App\FbsId\FbsId`.
 - **Reference (FBS People):** Today the outside keys (`AWS_*` for Spaces, the gateways, the AI provider, mail, and `VAPID_*` for push) come from `.env`. `App\Models\Setting` (`app_settings`) stores platform settings as plain JSON, so keys need an encrypted store: an encrypted cast or a separate secrets table, behind a secrets service that config reads from. The console page is drawn on the canvas as Settings › Keys & secrets, with a Rotate a key sheet.
 - **Check:**
     - `.env` holds only the start-up values.
     - Rotating a key on the page takes effect without a deploy.
+    - Setting or changing the FBS ID connection on the page turns it on or off without a restart.
     - The database never holds a key in plain text.
     - The audit log shows who rotated which key and when.
 
