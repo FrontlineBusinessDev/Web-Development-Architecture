@@ -6,7 +6,7 @@ How FBS People (the HRIS) hands people, time and money items to FBS Pay (payroll
 - **Sources:**
   - People: `tasks/plan-fbs-pay.md` (phases and decisions), `tasks/todo.md` ("FBS Pay"), `app/FbsPay/*` (`Client`, `ConnectionCode`, `EmployeeRow`, `CutoffPackage`, `MoneyItems`, `Watch`), `app/Jobs/{PushToFbsPay,SendCutoff,PullPayslips}.php`, `app/Http/Controllers/FbsPayWebhookController.php`, `routes/fbs-pay.php`, test `tests/Feature/MultiCompany/FbsPayConnectorTest.php`.
   - Pay: `docs/PROGRESS.md` ("FBS People connector"), `app/Connector/*` (`People`, `SyncEmployees`, `SyncCutoff`, `SyncAdjustments`), `app/Http/Controllers/Connector/*`, the `connector` group in `routes/api.php`, test `tests/Feature/FbsPeopleConnectorTest.php`.
-- **Last updated:** 2026-11-10 (phases 1 to 6 built; checked end to end with both apps on one machine)
+- **Last updated:** 2026-11-16 (`soloParent` on employee rows); phases 1 to 6 built on 2026-11-10 and checked end to end with both apps on one machine
 
 ## 1. Who owns what (owner, Nov 10)
 
@@ -49,6 +49,7 @@ All under `/api/v1/connector`, bearer connector key. Every write sends an `Idemp
 | `GET payroll?since=Y-m-d` | Runs finalized since then (default 31 days) | `data` |
 | `GET payroll/{period}` | A finalized run: per line `id`, `external_id`, `gross_pay`, `total_deductions`, `net_pay`, `url`, `paid_refs` | 404 unless finalized |
 
+- **Solo parent (RA 11861):** an employee row may carry `soloParent: {"idNumber": "…", "idExpiry": "Y-m-d"} | null`. Sent with a value: People owns it and Pay grants that year's Solo Parent Leave when the ID is valid. `null`: not a solo parent, Pay clears its own. Left out (an older People): Pay keeps what it has. People sends it only when both the ID number and its expiry are set (People `App\FbsPay\EmployeeRow`, Pay `App\Connector\SyncEmployees` with `App\Support\SoloParent`).
 - **Cutoffs:** a whole package or nothing. Pay refuses it when someone is unknown, a date is outside the period, it has no overtime rate for a day, or the days do not add up to People's `summary` (late, undertime, absences, overtime minutes). Sending the period again replaces it. A run approved or finalized over those days holds it (409), but only a run of those people's own payroll groups or a run with no group.
 - **Before the lock**, People refuses to lock a connected cutoff while anyone has a day with one punch, naming them, so no half day is paid as worked.
 - **Money:** Pay prices leave-conversion days once at the person's own daily rate (yearly pay over 261 days). A later raise does not reprice them. An item a run has paid is never changed.
