@@ -365,6 +365,12 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 - A key pasted on App links still wins for that app. Staff keep their staff keys.
 - The **org service token** is the same exchange with `kind: service`. It reaches aggregate tools only (counts and totals, never names), for suite metrics.
 
+**Suite metrics (Phase 9, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-phase-9-analytics-anomalies-digests.md` §1):**
+
+- Every night at 02:30 Asia/Manila the hub calls one aggregate tool per app with the org service token: People `workforce_metrics`, Pay `company_totals`, Learn `school_summary`, Connect `pipeline_summary`, Work `workspace_totals`, Stock `sales_summary` (Work and Stock for yesterday).
+- These tool names and the fields the hub reads are a contract: rename a field only with a new field next to the old one. The hub keeps only listed numeric fields (`App\Hub\SuiteMetrics::TOOLS`), never text.
+- Learn can add `teaching_minutes_week` to `school_summary`; the hub reads it when it is there.
+
 **Proposal tools by app (Phase 7, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-phase-7-cross-app-proposals.md`):**
 
 - A call only stores the change. The person, or an approver, confirms it on the app's page, which re-checks permission at that moment.
