@@ -2,9 +2,9 @@
 
 How one FBS app hands records to another (FBS People to FBS Pay, FBS Learn to FBS People, and the next ones). Rules 7, 12, 14, 18, 20, 28, 32, 33, 55, 63 and 68.
 
-- **Applies to:** every direct link between two FBS apps that carries records. Built: People → Pay ([fbs-people-pay-connector.md](fbs-people-pay-connector.md)). Being built: Learn → People (contract `fbs-suites-mcp/docs/contracts/learn-people-staff.v1.json`).
+- **Applies to:** every direct link between two FBS apps that carries records. Built: People → Pay ([fbs-people-pay-connector.md](fbs-people-pay-connector.md)). Built: Learn → People staff (contract `fbs-suites-mcp/docs/contracts/learn-people-staff.v1.json`) and Learn → People time and leave (`learn-people-time.v1.json`, spec `docs/superpowers/specs/2026-11-18-phase-6-learn-time.md`).
 - **Sources:** `fbs-suites-mcp/docs/superpowers/plans/2026-11-17-learn-pay-people-integration.md` (design rules, gaps G1, G14, G15), its audit `docs/superpowers/audits/2026-11-17-integration-audit.md`, and the People → Pay connector (People `app/FbsPay/*`, Pay `app/Connector/*`).
-- **Last updated:** 2026-11-17
+- **Last updated:** 2026-11-18 (time source, `locked`)
 
 ## 1. Connectors carry data, hub events carry ids
 
@@ -25,7 +25,7 @@ How one FBS app hands records to another (FBS People to FBS Pay, FBS Learn to FB
 - **Auth:** `Authorization: Bearer <connector key>`. The key belongs to a system user of the receiving tenant that holds only the connector's abilities, which no other key type can hold, so it can open nothing else.
 - **Writes** carry an `Idempotency-Key` header (up to 120 characters). The receiver keeps the first answer per tenant and key; a repeat answers it again and writes nothing (`Idempotent-Replayed: true`). The same key with a different body is a 409. Rule 33.
 - **Upserts** go by a stable external id the sender owns (`people:{company}:{employee}`, `learn:{school}:{kind}:{id}`), never by row id. Re-sending changes nothing.
-- **Answers** use `{ success, message, data }`. A batch answers per row: `accepted`, `unchanged`, `refused` (with a reason), and `held` when the receiver waits for its HR to approve a first-time person. A per-row problem is never a 422 for the whole batch.
+- **Answers** use `{ success, message, data }`. A batch answers per row: `accepted`, `unchanged`, `refused` (with a reason), `held` when the receiver waits for its HR to approve a first-time person, and `locked` when the row falls in a period the receiver has closed (a locked payroll cutoff): nothing changes and the sender stops sending that row and shows it locked. A per-row problem is never a 422 for the whole batch.
 - **Limits:** 60 calls a minute per connection (429), batches of up to 500 rows, 10 s timeouts, three tries on 429 and 5xx with backoff, then the job's own retries.
 - **Errors:** 401 = the key is bad or revoked: the sender marks the connection broken, tells its owners once and stops. 403 = switched off or not on the plan: nothing is written.
 - **Webhooks back** (receiver to sender, such as `payroll.finalized`) are signed like the hub (HMAC-SHA256 over `timestamp.body`, at most 300 s skew), and the receiver keeps each delivery id, so a retry is a no-op. Rule 32.
