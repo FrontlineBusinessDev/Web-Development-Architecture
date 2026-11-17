@@ -107,7 +107,7 @@ Only names are listed here. Never write a real value into a doc, a commit or a c
 | Mail | `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` |
 | Sign-in | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_TENANT` |
 | Push | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` |
-| FBS Suites hub | `FBS_HUB_URL`, `FBS_HUB_SECRET` ([hub contract](../integrations/fbs-suites-hub.md)) |
+| FBS Suites hub | `FBS_HUB_URL`, `FBS_HUB_SECRET`: fallback only, the app's keys page wins ([hub contract](../integrations/fbs-suites-hub.md)) |
 | AI | `AI_ENABLED`, `ANTHROPIC_API_KEY` |
 | Deploy stack | `COOLIFY_NETWORK`, `*_CPUS`, `*_MEMORY` ([deployment architecture](../deployment/architecture.md)) |
 

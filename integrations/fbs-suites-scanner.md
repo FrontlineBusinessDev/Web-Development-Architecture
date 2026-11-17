@@ -145,7 +145,7 @@ FBS_SCAN_SECRET=<this app's scan secret>      # Platform > Apps > Rotate scan se
 
 - Both are written for you by FBS Suites › Platform › Coolify › Connect, next to `FBS_HUB_URL` / `FBS_HUB_SECRET`. The scan secret is **not** the hub secret (least privilege).
 - Use the public `https://` address, never the internal Docker network (the shared `coolify` network carries every app; HMAC signs but does not encrypt).
-- Known gap: like `FBS_HUB_SECRET`, the scan secret lives in env, not a console keys page (rule 12). It moves when each app has its keys page.
+- Known gap: unlike `FBS_HUB_URL` / `FBS_HUB_SECRET` (now on each app's keys page, `.env` only as fallback), the scan secret still lives in env, not a console keys page (rule 12). It moves to the same keys page next.
 - `SCAN_DRIVER=clamav` with `CLAMAV_HOST` still talks to a local clamd directly (local development only).
 
 ## 8. Adding scanning to an app

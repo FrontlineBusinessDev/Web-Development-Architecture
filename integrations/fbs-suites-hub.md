@@ -265,7 +265,7 @@ Spec: `mcp-fbs-suites/docs/superpowers/specs/2026-11-17-phase-5b-tenant-lifecycl
 
 Use the template in [`templates/hub/`](../templates/hub/). It already does all of this:
 
-1. **Off without settings.** No `FBS_HUB_URL` or no `FBS_HUB_SECRET` means nothing is sent.
+1. **Off without settings.** No `FBS_HUB_URL` or no `FBS_HUB_SECRET` (from the app's keys page, else `.env`) means nothing is sent.
 2. **After commit.** `SendSuiteHubEvent::dispatch(...)->afterCommit()`, so a rolled-back sign-up never reaches the CRM.
 3. **Quiet mode.** `SuiteHub::quietly(fn () => ...)` sends nothing inside the callback. It uses hidden `Context`, so it is per request and per job (Octane-safe). Demo seeding and sandboxes run inside it.
 4. **Contact read in the job.** The event carries a reference (for example `['company_id' => 42]`). The job reads the contact when it runs, once the records exist. Null (tenant gone, or a sandbox) skips the event.
@@ -299,16 +299,16 @@ The app:
 3. Answers **202** and queues the handler, which runs inside `target.tenant_ref`'s tenant and is safe to run twice (rule 33). An event it does not handle is 202 and ignored, so the hub does not retry it.
 4. Never makes a change on its own when the change belongs to a person. It notifies, or proposes (rule 20).
 
-### Environment
+### Settings
 
 | Key | Value |
 |---|---|
 | `FBS_HUB_URL` | The FBS Suites base address: `https://`, no path, no trailing slash. |
 | `FBS_HUB_SECRET` | This app's webhook secret from FBS Suites › Platform › Apps. Shown once on create; Rotate makes a new one. |
 
-Both are secrets in Coolify. Never commit them, log them or put them in an audit row.
+Each app reads both from its own **keys page** (its platform / developer settings, beside its FBS ID settings): saved encrypted in the app's database, write-only (the page shows only that a value is set, never the value), applied with no restart (rule 12, audit 2.2). `.env` is only the fallback when the keys page has no value. Never commit them, log them or put them in an audit row.
 
-**Set them from FBS Suites:** Platform › Coolify reads the server (address and an API token with `read`, `read:sensitive`, `write` and `deploy`, saved encrypted in the hub's database and tested before it is saved, rule 12). It reads each application's `APP_URL` from its env, because the apps route their domains in their own compose files and Coolify often knows none (`read:sensitive` is what lets the token see env values), and matches each app to its resource by that host, a Coolify domain, or the app key in the resource or project name. **Connect** writes `FBS_HUB_URL` and a new `FBS_HUB_SECRET` into that resource's env (Coolify first, so a refused write changes nothing), then sets the app's Base URL (its `APP_URL`) and MCP path in the hub. Keep each app's `APP_URL` its public `https://` address: the hub uses it as the app's Base URL. The apps load their env with `env_file: .env`, which Coolify writes when it deploys the resource, so **Restart** (asked first: Coolify's restart is not the rolling deploy, a short downtime) applies the values, and the page runs Test connection until the app is back.
+**Set them from FBS Suites:** Platform › Coolify reads the server (address and an API token with `read`, `read:sensitive`, `write` and `deploy`, saved encrypted in the hub's database and tested before it is saved, rule 12). It reads each application's `APP_URL` from its env, because the apps route their domains in their own compose files and Coolify often knows none (`read:sensitive` is what lets the token see env values), and matches each app to its resource by that host, a Coolify domain, or the app key in the resource or project name. **Connect** writes `FBS_HUB_URL` and a new `FBS_HUB_SECRET` into that resource's env (Coolify first, so a refused write changes nothing), then sets the app's Base URL (its `APP_URL`) and MCP path in the hub. Keep each app's `APP_URL` its public `https://` address: the hub uses it as the app's Base URL. The apps load their env with `env_file: .env`, which Coolify writes when it deploys the resource, so **Restart** (asked first: Coolify's restart is not the rolling deploy, a short downtime) applies the values, and the page runs Test connection until the app is back. These env values are the fallback: a value saved on the app's keys page wins, so after Connect, clear the keys page (or paste the new secret there) if it already held one.
 
 ## 7. Leg 2: hub → destinations
 
