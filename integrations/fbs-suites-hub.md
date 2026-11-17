@@ -7,7 +7,7 @@ How an FBS app tells the rest of the suite that something happened (a sign-up, a
   - `fbs-suites-mcp`: `docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Webhook hub), `app/Hub/{Signature,Router,HookRefusal,HookCheck}.php`, `app/Http/Controllers/HookController.php`, `app/Jobs/DeliverEvent.php`, `app/Coolify/*` (Platform › Coolify), migrations `2026_11_10_000100_route_demo_opened_to_crm` and `2026_11_12_000100_route_subscription_paid_to_crm`.
   - The senders `app/Support/SuiteHub.php`, `app/Jobs/SendSuiteHubEvent.php` and `app/Http/Controllers/SuiteHubCheckController.php` in People, Stock, Work, Learn, Pay and Connect.
   - `laravel-fbs-crm`: `routes/api.php`, `app/Http/Requests/Api/SignupIntakeRequest.php`, `app/Support/Intake/*`.
-- **Last updated:** 2026-11-17 (connectors carry records, events ids only; the gateway's `fbs__guide` and daily cap). Before: 2026-11-10 (only proved emails for `tenant.signed_up` and `demo.opened`)
+- **Last updated:** 2026-11-18 (FBS Sample `accounts` and the shared password, section 2.2). Before: 2026-11-17 (connectors carry records, events ids only; the gateway's `fbs__guide` and daily cap). Before: 2026-11-10 (only proved emails for `tenant.signed_up` and `demo.opened`)
 
 Copy the sender from [`templates/hub/`](../templates/hub/). When you add or change an event, update this file in the same piece of work.
 
@@ -101,10 +101,11 @@ Platform › **Sample org** (`App\Http\Controllers\Platform\SampleController`, s
 
 - **Endpoint:** each app answers `POST {base_url}/api/fbs-hub/sample`, signed like section 2.1. The binding contract is `mcp-fbs-suites/docs/contracts/fbs-hub-sample.v1.md`.
 - **Actions:**
-  - `ensure`: make or reuse the sample tenant quietly (no `tenant.signed_up`, so no CRM lead), never billed, and return a tenant MCP key for the sample admin.
+  - `ensure`: make or reuse the sample tenant quietly (no `tenant.signed_up`, so no CRM lead), never billed, and return a tenant MCP key for the sample admin, plus `accounts`: every active sign-in user of the sample tenant (`{email, first_name, last_name, role}`, at most 200, each email marked verified in the app; never staff, another tenant's user or a password).
   - `link_pay` / `link_people`: pass the connector codes Pay → People → Learn.
   - `pause`: switch it off. Nothing is deleted.
 - **On the hub:** the key is stored as the sample admin's App link and checked with `whoami`, which binds `app_org_tenants` for the org **FBS Sample**.
+- **Sample sign-ins (2026-11-18):** every person in `accounts` gets an FBS Suites account in **FBS Sample** with the sample's one **shared password** (Platform › Sample org › Shared password, encrypted, shown once). Each app checks passwords with FBS ID, so the testers sign in to every app as any listed sample person with that one password. An app keeps its own random password copy for them and changes nothing else.
 - **Connector pass:** only these tenants get it (`connector_pilot`), so the connectors work for them while the global flags stay off for real tenants.
 
 ### 2.3 Fully automatic for real tenants (owner, 2026-11-17)
