@@ -187,6 +187,26 @@ A live-demo visitor left their details and agreed to be contacted. There is no t
 - **Sent by:** People, Connect, Learn, Stock, Work and Pay (`DemoController`).
 - **Routed to:** `crm` (migration `2026_11_10_000100_route_demo_opened_to_crm`).
 
+### Events between FBS apps (thin, per org): Phase 5a
+
+Spec: `mcp-fbs-suites/docs/superpowers/specs/2026-11-17-phase-5-hub-events.md`.
+
+These events tell **the same org's** other apps that something happened. The receiver fetches any data it needs through its connector.
+- **Ids only.** Besides the envelope, a body may carry only `tenant` (`ref`, `type`) and `subject` (`type`, `id`, `external_id`). The hub refuses anything else with 422 `not_thin` (rule 18).
+- **Who gets them.** The hub sends one to an app destination (`kind = app`) only when the sender's tenant and a tenant of the listening app belong to the same org (`app_org_tenants`). See section 6.1 for how it is delivered.
+
+| Event (v1) | Sender, when | Listener (route) | What it does |
+|---|---|---|---|
+| `people.employee.separated` | People, when an employee becomes separated or inactive, for companies linked to FBS Learn | Learn (`app-learn`) | Notifies the School Admins to review that staff member; Learn never changes them itself |
+| `people.employee.changed` | People, when an employee who came from Learn changes | Learn (`app-learn`) | Logged; reserved for refreshing `people_external_id` |
+
+Example:
+
+```json
+{"id":"<uuid>","event":"people.employee.separated","version":1,"occurred_at":"<ISO 8601>","app":"people",
+ "tenant":{"ref":"5","type":"company"},"subject":{"type":"employee","id":42,"external_id":"people:5:42"}}
+```
+
 ### Planned, not built
 
 `tenant.plan_changed`, `tenant.trial_ending`, `tenant.cancelled`, and tenant-level `customer.*` sync. Do not send them until they are added here and routed.
@@ -229,6 +249,19 @@ Use the template in [`templates/hub/`](../templates/hub/). It already does all o
 Optional, from Learn: keep the last result on the tenant (`hub_sent_at`, `hub_error` in plain words) and give staff a **Send to CRM** button plus an Artisan command for tenants made before the hub existed.
 
 Every sender (People, Pay, Learn, Connect, Work, Stock) now does both checks; new apps copy the template.
+
+### 6.1 Receiving events from the hub (listening apps, Phase 5a)
+
+An app that listens to events between apps (section 4) adds `POST /api/fbs/hooks`, routed like the check (outside `api` / `web`, with a throttle). The hub (`DeliverEvent`) sends:
+
+- **The same `X-FBS-*` headers and signature as section 2**, signed with **this app's** webhook secret, which is its `FBS_HUB_SECRET`. There is no bearer token, and redirects are not followed.
+- **The event as the sender sent it, plus `"target": {"app": "<this app>", "tenant_ref": "<its tenant in the sender's org>"}`.**
+
+The app:
+1. Checks the signature and the 300 s skew like `/api/fbs-hub/check` (401 with a reason), and refuses a `target.app` that is not its own (422).
+2. **Stores the event once by `X-FBS-Event-Id`** (a table such as `fbs_hook_receipts`: event id unique, event, tenant, received_at, handled_at). A repeat answers 202 and does nothing (rule 32).
+3. Answers **202** and queues the handler, which runs inside `target.tenant_ref`'s tenant and is safe to run twice (rule 33). An event it does not handle is 202 and ignored, so the hub does not retry it.
+4. Never makes a change on its own when the change belongs to a person. It notifies, or proposes (rule 20).
 
 ### Environment
 
