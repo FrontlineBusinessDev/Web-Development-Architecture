@@ -33,6 +33,7 @@ How one FBS app hands records to another (FBS People to FBS Pay, FBS Learn to FB
 ## 4. Switches and failure
 
 - **Global flag, off by default**, in the sender's config (`services.<receiver>.connector`, for example `FBS_PAY_CONNECTOR`, `services.fbs_learn.connector`). Nothing runs until it is set.
+- **Connector pass for the FBS Sample tenants:** a tenant with `connector_pilot = true` (People `companies`, Learn `schools`) may use the connector while the global flag is off. Only the hub's Platform › Sample org switch sets the column (`fbs-suites-hub.md` section 2.2). It is never fillable, and no real tenant gets it. This lets the team test in production before the lawyer check opens the connectors to everyone.
 - **Per-tenant switch** on the connection: connected, paused or disconnected. Pausing is the rollback: the data stays. A disconnect keeps the receiver's rows and unlocks the fields the sender owned.
 - **Plan gate:** each side names the `Feature` (and add-on) that unlocks it. A locked connector stays readable and refuses writes (rule 63).
 - **Never silently dropped:** every call is logged on the sender with counts only, never personal data (`app_fbs_pay_syncs` is the pattern); changes queue a send a minute later (unique per connection), and a nightly run sends what is left (rule 28).

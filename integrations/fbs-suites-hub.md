@@ -95,6 +95,18 @@ Platform › Apps › **Test connection** (`App\Hub\HookCheck`) proves both sett
 
 The result is kept on the app (`hook_test_*`). No session, API key or database is involved on the app's side. Locally the hub must serve more than one request at a time, because the app calls back during the test.
 
+### 2.2 The FBS Sample tenants
+
+Platform › **Sample org** (`App\Http\Controllers\Platform\SampleController`, steps in `App\Jobs\RunSampleStep`) is one switch that gives every app one real **FBS Sample** tenant in production, holding invented people only, so the suite assistant and the connectors can be tested end to end without staging or any `.env` change (owner, 2026-11-17).
+
+- **Endpoint:** each app answers `POST {base_url}/api/fbs-hub/sample`, signed like section 2.1. The binding contract is `mcp-fbs-suites/docs/contracts/fbs-hub-sample.v1.md`.
+- **Actions:**
+  - `ensure`: make or reuse the sample tenant quietly (no `tenant.signed_up`, so no CRM lead), never billed, and return a tenant MCP key for the sample admin.
+  - `link_pay` / `link_people`: pass the connector codes Pay → People → Learn.
+  - `pause`: switch it off. Nothing is deleted.
+- **On the hub:** the key is stored as the sample admin's App link and checked with `whoami`, which binds `app_org_tenants` for the org **FBS Sample**.
+- **Connector pass:** only these tenants get it (`connector_pilot`), so the connectors work for them while the global flags stay off for real tenants.
+
 ## 3. The envelope
 
 Every event has these top-level keys, then its own blocks:
