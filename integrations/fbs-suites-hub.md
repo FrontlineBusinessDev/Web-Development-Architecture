@@ -107,6 +107,17 @@ Platform › **Sample org** (`App\Http\Controllers\Platform\SampleController`, s
 - **On the hub:** the key is stored as the sample admin's App link and checked with `whoami`, which binds `app_org_tenants` for the org **FBS Sample**.
 - **Connector pass:** only these tenants get it (`connector_pilot`), so the connectors work for them while the global flags stay off for real tenants.
 
+### 2.3 Fully automatic for real tenants (owner, 2026-11-17)
+
+Spec: `mcp-fbs-suites/docs/superpowers/specs/2026-11-17-fully-automatic-integration.md`. A real tenant gets connectors and AI with no setup: no pasted codes and no hand-made keys.
+
+- **Automatic links** (replaces "off by default", D6 of both integration plans). When one org has tenants in both apps of a connector pair (Pay ↔ People, People ↔ Learn; Connect ↔ Work when its connector exists), the hub links them by itself. Each app answers `POST {base_url}/api/fbs-hub/link`, signed like section 2.1 (contract `mcp-fbs-suites/docs/contracts/fbs-hub-link.v1.md`): `code` returns the tenant's connector code, `link_pay` / `link_people` paste it and set the tenant's connector pass.
+- **The tenant keeps an Off switch** on its connection screen ("Linked by FBS Suites"). Off pauses the link and is remembered: the app then answers 409 `tenant_off` and the hub never asks again.
+- **Real tenants switch:** Platform › Orgs, default **off**. The hub links real orgs only after the owner turns it on, once the lawyer / NPC check has cleared. FBS Sample links either way.
+- **Tenants made before the hub:** each app answers `POST {base_url}/api/fbs-hub/tenants` (contract `fbs-hub-tenants.v1.md`): real tenants with their owner, 100 a page. `php artisan hub:import-tenants {app} [--apply]` gives each one an org (same owner email = same org). No CRM event, no email.
+- **Org merge:** Platform › Orgs › Merge, for one customer who signed up with different emails. Refused when both orgs have a tenant in the same app.
+- **AI with no keys:** see section 11 (token exchange and the FBS connector).
+
 ## 3. The envelope
 
 Every event has these top-level keys, then its own blocks:
@@ -345,6 +356,14 @@ Both are secrets in Coolify. Never commit them, log them or put them in an audit
 FBS Suites is also the MCP gateway: Claude (or another MCP client) calls `POST /mcp` with one `fbsm_` key, and the gateway calls each FBS app's own MCP endpoint with a key the person pasted on **App links**. Only FBS staff sign in to FBS Suites, so App links hold staff keys; customer keys stay for organizations that still have FBS Suites logins. Spec: `fbs-suites-mcp/docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Per-app contract); plan for Pay, People and Connect: `fbs-suites-mcp/docs/superpowers/plans/2026-11-07-staff-ai-keys-pay-people-connect.md`.
 
 The tools an MCP endpoint lists are the same classes as the app's in-app agent ([in-app-ai-agent.md](in-app-ai-agent.md), section 5).
+
+**No keys for tenants (owner, 2026-11-17; section 2.3):**
+
+- A tenant connects the **FBS connector** in Claude and signs in with FBS ID (OAuth on the gateway's `/mcp`). They never make a gateway key.
+- For each app the person's org has a tenant in, the gateway swaps a signed 60-second assertion at `POST {app}/api/fbs/token` for a 15-minute token of the app's own MCP type. That token is for that person, in that tenant. Contract: `mcp-fbs-suites/docs/contracts/fbs-id-token.v1.md`.
+- Each app checks, in order: the person belongs to the tenant, the plan includes AI, and the tenant's **AI access** switch is on (default on).
+- A key pasted on App links still wins for that app. Staff keep their staff keys.
+- The **org service token** is the same exchange with `kind: service`. It reaches aggregate tools only (counts and totals, never names), for suite metrics.
 
 **Every app's MCP endpoint:**
 

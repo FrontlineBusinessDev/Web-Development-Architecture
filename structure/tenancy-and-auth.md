@@ -106,6 +106,8 @@ One account for every FBS app, like a Google account across Gmail and Drive (own
 | Public API (`/api/v1/…`) | Bearer token: scoped, hashed at rest, expiring, revocable | per-key rate limit |
 | MCP endpoint (`POST /api/mcp`) | Sanctum key from Settings › API keys, never a browser session | `auth:sanctum`, `throttle:60,1` |
 | FBS Suites gateway keys | Sanctum, prefix `fbsm_`, shown once | 60 MCP requests a minute per key; staff keys never hold `write` |
+| The FBS connector (tenants in Claude) | FBS ID OAuth on the gateway's `/mcp` (PKCE, dynamic client registration, consent once), scope `mcp` | as gateway keys |
+| FBS Suites → app MCP (no pasted key) | `POST /api/fbs/token`: the app's FBS ID client id + secret (Basic) and a 60 s RS256 assertion checked with FBS ID's JWKS (`aud` = app key, single-use `jti`) → a 15-minute MCP token of the app's own type, for a user in that tenant, or `service` (aggregate tools only). Contract `mcp-fbs-suites/docs/contracts/fbs-id-token.v1.md` | the app's plan gate and the tenant's **AI access** switch (default on) |
 | Hub webhooks in | HMAC signature (`X-FBS-Signature`) | 300 s clock skew, stored once per event id |
 
 - Tokens never go in `localStorage`.
