@@ -365,6 +365,20 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 - A key pasted on App links still wins for that app. Staff keep their staff keys.
 - The **org service token** is the same exchange with `kind: service`. It reaches aggregate tools only (counts and totals, never names), for suite metrics.
 
+**Proposal tools by app (Phase 7, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-phase-7-cross-app-proposals.md`):**
+
+- A call only stores the change. The person, or an approver, confirms it on the app's page, which re-checks permission at that moment.
+- From MCP a proposal never runs by itself, and it waits 7 days (People: until someone decides).
+
+| App | Tools | Confirmed on |
+|---|---|---|
+| People | its `propose_*` tools (`ProposeTool` → `AgentAction`) | Approvals |
+| Learn | `propose_section_move`, `propose_document_request`, `propose_report` | AI proposals (School Admins) |
+| Connect | `propose_contact`, `propose_deal_stage` (`create_contact` deprecated) | AI proposals |
+| Stock | `propose_supplier_order` (makes a draft order) | Settings › AI proposals (owners) |
+| Work | `propose_task`, `propose_task_update`, `propose_time_entry` | Waiting for your OK |
+| Pay | none: read-only | — |
+
 **Every app's MCP endpoint:**
 
 - Answers `initialize`, `tools/list` and `tools/call` (JSON-RPC 2.0, plain JSON, no sessions) with a bearer key, never a browser session.
