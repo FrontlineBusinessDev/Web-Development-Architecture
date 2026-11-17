@@ -207,9 +207,34 @@ Example:
  "tenant":{"ref":"5","type":"company"},"subject":{"type":"employee","id":42,"external_id":"people:5:42"}}
 ```
 
+### `tenant.plan_changed` and `tenant.cancelled` (v1): Phase 5b
+
+Spec: `mcp-fbs-suites/docs/superpowers/specs/2026-11-17-phase-5b-tenant-lifecycle.md`. FBS's upsell and churn signals. They go to the CRM only (an external destination, so not thin): the same `tenant` and `contact` blocks as `subscription.paid`, so the CRM finds the client's deal by email. The CRM adds a note to the app's deal (the won deal first, else the open lead) and opens nothing for a tenant it never saw.
+
+```json
+{"id":"<uuid>","event":"tenant.plan_changed","version":1,"occurred_at":"<ISO 8601>","app":"work",
+ "tenant":{"ref":"7","name":"Acme Agency","type":"workspace","email":null,"phone":null,"country":"PH","website":null},
+ "contact":{"first_name":"Maria","last_name":"Reyes","email":"maria@example.com","phone":null,"job_title":"Owner"},
+ "plan":{"from":"starter","to":"pro"}}
+```
+
+```json
+{"id":"<uuid>","event":"tenant.cancelled","version":1,"occurred_at":"<ISO 8601>","app":"stock",
+ "tenant":{"ref":"3","name":"Sari-Sari Alpha","type":"store","email":null,"phone":null,"country":"PH","website":null},
+ "contact":{"first_name":"Ana","last_name":"Cruz","email":"ana@example.com","phone":null,"job_title":"Owner"},
+ "cancellation":{"reason":"cancelled","effective_at":"<ISO 8601 or null>"}}
+```
+
+- `plan.from` / `plan.to` are the app's own plan slugs. `plan.to` is required; `plan.from` is null when there was none. Send only when the slug really changes, from any cause (tenant, staff, payment, scheduled change, trial ending). Never on creation.
+- `cancellation.reason`: `cancelled` (the tenant chose to end or not renew, or staff cancelled at their request), `lapsed` (not paid or not renewed: the app marked it expired, read-only or suspended for non-payment), `suspended` (FBS staff suspended it). `effective_at` is when access ends, null when it is now.
+- Send once per change at the place the app records it. A reactivation sends nothing (later: `tenant.reactivated`). A purge or data deletion sends nothing more.
+- Same skips as `subscription.paid`: demo sandboxes, the FBS Sample tenant and console-made tenants never send (`SuiteHub::quietly()`), and the hub never fails the billing action (send after commit, `report()` lookups).
+- **Sent by:** all six apps (`SuiteHub::planChanged()`, `SuiteHub::cancelled()`).
+- **Routed to:** `crm` (migration `2026_11_18_000400_route_tenant_lifecycle_to_crm`).
+
 ### Planned, not built
 
-`tenant.plan_changed`, `tenant.trial_ending`, `tenant.cancelled`, and tenant-level `customer.*` sync. Do not send them until they are added here and routed.
+`tenant.trial_ending`, `tenant.reactivated`, and tenant-level `customer.*` sync. Do not send them until they are added here and routed.
 
 ## 5. App keys and tenant types
 
