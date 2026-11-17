@@ -7,9 +7,11 @@ How an FBS app tells the rest of the suite that something happened (a sign-up, a
   - `fbs-suites-mcp`: `docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Webhook hub), `app/Hub/{Signature,Router,HookRefusal,HookCheck}.php`, `app/Http/Controllers/HookController.php`, `app/Jobs/DeliverEvent.php`, `app/Coolify/*` (Platform › Coolify), migrations `2026_11_10_000100_route_demo_opened_to_crm` and `2026_11_12_000100_route_subscription_paid_to_crm`.
   - The senders `app/Support/SuiteHub.php`, `app/Jobs/SendSuiteHubEvent.php` and `app/Http/Controllers/SuiteHubCheckController.php` in People, Stock, Work, Learn, Pay and Connect.
   - `laravel-fbs-crm`: `routes/api.php`, `app/Http/Requests/Api/SignupIntakeRequest.php`, `app/Support/Intake/*`.
-- **Last updated:** 2026-11-10 (only proved emails for `tenant.signed_up` and `demo.opened`)
+- **Last updated:** 2026-11-17 (connectors carry records, events ids only; the gateway's `fbs__guide` and daily cap). Before: 2026-11-10 (only proved emails for `tenant.signed_up` and `demo.opened`)
 
 Copy the sender from [`templates/hub/`](../templates/hub/). When you add or change an event, update this file in the same piece of work.
+
+Events carry no records between apps: an app that hands records to another app uses a direct connector, and an event between apps carries ids only. See [fbs-suites-connectors.md](fbs-suites-connectors.md).
 
 The same FBS Suites also scans uploads for viruses, with its own per-app **scan secret** (`FBS_SCAN_URL` / `FBS_SCAN_SECRET`, written by Platform › Coolify › Connect next to the hub env): [fbs-suites-scanner.md](fbs-suites-scanner.md).
 
@@ -296,5 +298,7 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 | Pay | `/api/v1/mcp` | Integrations › API keys ("AI assistants (MCP)") | Platform › Security › Staff AI keys (super admins, two-factor on) | a live support access to that company, covering the tool's module; masked |
 | Connect | `/api/integrations/mcp` | Settings › API keys | Platform › Security › Staff AI keys (two-factor on) | as Platform › Enter (the business's Developer role); the key reaches only MCP |
 | Learn | `/api/mcp` | Settings › School › API Keys | Platform › Settings › Staff AI keys | as Enter school |
+
+**The gateway's own tools** (`fbs__…`, so no app may use the key `fbs`): `fbs__whoami` (the linked apps) and `fbs__guide` (how records join across apps: People's `external_id` is the shared person id, what `employee_number` means in each app, tenants, masking). The hub answers both itself. A gateway key may make 60 requests a minute and `mcp.daily_cap_per_key` tool calls a day (default 2000, then JSON-RPC -32003, audited once a day as `mcp.cap_reached`).
 
 The hub shows where to make the key in the Paste key dialog (`SuiteApp::KEY_PAGES` in `fbs-suites-mcp`): keep that list in step when a key page moves.

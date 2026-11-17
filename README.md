@@ -32,6 +32,7 @@ This repo is the source of truth. Every project's `CLAUDE.md` links here. When a
 | How do I add an in-app AI agent (Ask AI with tools, proposals, credits)? | [integrations/in-app-ai-agent.md](integrations/in-app-ai-agent.md) |
 | How do I add monthly and yearly subscriptions (Stripe outside the Philippines, Xendit inside)? | [integrations/subscriptions-stripe-xendit.md](integrations/subscriptions-stripe-xendit.md) |
 | How do FBS People and FBS Pay share people, time, money items and payslips? | [integrations/fbs-people-pay-connector.md](integrations/fbs-people-pay-connector.md) |
+| How does one FBS app hand records to another (codes, keys, idempotency, switches, contract files)? | [integrations/fbs-suites-connectors.md](integrations/fbs-suites-connectors.md) |
 | Who owns client data, what is extracted when a subscription ends, and when is it deleted? | [policies/client-data-ownership-and-extraction.md](policies/client-data-ownership-and-extraction.md) |
 | How are `docs/`, specs and plans organised? | [docs-and-ai/docs-and-specs.md](docs-and-ai/docs-and-specs.md) |
 | What goes in a project's `CLAUDE.md`? | [docs-and-ai/claude-md-template.md](docs-and-ai/claude-md-template.md) |
