@@ -7,7 +7,7 @@ How an FBS app adds agentic AI: an **Ask AI** assistant that answers from the ap
   - FBS Learn: `docs/ai-agent-codemap.md`, specs `docs/superpowers/specs/2026-10-06-ai-agent-design.md` and `2026-10-22-platform-ai-control-design.md`, `app/Ai/*`, `app/Jobs/RunAgentTurn.php`, `config/ai.php`, `tests/Support/FakeClaude.php`, `tests/AiEval`.
   - FBS People: `docs/subscription/REQUIREMENTS.md` §13, `tasks/plan-ai-*.md`, `app/Ai/*` (`Claude`, `Runner`, `Agents`, `Tools`, `Actions`, `Credits`, `Switches`, `Redact`), `app/Http/Controllers/McpController.php`, `tests/Evals`.
   - Rules 7, 12, 14, 18, 20, 24, 31, 32, 33, 34, 47, 60 and 63 in [../rules/system-rules.md](../rules/system-rules.md).
-- **Last updated:** 2026-11-17 (Work row: its assistant and plan)
+- **Last updated:** 2026-11-17 (Work: Anthropic only, proposals)
 
 The MCP side (an outside AI client calling the app through the FBS Suites gateway) is in [fbs-suites-hub.md, section 11](fbs-suites-hub.md#11-ai-keys-for-the-mcp-gateway). Both sides use the same tool classes (section 5).
 
@@ -19,7 +19,7 @@ The MCP side (an outside AI client calling the app through the FBS Suites gatewa
 | Learn | `App\Ai\Claude` (SDK) | Built: school chat, confirm cards, platform assistant | `/api/mcp` | The reference for the chat loop, credits and the platform AI console |
 | Connect | `App\Services\Ai\ClaudeClient` (SDK 0.57, structured output only) | Not yet: one-shot insights only (`GenerateAiResult`) | `/api/integrations/mcp` | `docs/superpowers/plans/2026-11-13-in-app-ai-agent.md` |
 | Stock | none | none | `/api/mcp` (read only) | `docs/superpowers/plans/2026-11-13-in-app-ai-agent.md` |
-| Work | `AssistantController` (OpenAI-compatible HTTP and the Anthropic SDK) | A tool-loop assistant that **writes directly** (create / update / delete tasks and time entries); not yet to this contract | `/api/mcp` | `fbs-suites-mcp/docs/superpowers/plans/2026-11-17-connect-work-stock-mcp-hooks-ai.md` (recommended: Anthropic only, writes become proposals) |
+| Work | `App\Ai\Claude` (Anthropic SDK only; Haiku for Free / Trial / Starter, Sonnet for Pro / Business) | Built (2026-11-17): the header assistant's reads answer at once, every change is a proposal card (`App\Ai\Proposals`, `app_ai_proposals`, confirm / reject, audited), no delete tool | `/api/mcp`, with `propose_*` tools confirmed in the same panel | `fbs-suites-mcp/docs/superpowers/plans/2026-11-17-connect-work-stock-mcp-hooks-ai.md` |
 | Pay, CRM | none (Pay: Lumi help assistant) | none | Pay has MCP | Later, from this file |
 
 ## 2. The three shapes of AI

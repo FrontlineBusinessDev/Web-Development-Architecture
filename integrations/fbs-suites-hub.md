@@ -280,7 +280,8 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 
 - Answers `initialize`, `tools/list` and `tools/call` (JSON-RPC 2.0, plain JSON, no sessions) with a bearer key, never a browser session.
 - Always lists and answers `whoami`: `{kind: 'tenant', tenant_ref: <tenant id>, tenant_name, user_name}` for a customer key, `{kind: 'staff', tenant_ref: null, …}` for a staff key. The gateway refuses a staff key pasted by a customer and the other way round.
-- Marks each tool with `annotations.readOnlyHint` (a tool without `true` is a write).
+- Marks each tool with `annotations.readOnlyHint` (a tool without `true` is a write). A **proposal tool** (it only stores the change; a person confirms it in the app, rule 7 and [in-app-ai-agent.md](in-app-ai-agent.md) section 7) also sets `_meta: {"fbs/proposal": true}`; name it `propose_…`.
+- Proposal tools need the app's own propose ability on the customer key (Work: `mcp.propose`), never a staff key. A plain write tool is being retired (owner, 2026-11-17): new keys get propose instead of write, and an app keeps an old write tool one release, marked "Deprecated, use propose_…".
 - Refuses one call inside MCP (a JSON-RPC error in a 200: -32001 not allowed, -32602 bad arguments). An HTTP 401 or 403 makes the gateway mark the link failed, so keep those for a key that no longer works; a plan without AI access answers inside MCP too (empty tool list, -32001 on calls).
 - Writes every tool call to the app's own audit trail (rule 31).
 
@@ -292,7 +293,7 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 
 | App | MCP path | Customer key | Staff key | Staff rule |
 |---|---|---|---|---|
-| Work | `/api/mcp` | Settings › API keys | Platform › View as a user › Staff AI keys | `tenant` + `reason`, as View as |
+| Work | `/api/mcp` | Settings › API keys (read, or read + propose) | Platform › View as a user › Staff AI keys | `tenant` + `reason`, as View as |
 | Stock | `/api/mcp` | none (staff only) | Account Settings › Staff AI keys | `tenant` + `reason` |
 | People | `/mcp` | Me › Settings › Connected assistants | Console › My settings › AI keys for FBS Suites (roles that may enter companies) | `tenant` + `reason`, as Console › Tenants › Enter; never a Test Drive sandbox |
 | Pay | `/api/v1/mcp` | Integrations › API keys ("AI assistants (MCP)") | Platform › Security › Staff AI keys (super admins, two-factor on) | a live support access to that company, covering the tool's module; masked |
@@ -300,5 +301,12 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 | Learn | `/api/mcp` | Settings › School › API Keys | Platform › Settings › Staff AI keys | as Enter school |
 
 **The gateway's own tools** (`fbs__…`, so no app may use the key `fbs`): `fbs__whoami` (the linked apps) and `fbs__guide` (how records join across apps: People's `external_id` is the shared person id, what `employee_number` means in each app, tenants, masking). The hub answers both itself. A gateway key may make 60 requests a minute and `mcp.daily_cap_per_key` tool calls a day (default 2000, then JSON-RPC -32003, audited once a day as `mcp.cap_reached`).
+
+**Gateway key classes** (`KeyPolicy::classOf`): read (any key), propose (a tenant key with `propose`, or `write`), write (a tenant key with `write`). Staff keys hold neither. New keys page: Read only, Read + propose, Read + write (being retired).
+
+| App | Proposal tools | Confirmed in |
+|---|---|---|
+| Work | `propose_task`, `propose_task_update`, `propose_time_entry` (7 days to confirm) | the AI assistant panel, "Waiting for your OK" (`app_ai_proposals`) |
+| Connect, Stock, People, Learn, Pay | planned (`fbs-suites-mcp/docs/superpowers/plans/2026-11-17-connect-work-stock-mcp-hooks-ai.md` Phase 3, `…learn-pay-people-integration.md` Phase 7) | the app's approvals list |
 
 The hub shows where to make the key in the Paste key dialog (`SuiteApp::KEY_PAGES` in `fbs-suites-mcp`): keep that list in step when a key page moves.
