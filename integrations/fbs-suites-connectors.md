@@ -41,6 +41,8 @@ How one FBS app hands records to another (FBS People to FBS Pay, FBS Learn to FB
 
 ## 5. Ids and data
 
+- **One source of time per person.** When an app sends a person's time (attendance, leave) to another, the receiver has a per-connection switch with a start date ("time from FBS Learn"); while it is on, that person's time is read-only in the receiver and only the connector writes it. The receiver tells the sender in `GET connector/company` (`data.time`: `source`, `from`, `locked_through`), so the sender sends only from that day and shows days up to `locked_through` as locked. The receiver keeps the balances (leave), and the sender's codes map to the receiver's types on the connection (a leave-type map).
+
 - **The shared person id** is FBS People's `external_id`, `people:{company}:{employee}`. People is the HR system of record. Pay keys employees on it; Learn stores it on a staff record as `people_external_id`. There is no hub registry of people.
 - `employee_number` is each app's own and unique per tenant only. Never join on it alone.
 - Names go as parts (`first`, `middle`, `last`), never one box (rule 68).
