@@ -379,6 +379,20 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 | Work | `propose_task`, `propose_task_update`, `propose_time_entry` | Waiting for your OK |
 | Pay | none: read-only | — |
 
+**Knowledge search by app (Phase 8, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-phase-8-search-knowledge.md`):**
+
+- Every app lists `search_knowledge` (`readOnlyHint: true`): input `query` (+ optional `limit`, 1 to 10), output `{results: [{source_id, title, snippet, url}]}`. `url` is empty when no page opens the source; cite `source_id` then.
+- It runs inside the key's tenant with the app's normal masking, reuses the app's own retrieval (keyword, no vector store) and is never open to a service key. `fbs__guide` tells the assistant to fan out and cite.
+
+| App | Searches | Tenant documents |
+|---|---|---|
+| People | policies, handbooks, the labor-law library and DOLE updates, in-app help (`App\Ai\Knowledge`) | policies and handbooks |
+| Pay | Lumi help articles the user may open (`App\Lumi\Knowledge`) | none |
+| Learn | the school's knowledge documents and the platform guides, by role (`KnowledgeSearch`) | school documents |
+| Connect | Lumi help articles (`ArticleIndex`, kept as Lumi's `Answerer` keeps them) | none |
+| Work | plan, price and billing facts (no help articles yet) | none |
+| Stock | the help chatbot's fixed-text topics (`ChatBot`) | none |
+
 **Every app's MCP endpoint:**
 
 - Answers `initialize`, `tools/list` and `tools/call` (JSON-RPC 2.0, plain JSON, no sessions) with a bearer key, never a browser session.
