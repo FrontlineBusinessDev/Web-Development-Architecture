@@ -294,10 +294,10 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 | App | MCP path | Customer key | Staff key | Staff rule |
 |---|---|---|---|---|
 | Work | `/api/mcp` | Settings › API keys (read, or read + propose) | Platform › View as a user › Staff AI keys | `tenant` + `reason`, as View as |
-| Stock | `/api/mcp` | none (staff only) | Account Settings › Staff AI keys | `tenant` + `reason` |
+| Stock | `/api/mcp` | Settings › API keys (store owners, Essential or Growth; read only) | Account Settings › Staff AI keys | `tenant` + `reason` |
 | People | `/mcp` | Me › Settings › Connected assistants | Console › My settings › AI keys for FBS Suites (roles that may enter companies) | `tenant` + `reason`, as Console › Tenants › Enter; never a Test Drive sandbox |
 | Pay | `/api/v1/mcp` | Integrations › API keys ("AI assistants (MCP)") | Platform › Security › Staff AI keys (super admins, two-factor on) | a live support access to that company, covering the tool's module; masked |
-| Connect | `/api/integrations/mcp` | Settings › API keys | Platform › Security › Staff AI keys (two-factor on) | as Platform › Enter (the business's Developer role); the key reaches only MCP |
+| Connect | `/api/integrations/mcp` | Settings › API keys (AI module) | Platform › Security › Staff AI keys (two-factor on) | `tenant` + `reason`, as Platform › Enter (the business's Developer role); the key reaches only MCP |
 | Learn | `/api/mcp` | Settings › School › API Keys | Platform › Settings › Staff AI keys | as Enter school |
 
 **The gateway's own tools** (`fbs__…`, so no app may use the key `fbs`): `fbs__whoami` (the linked apps) and `fbs__guide` (how records join across apps: People's `external_id` is the shared person id, what `employee_number` means in each app, tenants, masking). The hub answers both itself. A gateway key may make 60 requests a minute and `mcp.daily_cap_per_key` tool calls a day (default 2000, then JSON-RPC -32003, audited once a day as `mcp.cap_reached`).
