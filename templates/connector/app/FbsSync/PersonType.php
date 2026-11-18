@@ -10,8 +10,8 @@ use App\Models\Position;
 use App\Support\Statuses;
 
 /**
- * The shared `person` fields (contract fbs-record.v1) on People's Employee. A department or position is matched by name and never made
- * here (the org chart stays HR's). Every other field (pay, government ids, bank, 201 file) stays People's own.
+ * The shared `person` fields (contract fbs-record.v1) on People's Employee. A department or position is matched by name, else made
+ * (OrgNames, QA 2026-11-18). Every other field (pay, government ids, bank, 201 file) stays People's own.
  */
 final class PersonType
 {
@@ -52,23 +52,12 @@ final class PersonType
     {
         foreach (array_intersect_key($fields, array_flip(self::FIELDS)) as $field => $value) {
             match ($field) {
-                'department' => $e->department_id = self::id(Department::whereRaw('lower(name) = ?', [self::lower($value)])->value('id')) ?? $e->department_id,
-                'position' => $e->position_id = self::id(Position::whereRaw('lower(title) = ?', [self::lower($value)])->value('id')) ?? $e->position_id,
+                'department' => $e->department_id = OrgNames::department($value) ?? $e->department_id,
+                'position' => $e->position_id = OrgNames::position($value, $e->department_id) ?? $e->position_id,
                 'date_hired' => $e->hired_on = $value,
                 'status' => $e->status = $value === 'active' ? Statuses::ACTIVE : Statuses::INACTIVE,
                 default => $e->setAttribute($field, $value),
             };
         }
-    }
-
-    private static function lower(mixed $name): string
-    {
-        return is_string($name) ? mb_strtolower(trim($name)) : '';
-    }
-
-    /** @return int<0, max>|null a department or position id People already has (never made here) */
-    private static function id(mixed $id): ?int
-    {
-        return is_numeric($id) && (int) $id > 0 ? (int) $id : null;
     }
 }

@@ -102,7 +102,7 @@ Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-too
   Every automatic step is shown on the app's Settings › FBS apps page and audited.
 - **Money:** a `pay_item` or `money_item` arrives **approved** when someone other than the filer approved it in the source app (it names who). Otherwise it arrives **pending** in the receiver's approval engine, with "Approve all" (rules 46, 47). Once paid, the source locks the entry (`locked`).
 - **Pages:** the hub's Integrations › Links grid (pairs that never moved data are hidden until they do) and one Settings › FBS apps page per app.
-- **Health:** Platform › Connectors for FBS staff, with an alert after 24 h of failures.
+- **Health:** each app reports after every push (`POST /api/fbs-id/connector-report`, counts and times only); Platform › Connectors shows every pair for FBS staff, a direction with a change waiting 24 h emails staff once, and `fbs__connections` gives an org's AI the same, never values. Each app also answers `{app}__sync_status` and `{app}__holds` (Learn built 2026-11-18).
 - **Holds:** a weekly reminder for holds older than 30 days.
 - **Versions:** a type links only on a version both apps speak.
 - **Learn admission inquiries into Connect** are off per school until its admin turns them on (contact only, no student data).
