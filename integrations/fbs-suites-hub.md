@@ -139,10 +139,16 @@ Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-too
 
 **Connector tokens (built 2026-11-18, `mcp-fbs-suites` plan `2026-11-18-every-app-two-way-sync.md` Task 1; contract `docs/contracts/fbs-connector-token.v1.md`):** an app asks `POST /api/fbs-id/connector-token` (Basic with its FBS ID client) for a 5-minute token to another app's tenant, and `GET /api/fbs-id/connector-peers?tenant=` for its linked apps, their address and the shared types. The receiving app checks the token with FBS ID's JWKS (`aud` = itself, single-use `jti`). This is how every app sends shared records (`fbs-suites-connectors.md` section 7).
 
-**Switches (§2): two values, both default on.**
-- The app's own switch (`admin_on`, set only by its admin) and the hub's (`suite_on`, Integrations page, set only by the org admin). The effective state is both on, and neither side writes the other's.
-- The hub enforces its own value by signing no MCP or connector token for that tenant.
-- `POST {app}/api/fbs-hub/switch` only tells the app, for display. The app tells the hub its own changes with `tenant.switch_changed`, and the hub corrects drift nightly from `whoami.switches`.
+**Switches (§2): two values, both default on.** Contract `mcp-fbs-suites/docs/contracts/fbs-hub-switch.v1.md`. **Hub side built 2026-11-19**; each app adds its side (below).
+- Three switches per tenant: `ai` (MCP tools), `link` (connector records), `events` (thin app-to-app events).
+- The app's own switch (`admin_on`, set only by its admin) and the hub's (`suite_on`, Integrations page `/integrations`, set only by the org admin). The effective state is both on, and neither side writes the other's. Turning one side back on never needs the other.
+- The hub enforces its own value and its copy of yours:
+  - `ai` off: no FBS ID token exchange or service token, and gateway calls get JSON-RPC -32001 "Switched off in FBS Suites" (or "Switched off in {App} by its admin").
+  - `link` off: no connector token and no peers for a pair with that tenant (`tenant_off`). `ai` off never stops records.
+  - `events` off: the hub delivers nothing from or to that tenant; the event is marked `switched_off`.
+- **Hub → app, display only:** `POST {app}/api/fbs-hub/switch` (signed like `/api/fbs-hub/link`) `{id, event: "hub.switch", version: 1, app, tenant_ref, switch, on, by: {first_name, last_name}}`. Store it as your `suite_on` copy ("Off in FBS Suites by Maria Reyes"), never change `admin_on`, answer `200 {success: true, data: {admin_on}}`. Refusals: 401 / 409 as the link contract, 404 `no_tenant`, 422 `unknown_switch`. A lost call changes nothing that matters; the hub retries it.
+- **App → hub:** send `tenant.switch_changed` (section 4) whenever your admin flips one of the three.
+- **Missed messages:** your MCP `whoami` adds `"switches": {"ai": bool, "link": bool, "events": bool}` (your `admin_on` values), readable with the org service token. The hub reads it nightly and corrects its copy (audited `switch.drift`). Until you add it, the hub skips you quietly.
 
 ## 3. The envelope
 
@@ -244,6 +250,19 @@ Example:
  "tenant":{"ref":"5","type":"company"},"subject":{"type":"employee","id":42,"external_id":"people:5:42"}}
 ```
 
+### `tenant.switch_changed` (v1): your admin flipped a switch (hub only)
+
+Contract `mcp-fbs-suites/docs/contracts/fbs-hub-switch.v1.md` §3; section 2.4 above. Thin: only the envelope, `tenant` (`ref`, `type`) and `switch` (`name` = `ai` | `link` | `events`, `on` = bool). Anything more is refused with 422 `not_thin`.
+
+```json
+{"id":"<uuid>","event":"tenant.switch_changed","version":1,"occurred_at":"<ISO 8601>","app":"pay",
+ "tenant":{"ref":"42","type":"company"},"switch":{"name":"ai","on":false}}
+```
+
+- **Send** through `SuiteHub::send()` after commit, whenever your admin flips AI access, Linked by FBS Suites or "Share events with my other FBS apps". Never from a demo, the FBS Sample or the console. Never for a change the hub told you (`/api/fbs-hub/switch` only sets your `suite_on` copy).
+- **The hub** updates its copy of your `admin_on`, forgets that tenant's tool lists and audits `switch.changed` (side `app`). An event older than the copy it holds (`occurred_at`) is ignored. The event shows as `applied` on Platform › Webhooks.
+- **Routed to:** the hub itself. Never to other apps.
+
 ### `tenant.plan_changed` and `tenant.cancelled` (v1): Phase 5b
 
 Spec: `mcp-fbs-suites/docs/superpowers/specs/2026-11-17-phase-5b-tenant-lifecycle.md`. FBS's upsell and churn signals. They go to the CRM only (an external destination, so not thin): the same `tenant` and `contact` blocks as `subscription.paid`, so the CRM finds the client's deal by email. The CRM adds a note to the app's deal (the won deal first, else the open lead) and opens nothing for a tenant it never saw.
@@ -280,7 +299,6 @@ Added by spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-adv
 | `tenant.created` | external | any app, a second or later tenant made inside it (`parent_tenant_ref`) | crm, hub |
 | `tenant.trial_ending` | external | apps with trials, 7 days before the end | crm |
 | `tenant.reactivated` | external | any app | crm |
-| `tenant.switch_changed` | thin | any app, its admin flips AI access, Linked by FBS Suites or Share events | hub |
 | `ai.proposal.decided` | thin | any app, a proposal confirmed, rejected or expired | hub |
 | `fbs.record.changed` | thin | any app, a connector record (`person`, `time`, `customer`, `product`, `work_item`, `pay_item`, `money_item`) created, updated or archived; carries `origin.app` | the linked apps that take that type |
 | `pay.payroll.finalized` | thin | Pay | People, Learn, Work, Stock (lock paid days and sales), hub |
