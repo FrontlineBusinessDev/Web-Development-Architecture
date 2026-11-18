@@ -54,7 +54,7 @@ Values from each app's CSS on 2026-11-06. Keep them, but move them onto the shar
 
 | App | Brand / primary | Page | Font (body / display) | Card radius |
 |---|---|---|---|---|
-| People | ink primary `#16191f`; one accent, coral `#c43a24`, on every page (owner, Nov 12); logo `#a8362b` | `#f4f6f8` | Inter / Lexend Exa (wordmark) | 14 px (D2 says 16) |
+| People | ink primary `#16191f`; one accent, crimson `#c22d40`, for actions on every page (owner, Nov 12–13); product marks FBS People (the accent) and FBS Pay (teal `#1d9e75`) as a card stripe, fill, watermark and label, never on buttons (owner, Nov 15; People D12); logo `#a8362b` | `#f4f6f8` | Inter / Lexend Exa (wordmark) | 14 px (D2 says 16) |
 | CRM | blue `#2f6be0`, gold `#d9a62e`, text `#162141` | white, tint `#ebf5ff` | Instrument Sans / Space Grotesk (D3 says Inter) | 8 px |
 | Connect | blue `#2f6be0`, gold `#d9a62e`, text `#162141` | white, tint `#ebf5ff` | Inter / Space Grotesk | 8 px |
 | Pay | green `#2d9450` | `#f6fbf8` | Plus Jakarta Sans / Poppins | soft cards |

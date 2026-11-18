@@ -1,19 +1,19 @@
 # In-app AI agent: the shared contract
 
-How an FBS app adds agentic AI: an **Ask AI** assistant that answers from the app's own records through tools, proposes changes for a person to approve, and stays inside the asker's tenant, permissions, plan and budget. These are the generic rules. Each app writes its own plan from them (domain tools, roles, plan gates).
+How an FBS app adds agentic AI: an assistant called **Lumi** (every FBS app; owner, Nov 17, 2026) that answers from the app's own records through tools, proposes changes for a person to approve, and stays inside the asker's tenant, permissions, plan and budget. These are the generic rules. Each app writes its own plan from them (domain tools, roles, plan gates).
 
 - **Applies to:** every FBS app that adds AI: People, Learn (built), Connect, Stock (planned first), Pay, Work, the CRM, and every new project.
 - **Sources:**
   - FBS Learn: `docs/ai-agent-codemap.md`, specs `docs/superpowers/specs/2026-10-06-ai-agent-design.md` and `2026-10-22-platform-ai-control-design.md`, `app/Ai/*`, `app/Jobs/RunAgentTurn.php`, `config/ai.php`, `tests/Support/FakeClaude.php`, `tests/AiEval`.
   - FBS People: `docs/subscription/REQUIREMENTS.md` §13, `tasks/plan-ai-*.md`, `app/Ai/*` (`Claude`, `Runner`, `Agents`, `Tools`, `Actions`, `Credits`, `Switches`, `Redact`), `app/Http/Controllers/McpController.php`, `tests/Evals`.
   - Rules 7, 12, 14, 18, 20, 24, 31, 32, 33, 34, 47, 60 and 63 in [../rules/system-rules.md](../rules/system-rules.md).
-- **Last updated:** 2026-11-17 (Work: Anthropic only, proposals)
+- **Last updated:** 2026-11-17 (the assistant is called Lumi; Work: Anthropic only, proposals)
 
 The MCP side (an outside AI client calling the app through the FBS Suites gateway) is in [fbs-suites-hub.md, section 11](fbs-suites-hub.md#11-ai-keys-for-the-mcp-gateway). Both sides use the same tool classes (section 5).
 
 ## 1. Where each app stands (2026-11-13; Work 2026-11-17)
 
-| App | Model calls | Ask AI (tools + proposals) | MCP server | Plan |
+| App | Model calls | Lumi (tools + proposals) | MCP server | Plan |
 |---|---|---|---|---|
 | People | `App\Ai\Claude` (SDK 1.x) | Built: 12+ agents, approvals inbox, evals | `/mcp`, same tools | The reference for agents, switches, redaction and evals |
 | Learn | `App\Ai\Claude` (SDK) | Built: school chat, confirm cards, platform assistant | `/api/mcp` | The reference for the chat loop, credits and the platform AI console |
@@ -29,15 +29,15 @@ Pick the smallest shape that does the job. One app can have all three; they shar
 | Shape | What it is | Example | Tools? |
 |---|---|---|---|
 | **One-shot** | One model call that returns structured JSON (summary, score, draft) | Connect's client insight, People's résumé reading | No |
-| **Ask AI** (chat agent) | A person asks; the model calls read tools, answers, and may propose changes | Learn's school chat, People's Ask People | Yes |
+| **Lumi** (chat agent) | A person asks; the model calls read tools, answers, and may propose changes | Learn's school chat, People's Lumi (`AskPeople`) | Yes |
 | **Background agent** | Runs on an event or a schedule and leaves proposals or a report | People's onboarding and payroll prep agents | Yes |
 
 The model never runs on the app's side for MCP: the outside client is the model, and the app only runs the tools.
 
-## 3. The flow (Ask AI)
+## 3. The flow (Lumi)
 
 ```text
-Browser (Ask AI panel)                 App (web)                                 App (ai queue worker)                 Anthropic
+Browser (Lumi panel)                   App (web)                                 App (ai queue worker)                 Anthropic
 ----------------------                 ---------                                 ---------------------                 ---------
 POST /ai/messages {conversation, text}
                                        switches on? user may ask? (section 8)
@@ -106,7 +106,7 @@ Use these names in new apps. Existing apps keep theirs (section 15).
 - **Numbers come from tools, not from the model.** A chart or table shown to the user is built from the tool's raw output (`chart`, `report` keys), never parsed from the model's text.
 - **Links are built on the server** from routes the asker may open, and checked as same-origin paths before display. Never show a URL the model wrote.
 - **Reuse the screens' rules.** Prefer calling the same query, service or route the screen uses (Connect's MCP replays its own `/api/*` route; Learn's actions run the real controller) over a second copy of the query.
-- **One catalogue for both sides.** The MCP server lists the same tool classes (People's `Mcp` agent, Learn's tools). A tool added for Ask AI appears in MCP when its `readOnly()` and the key's scope allow it.
+- **One catalogue for both sides.** The MCP server lists the same tool classes (People's `Mcp` agent, Learn's tools). A tool added for Lumi appears in MCP when its `readOnly()` and the key's scope allow it.
 
 ## 6. Calling the model
 
@@ -214,7 +214,7 @@ Optional: `app_ai_memories` (per-person notes), `app_ai_facts` (tenant facts an 
 
 ## 12. Frontend
 
-- **Ask AI** is in the shell on every page where the app has it (D10): a sheet or drawer opened from the top bar, state in the URL (`?ask=…`, rule 34), lazy-loaded.
+- **Lumi** is in the shell on every page where the app has it (D10): a sheet or drawer opened from the top bar, state in the URL (`?ask=…`, rule 34), lazy-loaded.
 - It polls the reply with the app's data client (rule 38), shows a skeleton while loading (rule 3) and the running tool's friendly label ("Looking up overdue invoices…").
 - Cards: proposal (Confirm / Reject, with the summary and diff from the server), chart, table with Excel export, page link.
 - Starter questions per role, a credits indicator, and "why is this off" when a switch blocks it.

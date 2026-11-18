@@ -29,7 +29,7 @@ This repo is the source of truth. Every project's `CLAUDE.md` links here. When a
 | Which checks must pass before a deploy? | [quality/testing-and-ci.md](quality/testing-and-ci.md) |
 | How does an app talk to the FBS Suites hub and the CRM, and where are its AI (MCP) keys made? | [integrations/fbs-suites-hub.md](integrations/fbs-suites-hub.md) |
 | How does an app have an upload checked for viruses before it stores it? | [integrations/fbs-suites-scanner.md](integrations/fbs-suites-scanner.md) |
-| How do I add an in-app AI agent (Ask AI with tools, proposals, credits)? | [integrations/in-app-ai-agent.md](integrations/in-app-ai-agent.md) |
+| How do I add an in-app AI agent (Lumi with tools, proposals, credits)? | [integrations/in-app-ai-agent.md](integrations/in-app-ai-agent.md) |
 | How do I add monthly and yearly subscriptions (Stripe outside the Philippines, Xendit inside)? | [integrations/subscriptions-stripe-xendit.md](integrations/subscriptions-stripe-xendit.md) |
 | How do FBS People and FBS Pay share people, time, money items and payslips? | [integrations/fbs-people-pay-connector.md](integrations/fbs-people-pay-connector.md) |
 | How does one FBS app hand records to another (codes, keys, idempotency, switches, contract files)? | [integrations/fbs-suites-connectors.md](integrations/fbs-suites-connectors.md) |

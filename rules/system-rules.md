@@ -345,7 +345,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - **Undo instead of asking.** Act at once and offer Undo in a toast for 5–10 seconds. Keep confirmations for actions that can't be undone, and say exactly what will change.
     - **One way to everything.**
         - A command palette (`Ctrl K`) reaches every page, record and action ("file leave for Joy").
-        - Ask AI turns a multi-step task into a single approval card.
+        - Lumi turns a multi-step task into a single approval card.
     - **Save as people type.** Autosave drafts, Enter submits, Esc closes, and the most-used actions have keyboard shortcuts.
     - **Phone.** The primary action sits within thumb reach, the main hubs are in the bottom tab bar, and nothing needs a hover.
 - **Don't:**
@@ -355,7 +355,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - Ask again for something the system already knows.
     - Send people to a page that only links to another page.
 - **Reference (FBS People):**
-    - **On the canvas:** Home and Team "Waiting for you" rows with Review, the approvals inbox with bulk approve, the `Ctrl K` palette, Ask AI approval cards, and sheets for records and forms.
+    - **On the canvas:** Home and Team "Waiting for you" rows with Review, the approvals inbox with bulk approve, the `Ctrl K` palette, Lumi approval cards, and sheets for records and forms.
     - **Notification links:** these open `/approvals?open=leave-12`, with the request first and one tap from Approve (`docs/core-hr/REQUIREMENTS.md`, Approve from push).
 - **Check:** Walk the click budget table on the built app, desktop and phone. Any task over its budget needs a written reason or a fix.
 
@@ -536,7 +536,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Do, for the snapshot:**
     - **Build it** from a dedicated demo tenant seeded with fictional data that follows the project's dataset rules (no real people, emails, phone numbers or IDs). Export it into a platform-level snapshot record with a version, then remove the tenant: the snapshot is not a tenant, so tenant queries, metrics and billing never count it.
     - **Make it complete:** every module the landing page names (rule 13), each role's view, and the states worth showing (approvals waiting, a cutoff to lock, a probation due).
-    - **Show the AI at work:** include a history of AI so visitors see what it does: runs for every agent with their tools, cost and outcome, Ask AI threads for each role, approval cards both waiting and decided, Ask Insights answers, and the credits used against the pool (rule 20). Visitors can approve or decline the waiting cards, and the change stays in their own copy.
+    - **Show the AI at work:** include a history of AI so visitors see what it does: runs for every agent with their tools, cost and outcome, Lumi threads for each role, approval cards both waiting and decided, Ask Insights answers, and the credits used against the pool (rule 20). Visitors can approve or decline the waiting cards, and the change stays in their own copy.
     - **Keep it small and fast:** a compressed JSON bundle (aim under 2 MB) served from a public, read-only, cached and rate-limited endpoint, with an ETag or version so browsers reload it only when it changes.
     - **Let platform staff refresh it** from the console, with the change logged.
 - **Do, in the browser:**
@@ -1271,7 +1271,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Do:**
     - **When:** show it once the scrolled distance reaches 20% of the scrollable height, and hide it again above that. Only pages taller than about two screens get it.
     - **What it watches:** the element that really scrolls (the window, or the page's scroll container). A sheet or a long dialog with its own scroll gets its own button inside it.
-    - **Where:** bottom right, inside the safe area, above the phone's bottom tab bar, and clear of the unsaved-changes bar, toasts (rule 40) and Ask AI. The page keeps enough bottom padding that the button never covers the last row's action.
+    - **Where:** bottom right, inside the safe area, above the phone's bottom tab bar, and clear of the unsaved-changes bar, toasts (rule 40) and Lumi. The page keeps enough bottom padding that the button never covers the last row's action.
     - **What it does:** scrolls smoothly to the top (or jumps when "reduce motion" is on, rule 19), then moves focus to the page's main heading, so keyboard and screen-reader users land at the top too.
     - **Look:** a 44 px round secondary button (rule 19, D5) with an up-arrow icon and `aria-label="Back to top"`, fading in and out. While hidden, it leaves the tab order.
     - **One shared component** for every page, placed in the app shell, with its layer from the z-index scale (rule 41). It never shifts the layout (rule 37).
@@ -1639,7 +1639,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - Read the clipboard (`navigator.clipboard.read` / `readText`); paste comes in through the paste event (Ctrl V).
     - Call `navigator.clipboard.writeText` after an `await`.
     - Request a permission on page load, or before the app's modal asked.
-- **Reference (FBS People):** `components/kit3/confirm-host.tsx` (`askConfirm`, `askDiscard`, `ConfirmHost` in `app.tsx`). `FormFrame` and `useUnsavedGuard` use it, and every 2.x page that called `window.confirm` was moved to it on Oct 31. The older `components/kit/confirm-dialog.tsx` (`useConfirm`) is an in-app modal too and may stay until its pages move to 3.0. The PWA install prompt (`lib/install.ts`) is the browser's install sheet, opened only when the person taps Install, and is allowed. Permissions and links: `components/kit3/ask-allow.tsx` (`askAllow('camera' | 'microphone' | 'geolocation' | 'notifications')`, `shareLink()`), used by `openCamera`, the clock-in location, push alerts and Ask AI's voice input.
+- **Reference (FBS People):** `components/kit3/confirm-host.tsx` (`askConfirm`, `askDiscard`, `ConfirmHost` in `app.tsx`). `FormFrame` and `useUnsavedGuard` use it, and every 2.x page that called `window.confirm` was moved to it on Oct 31. The older `components/kit/confirm-dialog.tsx` (`useConfirm`) is an in-app modal too and may stay until its pages move to 3.0. The PWA install prompt (`lib/install.ts`) is the browser's install sheet, opened only when the person taps Install, and is allowed. Permissions and links: `components/kit3/ask-allow.tsx` (`askAllow('camera' | 'microphone' | 'geolocation' | 'notifications')`, `shareLink()`), used by `openCamera`, the clock-in location, push alerts and Lumi's voice input.
 - **Also:** kit B uses `useConfirm` with `components/settings/ConfirmDialog.tsx` (FBS Learn); FBS Suites uses `components/fbs/confirm-dialog.tsx` (`ConfirmDialog`, `tone="danger"` for destructive actions).
 - **Check:** A search of `resources/js` for `confirm(`, `alert(`, `prompt(` outside `askConfirm`/`useConfirm`, and for `beforeunload`, finds nothing. Close a dialog with unsaved changes: the app's modal asks, in the current theme. A search for `clipboard.read`, `getUserMedia`, `getCurrentPosition`, `requestPermission` and speech recognition finds each one only after `askAllow()`; every `writeText` runs in a click. In a fresh browser profile, no browser prompt appears without the app's modal first.
 
@@ -1713,7 +1713,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 ## Rule 64. Labels never wrap: they move to a menu, or become an icon
 
 - **Rule:** A button, tab, link, chip, pill, badge or menu item shows its label on one line. When a bar runs out of room, its least-used controls move into a menu first, then labels become their icons. Text never breaks onto a second line, and nothing spills out of the bar.
-- **Why:** On Nov 3, 2026 the owner showed the top bar beside the sidebar at about 1100 px: "Search people, pages, actions", "Ctrl K", "Ask AI", "Ask HR" and "Page tour" had each broken onto two lines. A wrapped label doubles a control's height, breaks the bar's line and looks broken (rule 37). The room a bar has depends on what sits beside it (the sidebar, a sheet, a split view), not on the window's width alone.
+- **Why:** On Nov 3, 2026 the owner showed the top bar beside the sidebar at about 1100 px: "Search people, pages, actions", "Ctrl K", "Ask AI" (now Lumi), "Ask HR" and "Page tour" had each broken onto two lines. A wrapped label doubles a control's height, breaks the bar's line and looks broken (rule 37). The room a bar has depends on what sits beside it (the sidebar, a sheet, a split view), not on the window's width alone.
 - **Do:**
     - **One line, always:** every control in a bar is `whitespace-nowrap` and `shrink-0`. The bar's one flexible text, such as the breadcrumb or a name, is `min-w-0` and truncates with an ellipsis, with the full text in a tooltip.
     - **Give way by the bar's own width:** make the bar a container (`@container`) and hide or shorten its controls with container queries (`@max-5xl:hidden`), not viewport breakpoints.
@@ -1728,7 +1728,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - Hide a control at some width without another way to reach it.
     - Use viewport breakpoints for anything inside the main column.
 - **Reference (FBS People):**
-    - **The model:** `components/kit3/shell/topbar.tsx`. The bar is a container: Ask HR and Page tour move to the Help menu below `@5xl`, search becomes an icon below `@3xl`, Ask AI loses its label below `@xl`, and Help goes below `@lg`.
+    - **The model:** `components/kit3/shell/topbar.tsx`. The bar is a container: Ask HR and Page tour move to the Help menu below `@5xl`, search becomes an icon below `@3xl`, Lumi loses its label below `@xl`, and Help goes below `@lg`.
     - **Shared controls carry `whitespace-nowrap`:** `ui/button.tsx`, the table toolbar's filter chips, the hub tabs and the phone tab bar.
     - **The canvas renderer** truncates a sidebar hub's name when a plan badge sits next to it (rule 63).
 - **Check:** At 1024, 1100, 1280, 1440 and 375 px, on any page, no button, tab, link or chip has its text on more than one line (a walk over its text nodes finds one line box), and the top bar's `scrollWidth` equals its `clientWidth`.
@@ -1877,7 +1877,7 @@ A project that uses this design follows D1–D11 as written. A project with a tr
 ### D1. Shell
 
 - **Navigation:** a sidebar with the app's mark, a tenant switcher when the person belongs to several tenants, and the hub menu (count badges where something waits). An app may use a narrow icon rail instead (FBS Suites uses a 72 px rail). The platform console groups items under small-caps section labels. The sidebar footer has the plan card (tenant owners only) and the signed-in person with their role.
-- **Top bar:** 56 px (52 px on a phone). Breadcrumb on the left; on the right: search with `Ctrl K`, Ask AI where the app has AI, the page tour, notifications, help, and a theme switch.
+- **Top bar:** 56 px (52 px on a phone). Breadcrumb on the left; on the right: search with `Ctrl K`, Lumi where the app has AI, the page tour, notifications, help, and a theme switch.
 - **Page:** tabs under the top bar, then pill-style sub-tabs when a tab has them. Title 26 px (22 px on a phone), one description line, actions on the right with the primary last. Content fills the main area with no max-width, with 32 px side padding (16 px on a phone).
 - **Who sees what:** the menu shows only what the person's role reaches (rule 30). On a phone, a bottom tab bar holds the main hubs and More.
 
@@ -1929,7 +1929,7 @@ A project that uses this design follows D1–D11 as written. A project with a tr
 - **Stepper:** numbered circles joined by a line. Done steps are filled with a check in the accent and the current step is outlined. A side box with the next action runs the full height of the card.
 - **Inbox** (approvals, helpdesk, support): the list on the left at 360 px, with count tabs and checkboxes; the detail on the right with a two-column key-value grid and the action row. Ticking several shows a bulk action bar.
 - **Dialog:** 520–600 px, centred. The header is an icon tile in a tone, the title, one subtitle line and Close. The body is a two-column grid, with half-width fields where they pair (From and To). The footer is Cancel plus one primary, with a note on the left when useful ("Saved as a draft as you type").
-- **Sheet:** slides in from the right, 520–600 px wide and full height, with the same header and footer. Long forms, records and Ask AI use sheets.
+- **Sheet:** slides in from the right, 520–600 px wide and full height, with the same header and footer. Long forms, records and Lumi use sheets. Lumi's chat sheet is narrower, 440 px (owner, Nov 17).
 - A destructive confirm says what will change, shows the numbers affected and, where it matters, asks for a reason (rule 60).
 
 ### D9. Pickers, loading and empty states
@@ -1943,7 +1943,7 @@ A project that uses this design follows D1–D11 as written. A project with a tr
 
 - **Words:** plain words in sentence case, and "they" for people in sample text. Dates carry a computed weekday ("Fri, Oct 30").
 - **Money:** pesos with two decimals on payslips, invoices and receipts; "k" only in charts and stats.
-- **Ask AI,** where the app has it, is on every page. Anything it would change shows as an approval card ("Nothing is filed until you approve", rule 20).
+- **Lumi,** where the app has AI, is on every page. Anything it would change shows as an approval card ("Nothing is filed until you approve", rule 20). The assistant is called **Lumi** and nothing else: no "Ask AI", "Agent" or "AI" in its name, in every FBS app, and a console's staff assistant is Lumi too (owner, Nov 17, 2026). Lumi is a character (the Lumi People design: glasses, necktie, idle tricks while its sheet is open), drawn in code, never a robot icon.
 - **Page tours:** every page has a tour, and the tour catalog is tabbed.
 
 ### D11. Dark mode and phone
