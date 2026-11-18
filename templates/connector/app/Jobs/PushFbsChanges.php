@@ -2,7 +2,9 @@
 
 namespace App\Jobs;
 
+use Carbon\CarbonInterface;
 use App\FbsId\FbsId;
+use App\FbsSync\SyncHealth;
 use App\Models\Company;
 use App\Models\FbsChange;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -29,6 +31,9 @@ class PushFbsChanges implements ShouldBeUnique, ShouldQueue
 
     public int $uniqueFor = 120;
 
+    /** @var array<string, array{at: CarbonInterface, error: string}> this run's failures per peer, for the health report */
+    private array $failures = [];
+
     public function __construct(public int $companyId) {}
 
     public function uniqueId(): string
@@ -44,15 +49,15 @@ class PushFbsChanges implements ShouldBeUnique, ShouldQueue
         Company::run($this->companyId, function () {
             $own = FbsChange::whereNull('received_from')->where('status', 'pending')->orderBy('id')->limit(500)->get();
             $taken = FbsChange::where('forward_status', 'pending')->orderBy('id')->limit(500)->get();
-            if ($own->isEmpty() && $taken->isEmpty()) {
-                return;
-            }
             $peers = $this->peers();
             if ($peers === null) {
                 return; // FBS Suites did not answer: everything waits for the next run
             }
             $this->deliver($own, $peers, 'status');
             $this->deliver($taken, $peers, 'forward_status');
+            // how each linked app stands, for the hub's Platform › Connectors (fbs-connector-token.v1 "Report how the sync stands")
+            SyncHealth::report((string) $this->companyId, array_map(fn (array $p) => SyncHealth::of($p, $this->failures[$this->key($p)] ?? null),
+                array_values(array_filter($peers, fn (array $p) => in_array('person', $p['types'], true)))));
         });
     }
 
@@ -119,9 +124,15 @@ class PushFbsChanges implements ShouldBeUnique, ShouldQueue
             $res = is_string($token) ? Http::timeout(15)->acceptJson()->withToken($token)->withoutRedirecting()
                 ->put(rtrim($peer['base_url'], '/').'/api/fbs/connector/changes', ['changes' => $body->all()]) : null;
         } catch (Throwable) {
+            $this->failures[$this->key($peer)] = ['at' => now(), 'error' => 'FBS '.ucfirst($peer['app']).' or FBS Suites did not answer.'];
+
             return; // waits for the next run
         }
         $answers = $res?->successful() && $res->json('success') === true ? (array) $res->json('data.answers', []) : [];
+        if ($answers === []) {
+            $this->failures[$this->key($peer)] = ['at' => now(), 'error' => $res === null ? 'FBS Suites gave no connector token.'
+                : 'FBS '.ucfirst($peer['app'])." answered {$res->status()}: ".mb_substr((string) $res->json('message', ''), 0, 120)];
+        }
         foreach ($changes as $change) {
             if (isset($answers[$change->change_id])) {
                 $change->forceFill(['targets' => [...($change->targets ?? []), $this->key($peer) => (string) $answers[$change->change_id]]])->save();
