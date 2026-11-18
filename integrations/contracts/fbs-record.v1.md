@@ -46,7 +46,9 @@ Built for `person`, 2026-11-18: FBS People (the center), FBS Pay (with salary), 
 |---|---|
 | `person` | `first_name`, `middle_name`, `last_name`, `email`, `mobile`, `employee_number`, `department`, `position`, `employment_type`, `date_hired`, `status` (`active` / `inactive`) |
 | `person`, salary (People and Pay only) | `compensation:{Y-m-d}` => `{basic_pay, pay_type}`, one field per effective date, so each dated pay row wins on its own (rule 46). Never sent to any other app. A date on or before the person's last finalized FBS Pay period is `locked`: Pay checks its runs, People the payslips Pay sent it, and both refuse such a date when edited in the app too. |
-| `time`, `customer`, `product`, `work_item`, `money_item`, `pay_item` | as the plan's Global Constraints; not built yet |
+| `time` (built 2026-11-18: People's approved leave) | one record per person per day, `people:{company}:time:{employee}:{date}`: `person` (People's id), `date`, `status` (`leave`, or `none` once cancelled), `leave_code`, `half`. People sends it to Learn (an approved staff leave "From FBS People") and Work (a day away, "On leave today"); never to Pay (cutoff connector) and never for someone whose time comes from Learn. |
+| `pay_item` (built 2026-11-18: Work's hours) | one record per person per day, `work:{workspace}:hours:{user}:{date}`: `person`, `date`, `kind` `hours`, `hours` ("7.50"), `approved` (true only when someone other than the person approved it in the source; Work has no time approval, so false). Work sends it to Pay only; Pay files one hourly work log, pending in Approvals, for hourly-paid employees (else `refused`), updated while pending, `locked` once decided; 0 hours withdraws it. |
+| `customer`, `product`, `work_item`, `money_item` | as the plan's Global Constraints; not built yet |
 
 ## Tally (nightly check, Task 6)
 
