@@ -91,6 +91,7 @@ Search for `## Rule N.` to jump to a rule.
 69. An action opens where you are: no trip to another page to finish it
 70. Public pages share one look: the best public page is the reference
 71. Coming back to the tab brings fresh data: nobody refreshes the page
+72. A record shared with other FBS apps says so before it is changed or removed
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -1868,6 +1869,26 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 
 ---
 
+## Rule 72. A record shared with other FBS apps says so before it is changed or removed
+
+- **Rule:** When a person saves a change to, archives or deletes a record that is connected to other FBS apps (a person, their pay, time, a customer, a product, a project or task), the app first asks in its own modal, naming the apps, what will happen there. The save goes through only after they confirm.
+- **Why:** Owner, Nov 18, 2026: every app now edits shared records and every change reaches the other connected apps (`integrations/contracts/fbs-record.v1.md`). Someone fixing a phone number in FBS Pay must know it also changes in FBS People and FBS Learn, and someone archiving a person must know what the other apps will do, before it happens, not after.
+- **Do:**
+    - **Ask before the save, in the app's confirm modal** (rule 60), only when the record is connected (it has an external id another app knows, or a sync link), and only when the change touches a shared field (a change to the app's own fields saves with no question).
+    - **Name the apps and the effect, in plain words:** "This person is connected to FBS People and FBS Learn. Saving updates the mobile number there too." List the shared fields that change.
+    - **Removing:** archiving or deleting says what the other apps do: "FBS People and FBS Learn keep this person and mark them inactive there." A delete never deletes in another app (fbs-record.v1); say so. Use tone danger for delete.
+    - **Salary and money:** say where it goes and that it waits for approval there when it does ("FBS Pay updates the pay from 1 Dec 2026", "Arrives in FBS Pay for approval").
+    - **Know the list from the app's own records:** the apps it last synced the record with (its sync targets) or that its external id names; never call another app to fill the modal.
+    - **One confirm per save:** a bulk action asks once with the count ("12 people are connected to FBS People. Archiving marks them inactive there.").
+- **Don't:**
+    - Use the browser's `confirm()` (rule 60), or ask when nothing shared changes.
+    - Promise a delete in another app, or hide that the change leaves this app.
+    - Ask again for a change that arrived from another app (it was confirmed where it was made).
+- **Reference:** to be built first in FBS Pay and FBS People with the two-way sync (`fbs-suites-mcp/docs/superpowers/plans/2026-11-18-every-app-two-way-sync.md`, Task 5): the server answers which apps a record is connected to with the record (`connected_apps` from `fbs_changes.targets` and the external id), and the edit, archive and delete forms open the confirm modal from it.
+- **Check:** Edit a shared field of a connected record: the modal names the apps and the field; cancel changes nothing. Edit an app-only field: no modal. Archive and delete: the modal says the other apps mark it inactive and keep it.
+
+---
+
 ## Design profile
 
 D1–D11 are the shared design system of every FBS app: layout, sizes, controls and behaviour, taken from FBS People UI 3.0 (approved by the owner on Nov 6, 2026). They hold no brand values. Colour token names, the light and dark values each app sets, and the kit components that draw them are in [../structure/design-system.md](../structure/design-system.md). D12 is each app's own product profile and lives in that app's repo.
@@ -2001,3 +2022,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-13:** Rule 60 extended (owner): no browser prompts either. The app never makes the browser ask on its own (clipboard, camera, microphone, location, notifications); it copies only on a click, and asks in its own modal (`askAllow()`) before any permission.
 - **2026-11-13:** Rule 70 added (owner): public pages share one look; the best existing public page (People's careers page) is the reference and every other public page is built from its parts through one shared frame.
 - **2026-11-13:** Rule 71 added (owner): coming back to the tab or back online reloads what went stale, through one data client setting, so nobody refreshes the page.
+- **2026-11-18:** Rule 72 added (owner): a record connected to other FBS apps asks in the app's modal, naming the apps and what happens there, before a change to a shared field, an archive or a delete is saved.
