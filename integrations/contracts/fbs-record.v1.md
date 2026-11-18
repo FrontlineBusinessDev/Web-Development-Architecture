@@ -47,3 +47,17 @@ Built for `person`, 2026-11-18: FBS People (the center), FBS Pay (with salary), 
 | `person` | `first_name`, `middle_name`, `last_name`, `email`, `mobile`, `employee_number`, `department`, `position`, `employment_type`, `date_hired`, `status` (`active` / `inactive`) |
 | `person`, salary (People and Pay only) | `compensation:{Y-m-d}` => `{basic_pay, pay_type}`, one field per effective date, so each dated pay row wins on its own (rule 46). Never sent to any other app. A date on or before the person's last finalized FBS Pay period is `locked`: Pay checks its runs, People the payslips Pay sent it, and both refuse such a date when edited in the app too. |
 | `time`, `customer`, `product`, `work_item`, `money_item`, `pay_item` | as the plan's Global Constraints; not built yet |
+
+## Tally (nightly check, Task 6)
+
+The type's center (People for `person`) checks every night that the linked apps hold the same shared fields, without any value crossing (rule 18).
+
+`POST {peer base_url}/api/fbs/connector/tally`, a hub connector token with scope `connector.person.read` (same checks as `changes`: aud, tenant, single-use jti), body `{"type": "person", "salt": "<32 to 64 hex, new each run>"}`. 422 for another type or a bad salt, 403 for another scope.
+
+```json
+{"success": true, "message": "", "data": {"records": {"people:12:345": {"first_name": "9c1f…16 hex", "last_name": "…", "status": "…"}}, "truncated": false}}
+```
+
+- One entry per record another app knows (Learn: every staff member under `people_external_id`, else its own id; Pay: employees with an `external_id`; Work, Stock, Connect: their synced accounts), at most 5000.
+- Per field it holds of `first_name`, `middle_name`, `last_name`, `email`, `mobile`, `employee_number`, `department`, `position`, `date_hired`, `status`: the first 16 hex of HMAC-SHA256 of the value with the salt, after lower case, trimming and single spaces; `status` is `active` or `inactive`; null is the empty string. `employment_type` is left out (each app words it its own way).
+- The asker finds each id with its own `PersonType::find`, hashes its own fields the same way, and keeps only the ids and field names that differ, plus how many ids it could not find (People: `app_fbs_tallies`, `sync_status`). It reports the counts to the hub with its sync health (`connector-report` `peers.*.tally`), never the ids' values. Nothing is changed by a tally.
