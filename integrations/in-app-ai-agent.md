@@ -7,7 +7,7 @@ How an FBS app adds agentic AI: an assistant called **Lumi** (every FBS app; own
   - FBS Learn: `docs/ai-agent-codemap.md`, specs `docs/superpowers/specs/2026-10-06-ai-agent-design.md` and `2026-10-22-platform-ai-control-design.md`, `app/Ai/*`, `app/Jobs/RunAgentTurn.php`, `config/ai.php`, `tests/Support/FakeClaude.php`, `tests/AiEval`.
   - FBS People: `docs/subscription/REQUIREMENTS.md` §13, `tasks/plan-ai-*.md`, `app/Ai/*` (`Claude`, `Runner`, `Agents`, `Tools`, `Actions`, `Credits`, `Switches`, `Redact`), `app/Http/Controllers/McpController.php`, `tests/Evals`.
   - Rules 7, 12, 14, 18, 20, 24, 31, 32, 33, 34, 47, 60 and 63 in [../rules/system-rules.md](../rules/system-rules.md).
-- **Last updated:** 2026-11-17 (the assistant is called Lumi; Work: Anthropic only, proposals)
+- **Last updated:** 2026-11-18 (planned shared MCP tools and proposal rules, §5.1). Before: 2026-11-17 (the assistant is called Lumi; Work: Anthropic only, proposals)
 
 The MCP side (an outside AI client calling the app through the FBS Suites gateway) is in [fbs-suites-hub.md, section 11](fbs-suites-hub.md#11-ai-keys-for-the-mcp-gateway). Both sides use the same tool classes (section 5).
 
@@ -107,6 +107,34 @@ Use these names in new apps. Existing apps keep theirs (section 15).
 - **Links are built on the server** from routes the asker may open, and checked as same-origin paths before display. Never show a URL the model wrote.
 - **Reuse the screens' rules.** Prefer calling the same query, service or route the screen uses (Connect's MCP replays its own `/api/*` route; Learn's actions run the real controller) over a second copy of the query.
 - **One catalogue for both sides.** The MCP server lists the same tool classes (People's `Mcp` agent, Learn's tools). A tool added for Lumi appears in MCP when its `readOnly()` and the key's scope allow it.
+
+### 5.1 Shared tools and proposal rules (planned, owner 2026-11-18)
+
+Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §5.0 and §5.8. **Not built yet.**
+
+**Shared tools.** Every app's MCP endpoint (and its in-app agent where it fits) adds:
+
+| Tool | What it does |
+|---|---|
+| `get_knowledge` | one help article in full by `source_id` |
+| `document_link` | opens once, only for the same signed-in FBS ID person |
+| `complete` | suggestions for `{kind, prefix}`, at most 10 |
+| `list_proposals` | this person's proposals and their state |
+| `cancel_proposal` | withdraws one's own pending proposal |
+| `recent_activity` | the tenant's recent changes from its audit log, no values |
+| `sync_status` | this tenant's connections and their last results |
+| `holds` | records waiting for an admin |
+| `propose_hold_decision` | proposes link, add or ignore for one held record |
+
+`whoami` adds `switches` and `plan`.
+
+**Proposal rules.** Every proposal engine:
+- answers `list_proposals` and `cancel_proposal`;
+- expires after 7 days;
+- re-checks rights on confirm (409 if decided, 410 if expired);
+- sends the thin hub event `ai.proposal.decided`.
+
+No new direct writes.
 
 ## 6. Calling the model
 

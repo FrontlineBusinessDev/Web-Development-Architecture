@@ -4,7 +4,7 @@ How one FBS app hands records to another (FBS People to FBS Pay, FBS Learn to FB
 
 - **Applies to:** every direct link between two FBS apps that carries records. Built: People → Pay ([fbs-people-pay-connector.md](fbs-people-pay-connector.md)). Built: Learn → People staff (contract `fbs-suites-mcp/docs/contracts/learn-people-staff.v1.json`) and Learn → People time and leave (`learn-people-time.v1.json`, spec `docs/superpowers/specs/2026-11-18-phase-6-learn-time.md`).
 - **Sources:** `fbs-suites-mcp/docs/superpowers/plans/2026-11-17-learn-pay-people-integration.md` (design rules, gaps G1, G14, G15), its audit `docs/superpowers/audits/2026-11-17-integration-audit.md`, and the People → Pay connector (People `app/FbsPay/*`, Pay `app/Connector/*`).
-- **Last updated:** 2026-11-18 (time source, `locked`)
+- **Last updated:** 2026-11-18 (time source, `locked`; section 7 planned: every app connected both ways)
 
 ## 1. Connectors carry data, hub events carry ids
 
@@ -55,3 +55,57 @@ How one FBS app hands records to another (FBS People to FBS Pay, FBS Learn to FB
 - Both sides copy it into their tests (`tests/Fixtures/contracts/`) and validate their requests or answers against it, so a change that breaks the other side fails a test first.
 - A breaking change is a new version: a new file, a new code prefix, and the receiver answers both until every sender moved.
 - Change both sides, the contract file and this doc in the same piece of work (rule 55). Each phase of the integration plan ends with an audit section against its checklist.
+
+## 7. Every app connected, both ways (planned, owner 2026-11-18)
+
+Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §0, §1.7, §1.8, §10 and §11, with the audit `docs/superpowers/audits/2026-11-18-multi-tenant-spec-audit.md`. **Not built yet.** Sections 1–6 stay the rules of what is built today; new connector work follows this section. The CRM stays out: it is FBS's own, not a client's.
+
+**One framework, every pair.** Every tenant app (People, Pay, Learn, Connect, Work, Stock) implements one framework once, from `templates/connector/`, instead of one connector per pair.
+
+- **Record types,** one contract each:
+
+  | Type | What it is |
+  |---|---|
+  | `person` | someone who works for the tenant |
+  | `time` | attendance days, leave, hours worked |
+  | `customer` | a client company or contact, or a store's credit customer |
+  | `product` | an item or service sold |
+  | `work_item` | a project or task, with billable hours |
+  | `pay_item` | an earning or deduction for a person (hours, output, commission sales) |
+  | `money_item` | an invoice or sale total for a customer |
+
+- **Details belong to the app a record started in.** Other apps lock those fields ("From FBS {App}", 422) and keep their own app-only fields. Every row carries `origin: {app, external_id}`, and nothing is sent back to its origin, so there is no loop.
+- **One center per type,** so no record arrives twice through two paths:
+
+  | Type | Center |
+  |---|---|
+  | `person`, `time` | People |
+  | `customer`, `money_item` | Connect |
+  | `product` | Stock |
+
+  Without the center app, the pair connects directly. When the org adds the center later, the flow moves to it by itself. Pay is never the center for people.
+- **Manifest, push and pull:**
+  - `GET connector/manifest`: the tenant, `gives` / `takes` per type with versions, switches, and the time source;
+  - `PUT connector/{type}`: batch upsert, idempotent, answered per row;
+  - `GET connector/{type}/outbound?since=`.
+
+  The origin pushes on change and nightly. The other side pulls nightly and within a minute of the thin hub event `fbs.record.changed`.
+- **No stored keys between apps.** An app asks the hub for a 5-minute RS256 connector token (`aud` = the other app, tenant, scope, `jti`, checked with FBS ID's JWKS; contract `fbs-connector-token.v1.md`). The hub signs it only for a linked pair with both switches on and "Real tenants" allowing it. The `fbs{app}1.` codes of section 2 stay only for tenants not on FBS Suites.
+- **Zero setup:**
+  - pairs link themselves;
+  - staff flow automatically and HR only excludes;
+  - Learn's Faculty or Non-Faculty comes from a seeded map;
+  - clear matches auto-link (same origin id, or same verified email and same first and last name), and only true conflicts are held;
+  - a person with an FBS ID gets a login while seats last;
+  - a "time from" switch is on by itself when that app is the person's only time source.
+
+  Every automatic step is shown on the app's Settings › FBS apps page and audited.
+- **Money:** a `pay_item` or `money_item` arrives **approved** when someone other than the filer approved it in the source app (it names who). Otherwise it arrives **pending** in the receiver's approval engine, with "Approve all" (rules 46, 47). Once paid, the source locks the entry (`locked`).
+- **Pages:** the hub's Integrations › Links grid (pairs that never moved data are hidden until they do) and one Settings › FBS apps page per app.
+- **Health:** Platform › Connectors for FBS staff, with an alert after 24 h of failures.
+- **Holds:** a weekly reminder for holds older than 30 days.
+- **Versions:** a type links only on a version both apps speak.
+- **Learn admission inquiries into Connect** are off per school until its admin turns them on (contact only, no student data).
+- **The pair-by-pair list** of what flows each way is the spec's §10.2. Build order is by value: People ↔ Pay, Stock and Work → Pay, Connect ↔ Work, Connect ↔ Stock, Stock ↔ Learn, then the rest.
+- **The lawyer / NPC check** still gates every new personal-data crossing for real tenants. FBS Sample tests everything first.
+

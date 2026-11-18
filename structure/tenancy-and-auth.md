@@ -4,7 +4,7 @@ How an app keeps each customer's data apart, how people sign in, and how roles, 
 
 - **Applies to:** every FBS app. The tenancy half applies to multi-tenant products (People, Pay, Learn, Connect, Work, Stock); single-organisation apps (CRM, FCA-SMS) skip it.
 - **Sources:** People `app/Models/Company.php`, `Models/Scopes/CompanyScope.php`, `Models/Concerns/BelongsToCompany.php`, `Http/Middleware/ResolveCompany.php`, `config/fortify.php`, `config/permission.php`, `SYSTEM-RULES.md` rules 5, 7, 29, 30, 31 and 32; Pay `docs/PLAN.md` section 4; Learn and MCP `CLAUDE.md`.
-- **Last updated:** 2026-11-16
+- **Last updated:** 2026-11-18 (planned: hub-signed connector tokens, two-value integration switches, several tenants per org). Before: 2026-11-16
 
 ## Tenancy
 
@@ -113,7 +113,13 @@ One account for every FBS app, like a Google account across Gmail and Drive (own
 | The FBS connector (tenants in Claude) | FBS ID OAuth on the gateway's `/mcp` (PKCE, dynamic client registration, consent once), scope `mcp` | as gateway keys |
 | FBS Suites → app MCP (no pasted key) | `POST /api/fbs/token`: the app's FBS ID client id + secret (Basic) and a 60 s RS256 assertion checked with FBS ID's JWKS (`aud` = app key, single-use `jti`) → a 15-minute MCP token of the app's own type, for a user in that tenant, or `service` (aggregate tools only). Contract `mcp-fbs-suites/docs/contracts/fbs-id-token.v1.md` | the app's plan gate and the tenant's **AI access** switch (default on) |
 | Hub webhooks in | HMAC signature (`X-FBS-Signature`) | 300 s clock skew, stored once per event id |
+| App → app connector (planned, spec `2026-11-18-multi-tenant-advanced-tools-webhooks.md` §10.1 #7) | A 5-minute RS256 connector token the hub signs (`aud` = the receiving app, `tenant`, `scope` such as `connector.person.write`, single-use `jti`), checked with FBS ID's JWKS; no stored key | only for a linked pair with both switches on; stored `fbs{app}1.` keys stay for tenants not on FBS Suites |
 
+- **Integration switches (planned, owner 2026-11-18, same spec §2):**
+  - Every switch that lets FBS Suites act for a tenant (AI access, Linked by FBS Suites, Share events) defaults to **on** and has **two values**: the app's own (`admin_on`, set by its admin) and the hub's (`suite_on`, set by the org admin in FBS Suites).
+  - The effective state is both on. Neither side writes the other's value, so one side turning back on never needs the other.
+  - The hub enforces its value by not signing tokens. The app keeps a copy only to show "Off in FBS Suites by …".
+- **Several tenants per org (planned, same spec §1):** one person may reach several tenants of one app. Every token stays for one person in one tenant, and the app refuses a person with no account there (`403 not_a_member`).
 - Tokens never go in `localStorage`.
 - Secrets (webhook secrets, app keys, gateway keys) use the `encrypted` cast, are shown once, and never appear in JSON, logs or audit arguments.
 

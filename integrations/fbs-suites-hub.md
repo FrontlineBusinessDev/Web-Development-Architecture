@@ -7,7 +7,7 @@ How an FBS app tells the rest of the suite that something happened (a sign-up, a
   - `fbs-suites-mcp`: `docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Webhook hub), `app/Hub/{Signature,Router,HookRefusal,HookCheck}.php`, `app/Http/Controllers/HookController.php`, `app/Jobs/DeliverEvent.php`, `app/Coolify/*` (Platform › Coolify), migrations `2026_11_10_000100_route_demo_opened_to_crm` and `2026_11_12_000100_route_subscription_paid_to_crm`.
   - The senders `app/Support/SuiteHub.php`, `app/Jobs/SendSuiteHubEvent.php` and `app/Http/Controllers/SuiteHubCheckController.php` in People, Stock, Work, Learn, Pay and Connect.
   - `laravel-fbs-crm`: `routes/api.php`, `app/Http/Requests/Api/SignupIntakeRequest.php`, `app/Support/Intake/*`.
-- **Last updated:** 2026-11-18 (FBS Sample `accounts` and the shared password, section 2.2). Before: 2026-11-17 (connectors carry records, events ids only; the gateway's `fbs__guide` and daily cap). Before: 2026-11-10 (only proved emails for `tenant.signed_up` and `demo.opened`)
+- **Last updated:** 2026-11-18 (planned: several tenants per org, zero setup and two-value switches §2.4, new events §4, gateway features §11, client webhooks §12). Before: 2026-11-18 (FBS Sample `accounts` and the shared password, section 2.2). Before: 2026-11-17 (connectors carry records, events ids only; the gateway's `fbs__guide` and daily cap). Before: 2026-11-10 (only proved emails for `tenant.signed_up` and `demo.opened`)
 
 Copy the sender from [`templates/hub/`](../templates/hub/). When you add or change an event, update this file in the same piece of work.
 
@@ -118,6 +118,29 @@ Spec: `mcp-fbs-suites/docs/superpowers/specs/2026-11-17-fully-automatic-integrat
 - **Tenants made before the hub:** each app answers `POST {base_url}/api/fbs-hub/tenants` (contract `fbs-hub-tenants.v1.md`): real tenants with their owner, 100 a page. `php artisan hub:import-tenants {app} [--apply]` gives each one an org (same owner email = same org). No CRM event, no email.
 - **Org merge:** Platform › Orgs › Merge, for one customer who signed up with different emails. Refused when both orgs have a tenant in the same app.
 - **AI with no keys:** see section 11 (token exchange and the FBS connector).
+
+### 2.4 Several tenants per org, zero setup, switches (planned, owner 2026-11-18)
+
+Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` (§0, §1, §2). **Not built yet:** nothing here may be relied on until the spec's phases ship. It is written here so new work follows it (rule 66).
+
+**Zero setup (§0).** A client only signs up and uses the apps. Everything else happens by itself:
+- **Joining the org:** a new tenant joins its org when FBS ID has verified the admin's email and that person is the org's admin. Otherwise it waits as "Wants to join" for the org admin; it never joins silently.
+- **Pairing tenants:** automatic by `parent_tenant_ref`, then the same name, then the same admin. The org admin is asked only when no rule decides.
+- **Other defaults:** staff flow between apps, clear matches auto-link, logins are made from FBS ID, money approved in the source arrives approved (see `fbs-suites-connectors.md` section 7).
+- **What still asks a person:** a true record conflict, money no one approved, the per-school switch for Learn admission inquiries into Connect, and FBS's lawyer / NPC check.
+
+**Several tenants of one app in one org:**
+- `app_org_tenants` drops unique (`org_id`, `app_id`) and keeps (`app_id`, `tenant_ref`).
+- App links are per person, app and tenant.
+- Every gateway tool takes an optional `tenant` argument (left out = the person's default; `"*"` = a read on every tenant, run in parallel, each upstream call counted in the daily cap).
+- New tools `fbs__my_tenants` and `fbs__set_default_tenant`.
+- The tool list is the union of the person's tenants.
+- Org merge is no longer refused when both orgs use the same app.
+
+**Switches (§2): two values, both default on.**
+- The app's own switch (`admin_on`, set only by its admin) and the hub's (`suite_on`, Integrations page, set only by the org admin). The effective state is both on, and neither side writes the other's.
+- The hub enforces its own value by signing no MCP or connector token for that tenant.
+- `POST {app}/api/fbs-hub/switch` only tells the app, for display. The app tells the hub its own changes with `tenant.switch_changed`, and the hub corrects drift nightly from `whoami.switches`.
 
 ## 3. The envelope
 
@@ -247,6 +270,23 @@ Spec: `mcp-fbs-suites/docs/superpowers/specs/2026-11-17-phase-5b-tenant-lifecycl
 ### Planned, not built
 
 `tenant.trial_ending`, `tenant.reactivated`, and tenant-level `customer.*` sync. Do not send them until they are added here and routed.
+
+Added by spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §6.1 (owner 2026-11-18). These are planned and **not sent yet**: each is added to the catalogue above with its full shape before the first app sends it.
+
+| Event (v1) | Kind | Sender | Routed to |
+|---|---|---|---|
+| `tenant.created` | external | any app, a second or later tenant made inside it (`parent_tenant_ref`) | crm, hub |
+| `tenant.trial_ending` | external | apps with trials, 7 days before the end | crm |
+| `tenant.reactivated` | external | any app | crm |
+| `tenant.switch_changed` | thin | any app, its admin flips AI access, Linked by FBS Suites or Share events | hub |
+| `ai.proposal.decided` | thin | any app, a proposal confirmed, rejected or expired | hub |
+| `fbs.record.changed` | thin | any app, a connector record (`person`, `time`, `customer`, `product`, `work_item`, `pay_item`, `money_item`) created, updated or archived; carries `origin.app` | the linked apps that take that type |
+| `pay.payroll.finalized` | thin | Pay | People, Learn, Work, Stock (lock paid days and sales), hub |
+| `people.employee.hired` | thin | People | Pay, Learn |
+| `stock.low_stock` | thin | Stock | hub (events to the AI, client webhooks) |
+
+- `fbs.record.changed` replaces one event per record type. Named events stay only where a person is told something.
+- A new destination kind `hub` handles hub-only events inside the hub.
 
 ## 5. App keys and tenant types
 
@@ -386,6 +426,20 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 | Work | `propose_task`, `propose_task_update`, `propose_time_entry` | Waiting for your OK |
 | Pay | none: read-only | — |
 
+**Planned gateway features (owner 2026-11-18, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §3–§5; not built yet):**
+
+- **Protocol:**
+  - `prompts/*` (ready-made workflows such as `month_end_payroll_check` and `client_renewal_prep`);
+  - `resources/*` (`fbs://guide`, `fbs://tenants`, `fbs://events/recent`, help articles, and document links that open once and only for the same signed-in person);
+  - `completion/complete`;
+  - `outputSchema` and `structuredContent` (on `2025-06-18`);
+  - SSE progress;
+  - `listChanged: true`.
+- **Cross-app tools, joined in memory only** (the hub keeps nothing): `fbs__person_360`, `fbs__search`, `fbs__org_overview`, `fbs__reconcile`, `fbs__recent_events`. This replaces "no server-side joins".
+- **Every app adds the shared tools:** `get_knowledge`, `document_link`, `complete`, `list_proposals`, `cancel_proposal`, `recent_activity`, `sync_status`, `holds`. Plus its own list in the spec's §5.
+- **No new direct writes.** Work's `create_task` and `log_time_entry` and Connect's `create_contact` go next release.
+- **The CRM gets an MCP server** for FBS staff only.
+
 **Knowledge search by app (Phase 8, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-phase-8-search-knowledge.md`):**
 
 - Every app lists `search_knowledge` (`readOnlyHint: true`): input `query` (+ optional `limit`, 1 to 10), output `{results: [{source_id, title, snippet, url}]}`. `url` is empty when no page opens the source; cite `source_id` then.
@@ -434,3 +488,12 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 | Connect, Stock, People, Learn, Pay | planned (`fbs-suites-mcp/docs/superpowers/plans/2026-11-17-connect-work-stock-mcp-hooks-ai.md` Phase 3, `…learn-pay-people-integration.md` Phase 7) | the app's approvals list |
 
 The hub shows where to make the key in the Paste key dialog (`SuiteApp::KEY_PAGES` in `fbs-suites-mcp`): keep that list in step when a key page moves.
+
+## 12. Client webhooks (planned)
+
+Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §6.2 and §11 (C6). **Not built yet.**
+
+- **Endpoints:** an org admin registers up to 5 HTTPS endpoints (Integrations › Events › Webhooks; public addresses only, no redirects). Each picks events, apps and tenants, and gets a secret shown once, with Rotate.
+- **Payload:** the **thin form** of each event only (ids, type, time, app, tenant), never contact blocks or names (rule 18). The client fetches the record with `fbs__get_record` or the app's API, using its own key.
+- **Signing and retries:** signed like section 6.1 with the endpoint's secret. Retries `[60, 300, 1800, 7200, 43200]`. 20 failures in a row disable the endpoint and email the org admins once. Deliveries are kept 30 days, never the response body.
+- **Contract:** `mcp-fbs-suites/docs/contracts/fbs-client-webhooks.v1.md`, with verifier samples and test vectors.
