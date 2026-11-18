@@ -438,7 +438,7 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 
 **Planned gateway features (owner 2026-11-18, same spec §4–§5; not built yet):**
 
-- **Cross-app tools, joined in memory only** (the hub keeps nothing): `fbs__person_360`, `fbs__search`, `fbs__org_overview`, `fbs__reconcile`, `fbs__recent_events`. This replaces "no server-side joins".
+- **Cross-app tools, joined in memory only** (the hub keeps nothing): `fbs__search` and `fbs__recent_events` are built (2026-11-18): `fbs__search` calls **an app's read tool named `search`**, else its first `list_*` tool whose input takes `search` or `query` (and `limit` / `per_page` when it has one), so an app joins the search by having one. `fbs__person_360`, `fbs__org_overview` and `fbs__reconcile` wait on the §5 app tools. This replaces "no server-side joins".
 - **Every app adds the shared tools:** `get_knowledge`, `document_link`, `complete`, `list_proposals`, `cancel_proposal`, `recent_activity`, `sync_status`, `holds`. Plus its own list in the spec's §5.
 - **No new direct writes.** Work's `create_task` and `log_time_entry` and Connect's `create_contact` go next release.
 - **The CRM gets an MCP server** for FBS staff only.
