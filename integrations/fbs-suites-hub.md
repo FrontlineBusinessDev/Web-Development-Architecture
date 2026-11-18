@@ -492,11 +492,11 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 
 The hub shows where to make the key in the Paste key dialog (`SuiteApp::KEY_PAGES` in `fbs-suites-mcp`): keep that list in step when a key page moves.
 
-## 12. Client webhooks (planned)
+## 12. Client webhooks (built 2026-11-18)
 
-Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §6.2 and §11 (C6). **Not built yet.**
+Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §6.2, §6.4 and §11 (C6). Contract: `mcp-fbs-suites/docs/contracts/fbs-client-webhooks.v1.md` (verifier samples in PHP and Node, test vectors). Built in the hub only: **apps change nothing**. Every event an app already sends reaches these endpoints once its account is bound to an org.
 
-- **Endpoints:** an org admin registers up to 5 HTTPS endpoints (Integrations › Events › Webhooks; public addresses only, no redirects). Each picks events, apps and tenants, and gets a secret shown once, with Rotate.
-- **Payload:** the **thin form** of each event only (ids, type, time, app, tenant), never contact blocks or names (rule 18). The client fetches the record with `fbs__get_record` or the app's API, using its own key.
-- **Signing and retries:** signed like section 6.1 with the endpoint's secret. Retries `[60, 300, 1800, 7200, 43200]`. 20 failures in a row disable the endpoint and email the org admins once. Deliveries are kept 30 days, never the response body.
-- **Contract:** `mcp-fbs-suites/docs/contracts/fbs-client-webhooks.v1.md`, with verifier samples and test vectors.
+- **Endpoints:** an org admin registers up to 5 HTTPS endpoints on **Integrations › Webhooks** (`/integrations/webhooks`). Only public addresses are accepted, checked on save and before each send. The connection is pinned to the checked address and redirects are never followed. Each endpoint picks events (or `*`), apps and accounts, and gets a secret that is shown once; Rotate replaces it.
+- **Payload:** the **thin form** of each event only (`id`, `event`, `version`, `occurred_at`, `app`, `tenant {ref, label}`, a subject's ids), never a contact block or a name (rule 18). The client looks the record up through the app's API or MCP with its own key. `hub.*` events never leave the hub.
+- **Signing and retries:** signed like section 6.1, with the endpoint's secret. Retries follow `[60, 300, 1800, 7200, 43200]`; any other 4xx fails at once. 20 failures in a row disable the endpoint and email the org admins once. Deliveries are kept 30 days, never with the response body.
+- **Tools (gateway):** `fbs__list_events`, `fbs__get_event`, `fbs__failed_deliveries`, `fbs__list_endpoints`, and `fbs__replay_event` (org admin with a write key, own endpoints only). Staff keys read every org's events and never replay.
