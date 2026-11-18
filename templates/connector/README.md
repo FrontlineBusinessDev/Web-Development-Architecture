@@ -19,3 +19,7 @@ The files here are FBS People's, the `person` center (`laravel-fbs-people`, buil
 | `app/Models/FbsChange.php`, `FbsVersion.php`, the migration | Use your tenant column and table prefix rule. The tenant column is never fillable. |
 
 Wrap every save your other connectors make from another app's data in `ApplyChanges::receiving()`, or the change log sends it back (the loop guard).
+
+## Login apps (owner 2026-11-18 option 2)
+
+Work (`laravel-fbs-work`), Stock (`laravel-fbs-stock`) and Connect (`laravel-fbs-connect`) keep people as sign-in accounts, so they add one thing to this template: an email another app changes never applies at once. It waits in `fbs_email_changes` for that app's admin (Work: a workspace admin, Settings › Users; Stock: an owner of the store, Settings; Connect: an admin, the Users page). Confirm applies and audits it; Reject keeps the email and marks the change `superseded`. A status from another app never switches off the last active admin or owner. Copy `app/FbsSync/*`, `PersonType::apply` and `FbsSync\EmailChangeController` from one of them.
