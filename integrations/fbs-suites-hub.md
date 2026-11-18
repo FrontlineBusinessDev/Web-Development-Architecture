@@ -129,7 +129,7 @@ Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-too
 - **Other defaults:** staff flow between apps, clear matches auto-link, logins are made from FBS ID, money approved in the source arrives approved (see `fbs-suites-connectors.md` section 7).
 - **What still asks a person:** a true record conflict, money no one approved, the per-school switch for Learn admission inquiries into Connect, and FBS's lawyer / NPC check.
 
-**Several tenants of one app in one org:**
+**Several tenants of one app in one org (built in the hub 2026-11-18, `mcp-fbs-suites` plan `2026-11-18-phase-1-multi-tenant-hub.md`; the apps' `not_a_member` refusal and §1.2 joins are still to come):**
 - `app_org_tenants` drops unique (`org_id`, `app_id`) and keeps (`app_id`, `tenant_ref`).
 - App links are per person, app and tenant.
 - Every gateway tool takes an optional `tenant` argument (left out = the person's default; `"*"` = a read on every tenant, run in parallel, each upstream call counted in the daily cap).
@@ -478,7 +478,7 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 | Connect | `/api/integrations/mcp` | Settings › API keys (AI module) | Platform › Security › Staff AI keys (two-factor on) | `tenant` + `reason`, as Platform › Enter (the business's Developer role); the key reaches only MCP |
 | Learn | `/api/mcp` | Settings › School › API Keys | Platform › Settings › Staff AI keys | as Enter school |
 
-**The gateway's own tools** (`fbs__…`, so no app may use the key `fbs`): `fbs__whoami` (the linked apps) and `fbs__guide` (how records join across apps: People's `external_id` is the shared person id, what `employee_number` means in each app, tenants, masking). The hub answers both itself. A gateway key may make 60 requests a minute and `mcp.daily_cap_per_key` tool calls a day (default 2000, then JSON-RPC -32003, audited once a day as `mcp.cap_reached`).
+**The gateway's own tools** (`fbs__…`, so no app may use the key `fbs`): `fbs__whoami` (the linked apps and, per app, the tenants), `fbs__my_tenants` (the companies, schools or workspaces the person reaches, and the default), `fbs__set_default_tenant` (the person's own default per app; read-only, `_meta["fbs/preference"]`, audited `link.default`) and `fbs__guide` (how records join across apps: People's `external_id` is the shared person id, what `employee_number` means in each app, tenants, masking). The hub answers both itself. A gateway key may make 60 requests a minute and `mcp.daily_cap_per_key` tool calls a day (default 2000, then JSON-RPC -32003, audited once a day as `mcp.cap_reached`).
 
 **Gateway key classes** (`KeyPolicy::classOf`): read (any key), propose (a tenant key with `propose`, or `write`), write (a tenant key with `write`). Staff keys hold neither. New keys page: Read only, Read + propose, Read + write (being retired).
 
