@@ -12,7 +12,8 @@ How FBS People (the HRIS) hands people, time and money items to FBS Pay (payroll
 
 | | FBS People | FBS Pay |
 | --- | --- | --- |
-| People, their pay record, branch, department | owns; sends | keeps a copy, read-only ("Managed in FBS People") |
+| People: name, contact, employee number, department, position, employment type, hire date, and their salary (pay record) | edits; each change goes to the other app (owner 2026-11-18, `integrations/contracts/fbs-record.v1.md`; the later change wins) | edits; each change goes to the other app |
+| Government ids, bank, branch, separation status | owns; sends | keeps a copy, read-only ("Managed in FBS People") |
 | Time: punches, overtime, leave | owns; sends when a cutoff locks | takes it; its own time entry is closed while connected |
 | Claims, HMO dependent premiums, leave conversions | approves; sends | pays as payroll adjustments |
 | Payroll runs, payslips, statutory, tax | never makes them | owns everything |

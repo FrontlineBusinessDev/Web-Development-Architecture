@@ -42,4 +42,5 @@ Built: FBS People (the `person` center) and FBS Pay, for `person`, 2026-11-18. T
 | Type | Fields |
 |---|---|
 | `person` | `first_name`, `middle_name`, `last_name`, `email`, `mobile`, `employee_number`, `department`, `position`, `employment_type`, `date_hired`, `status` (`active` / `inactive`) |
+| `person`, salary (People and Pay only) | `compensation:{Y-m-d}` => `{basic_pay, pay_type}`, one field per effective date, so each dated pay row wins on its own (rule 46). Never sent to any other app. Pay answers `locked` for a date inside a finalized run of that person. |
 | `time`, `customer`, `product`, `work_item`, `money_item`, `pay_item` | as the plan's Global Constraints; not built yet |
