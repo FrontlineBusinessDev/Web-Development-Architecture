@@ -113,7 +113,9 @@ Draining a container: the rollout touches the flag, Traefik's next check (within
 - **Timing rule:** the connection's `retry_after` (90 s in `config/queue.php`) is longer than the worker's `--timeout` (30 s), which is longer than any job's own `$timeout` (at most 20 s). Otherwise a slow job runs twice.
 - **Long jobs** (backups, AI turns, big exports) go on their own queue name, their own worker service (`<name>-queue` with `QUEUE_NAMES` and `QUEUE_TIMEOUT`), and their own connection whose `retry_after` is longer than that timeout (`QUEUE_WORKER_CONNECTION`).
 - **Retries:** jobs are safe to run twice and set their own backoff (rule 33). The hub sender uses `[60, 300, 1800, 7200, 43200]` ([fbs-suites-hub.md](../integrations/fbs-suites-hub.md)).
-- **Shutdown:** the worker is PID 1 (`exec`), so SIGTERM lets it finish the current job within `stop_grace_period`.
+- **Shutdown:** the worker is PID 1 (`exec`), so the stop signal (SIGTERM, or SIGQUIT in the `serversideup/php` images) lets it finish the current job within `stop_grace_period`.
+    - Before the `exec`, bash is PID 1: the kernel drops a signal PID 1 has no handler for, and bash ignores SIGQUIT in any case. A stop in that window (a deploy recreating a worker that `queue:restart` just restarted, still in `wait-for-db.sh`) is lost, and Docker waits the whole `stop_grace_period` before killing it. `worker.sh` runs the wait in the background behind `trap '...; exit 0' TERM QUIT INT` and `wait`, then clears the trap before `exec`. Reference: FBS Pay `scripts/worker.sh`.
+    - A service whose PID 1 has no handler for the stop signal (`php -S` for the maintenance page) sets `init: true`, so Docker's init passes the signal on.
 - **Scheduler:** one `schedule:work` container. Every schedule uses `->onOneServer()->withoutOverlapping()`, so a second scheduler during a rollout never runs a task twice.
 
 ## Files and object storage
