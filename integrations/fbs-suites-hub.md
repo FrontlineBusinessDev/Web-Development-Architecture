@@ -428,15 +428,16 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 | Work | `propose_task`, `propose_task_update`, `propose_time_entry` | Waiting for your OK |
 | Pay | none: read-only | — |
 
-**Planned gateway features (owner 2026-11-18, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §3–§5; not built yet):**
+**Gateway protocol (spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §3, built 2026-11-18):**
 
-- **Protocol:**
-  - `prompts/*` (ready-made workflows such as `month_end_payroll_check` and `client_renewal_prep`);
-  - `resources/*` (`fbs://guide`, `fbs://tenants`, `fbs://events/recent`, help articles, and document links that open once and only for the same signed-in person);
-  - `completion/complete`;
-  - `outputSchema` and `structuredContent` (on `2025-06-18`);
-  - SSE progress;
-  - `listChanged: true`.
+- `prompts/*`: ready-made workflows such as `month_end_payroll_check`, `client_renewal_prep` and `store_reorder_plan`, hub templates that name tools. A prompt is listed only when the person has every tool it names, so **a prompt appears once your app ships the tools it names** (the list is in the spec's §3.2).
+- `resources/*`: `fbs://guide`, `fbs://tenants`, `fbs://events/recent` (thin: ids, type, time, app, tenant label). Help articles and one-use document links come with the app tools `get_knowledge` and `document_link` (not built in any app yet).
+- `completion/complete`: `tenant` from the person's tenants; a prompt argument naming a record (`company`, `person`, `school`, `store`) through **an app's optional `complete` tool** (`{kind, prefix}` → `structuredContent.values`: at most 10 `{value, label}`). An app without it gives no completions.
+- **What an app can add, at its own pace:** `title` and `outputSchema` on its tool definitions, and `structuredContent` beside the `content` text in `tools/call` answers. The gateway passes them through unchanged, and drops them for a client whose `MCP-Protocol-Version` is `2025-03-26`.
+- SSE progress for a `tools/call` with `_meta.progressToken`, and `listChanged: true` (a link that turns failed during a call adds `notifications/tools/list_changed`).
+
+**Planned gateway features (owner 2026-11-18, same spec §4–§5; not built yet):**
+
 - **Cross-app tools, joined in memory only** (the hub keeps nothing): `fbs__person_360`, `fbs__search`, `fbs__org_overview`, `fbs__reconcile`, `fbs__recent_events`. This replaces "no server-side joins".
 - **Every app adds the shared tools:** `get_knowledge`, `document_link`, `complete`, `list_proposals`, `cancel_proposal`, `recent_activity`, `sync_status`, `holds`. Plus its own list in the spec's §5.
 - **No new direct writes.** Work's `create_task` and `log_time_entry` and Connect's `create_contact` go next release.
