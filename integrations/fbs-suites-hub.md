@@ -137,6 +137,8 @@ Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-too
 - The tool list is the union of the person's tenants.
 - Org merge is no longer refused when both orgs use the same app.
 
+**Connector tokens (built 2026-11-18, `mcp-fbs-suites` plan `2026-11-18-every-app-two-way-sync.md` Task 1; contract `docs/contracts/fbs-connector-token.v1.md`):** an app asks `POST /api/fbs-id/connector-token` (Basic with its FBS ID client) for a 5-minute token to another app's tenant, and `GET /api/fbs-id/connector-peers?tenant=` for its linked apps, their address and the shared types. The receiving app checks the token with FBS ID's JWKS (`aud` = itself, single-use `jti`). This is how every app sends shared records (`fbs-suites-connectors.md` section 7).
+
 **Switches (§2): two values, both default on.**
 - The app's own switch (`admin_on`, set only by its admin) and the hub's (`suite_on`, Integrations page, set only by the org admin). The effective state is both on, and neither side writes the other's.
 - The hub enforces its own value by signing no MCP or connector token for that tenant.

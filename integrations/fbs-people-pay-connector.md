@@ -6,7 +6,7 @@ How FBS People (the HRIS) hands people, time and money items to FBS Pay (payroll
 - **Sources:**
   - People: `tasks/plan-fbs-pay.md` (phases and decisions), `tasks/todo.md` ("FBS Pay"), `app/FbsPay/*` (`Client`, `ConnectionCode`, `EmployeeRow`, `CutoffPackage`, `MoneyItems`, `Watch`), `app/Jobs/{PushToFbsPay,SendCutoff,PullPayslips}.php`, `app/Http/Controllers/FbsPayWebhookController.php`, `routes/fbs-pay.php`, test `tests/Feature/MultiCompany/FbsPayConnectorTest.php`.
   - Pay: `docs/PROGRESS.md` ("FBS People connector"), `app/Connector/*` (`People`, `SyncEmployees`, `SyncCutoff`, `SyncAdjustments`), `app/Http/Controllers/Connector/*`, the `connector` group in `routes/api.php`, test `tests/Feature/FbsPeopleConnectorTest.php`.
-- **Last updated:** 2026-11-16 (`soloParent` on employee rows); phases 1 to 6 built on 2026-11-10 and checked end to end with both apps on one machine
+- **Last updated:** 2026-11-18 (personal, job and salary fields edited in either app through `contracts/fbs-record.v1.md`; salary is the `person` field `compensation:{date}`, sent between People and Pay only, and locked in both apps on or before the last finalized FBS Pay period); phases 1 to 6 built on 2026-11-10 and checked end to end with both apps on one machine
 
 ## 1. Who owns what (owner, Nov 10)
 

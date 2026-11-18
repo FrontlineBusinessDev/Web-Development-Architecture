@@ -56,9 +56,15 @@ How one FBS app hands records to another (FBS People to FBS Pay, FBS Learn to FB
 - A breaking change is a new version: a new file, a new code prefix, and the receiver answers both until every sender moved.
 - Change both sides, the contract file and this doc in the same piece of work (rule 55). Each phase of the integration plan ends with an audit section against its checklist.
 
-## 7. Every app connected, both ways (planned, owner 2026-11-18)
+## 7. Every app connected, both ways (owner 2026-11-18; `person` built)
 
-Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §0, §1.7, §1.8, §10 and §11, with the audit `docs/superpowers/audits/2026-11-18-multi-tenant-spec-audit.md`. **Not built yet.** Sections 1–6 stay the rules of what is built today; new connector work follows this section. The CRM stays out: it is FBS's own, not a client's.
+Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-tools-webhooks.md` §0, §1.7, §1.8, §10 and §11, with the audit `docs/superpowers/audits/2026-11-18-multi-tenant-spec-audit.md`. Sections 1–6 stay the rules of the connectors built before it; new connector work follows this section.
+
+**Built so far (2026-11-18):** the `person` type in all six tenant apps, on the shared-records contract `contracts/fbs-record.v1.md` (`PUT /api/fbs/connector/changes`, hub connector tokens, FBS People as the center), from `templates/connector/`:
+- People (center), Pay (with salary `compensation:{date}`, both apps lock a date inside a finalized FBS Pay period), Learn (staff);
+- Work, Stock and Connect, whose people are login accounts: names and status sync, but an email another app changes waits for that app's admin (owner option 2; see the template's README "Login apps").
+- Every app names the apps a record is shared with before a change (rule 72).
+What the rest of this section plans and is **not built yet**: the other types, the manifest and `outbound` pull, Settings › FBS apps pages, holds pages, and the health report and tally (plan Task 6). The built push is `PUT connector/changes`, not `PUT connector/{type}`. The CRM stays out: it is FBS's own, not a client's.
 
 **One framework, every pair.** Every tenant app (People, Pay, Learn, Connect, Work, Stock) implements one framework once, from `templates/connector/`, instead of one connector per pair.
 
