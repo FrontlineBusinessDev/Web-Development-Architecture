@@ -2,7 +2,7 @@
 
 How FBS apps keep shared records the same (owner 2026-11-18: any connected app may edit a shared field, and the change reaches every other connected app). Plan: `mcp-fbs-suites/docs/superpowers/plans/2026-11-18-every-app-two-way-sync.md`. Template: `templates/connector/`. Tokens: `mcp-fbs-suites/docs/contracts/fbs-connector-token.v1.md`. Rules 7, 18, 21, 33, 46, 47.
 
-Built: FBS People (the `person` center) and FBS Pay, for `person`, 2026-11-18. The other apps and types follow the plan.
+Built for `person`, 2026-11-18: FBS People (the center), FBS Pay (with salary) and FBS Learn (staff). Work, Stock and Connect and the other types follow the plan.
 
 ## Send changes
 
@@ -14,7 +14,8 @@ Built: FBS People (the `person` center) and FBS Pay, for `person`, 2026-11-18. T
   "origin": {"app": "people", "external_id": "people:12:345"},
   "changed_by": {"app": "pay", "first_name": "Pia", "last_name": "Lim"},
   "changed_at": "2026-11-18T06:12:30.123456Z",
-  "fields": {"mobile": "0917…", "department": "Finance"}
+  "fields": {"mobile": "0917…", "department": "Finance"},
+  "match": {"email": "ana@acme.test", "first_name": "Ana", "last_name": "Cruz"}
 }]}
 ```
 
@@ -34,7 +35,8 @@ Built: FBS People (the `person` center) and FBS Pay, for `person`, 2026-11-18. T
 - **Loop guard.** An app sends only changes its own people or jobs made, never one it took. Wrap every save another connector makes from another app's data as "received".
 - **Centers.** People for `person` and `time`, Connect for `customer` and `money_item`, Stock for `product`, Work for `work_item`. The center passes a change it took on to every other linked app, under its own id, never back to the app that made it. A non-center app sends to the center when the org has it linked, else to every linked app that takes the type.
 - **Ids.** Once the center has a record, its id is the shared id (`people:{company}:{employee}`). An app finds a record by that id, or by the id it sent the record under.
-- **Never merged, never deleted.** A record an app lacks is held for its people. A delete is sent as `status: inactive`.
+- **Auto-link (spec §0).** Every `person` change carries `match`: who the person is. A receiver that does not know the id links it to the one person it has with the same email and the same first and last name (case aside), and keeps that id. People keeps any app's id (`app_fbs_links`); the other apps link only People's ids (`people:…`). Two matches, or a different name, stay held.
+- **Never merged, never deleted.** A record an app lacks, with no clear match, is held for its people. A delete is sent as `status: inactive`.
 - **Linked apps.** Ask `GET {FBS Suites}/api/fbs-id/connector-peers?tenant=` before each run. A change waits until every app it goes to has answered; the next run sends it again.
 
 ## Shared fields
