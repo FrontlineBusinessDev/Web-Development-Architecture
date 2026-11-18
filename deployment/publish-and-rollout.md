@@ -3,8 +3,8 @@
 How a change gets from a developer's PC to production with no downtime, and how to undo it.
 
 - **Applies to:** every FBS Laravel app on the standard deploy. Each project's own steps live in its `DEPLOY.md` ([template](../templates/deploy-kit/DEPLOY.md)).
-- **Sources:** People `DEPLOY.md`, `scripts/publish.sh`, `deploy/*`; MCP `scripts/publish.sh` (lock, image-arrived check), `deploy/rolling-deploy.sh` (keep 3 builds); Learn `scripts/publish.sh` (docs-only retag); Work `deploy/rolling-deploy.sh` (env sync).
-- **Last updated:** 2026-11-07
+- **Sources:** People `DEPLOY.md`, `scripts/publish.sh`, `scripts/send-image.sh` (only missing layers), `deploy/*`; MCP `scripts/publish.sh` (lock, image-arrived check), `deploy/rolling-deploy.sh` (keep 3 builds); Learn `scripts/publish.sh` (docs-only retag); Work `deploy/rolling-deploy.sh` (env sync).
+- **Last updated:** 2026-11-18
 
 Related: [architecture.md](architecture.md), [docker-image.md](docker-image.md), [git-workflow.md](../rules/git-workflow.md), [rule 23](../rules/system-rules.md#rule-23-safe-deploys-and-migrations).
 
@@ -13,7 +13,7 @@ Related: [architecture.md](architecture.md), [docker-image.md](docker-image.md),
 ```
 php artisan deploy (your PC, on master, clean tree)
   -> build in the deployer image: composer ci:check, tests on PostgreSQL, Vite files to the bucket, image
-  -> docker save | gzip | ssh <server> docker load        (no registry)
+  -> scripts/send-image.sh: only the layers the server lacks, over SSH   (no registry)
   -> git push origin master
   -> POST {COOLIFY_URL}/api/v1/deploy?uuid=<deployer>
        -> deployer: finds <slug>-pc:<commit>, migrates, replaces web-1 then web-2, restarts workers
@@ -75,7 +75,7 @@ What `scripts/publish.sh` does:
 
 1. Takes a lock (`.git/publish.lock`): one deploy at a time per clone; a lock whose process is gone is taken over.
 2. Reads `.env.deploy` and refuses when a key is missing, or when the deployer uuid is the app's.
-3. Checks Docker locally and over SSH (`BatchMode`, keep-alives), the branch (`master`) and a clean tree.
+3. Checks Docker locally and over SSH (`BatchMode`, keep-alives), the branch (`master`), a clean tree, and that GitHub's `master` has nothing this one lacks (checked before the build, so a push can't be refused after it).
 4. Names the image `<slug>-pc:<first 12 characters of the commit>`. If the server already has it, skips to step 7.
 5. Builds it: `git archive HEAD` into the deployer image, which runs `deploy/build-image.sh` against the PC's Docker:
     1. the `checks` stage (`composer ci:check`);
@@ -84,7 +84,7 @@ What `scripts/publish.sh` does:
     4. the final image (with only the Vite manifest when the files went to the bucket).
 
     Any failure stops here. Nothing is sent and nothing is pushed.
-6. Sends it: if the server already has an image with the same id (a docs-only commit), it only tags it there. Otherwise `docker save | gzip | ssh docker load`, then checks the server really has it.
+6. Sends it: if the server already has an image with the same id (a docs-only commit), it only tags it there. Otherwise `scripts/send-image.sh`, then checks the server really has it. That script runs `docker save`, asks the server's containerd store (`ctr -n moby content ls`) which layer blobs it already holds, and sends the rest through `gzip | ssh docker load`. A code change usually sends only the app's own layers (tens of MB, not the whole image). If the server has no containerd store, or refuses the partial image, the whole image is sent. In the Dockerfile, put layers that rarely change (a `COPY --from=node` binary, system packages) before the app's code, so they stay the same from one build to the next.
 7. `git push origin master`.
 8. Starts the deployer: `POST /api/v1/deploy?uuid=<deployer>`. A non-200 answer is printed; the image is already on the server, so Redeploy on the deployer finishes the job.
 
@@ -131,6 +131,7 @@ Coolify → Deployer → **Runtime Logs** (not Deployment Logs). The last line s
 | `No .env.deploy` / `... is not set in .env.deploy` | Create or complete `.env.deploy`. |
 | `Cannot run docker on ... over SSH`, `Permission denied (publickey)` | The key is not in the server's `authorized_keys`, or the server was never trusted. |
 | `Uncommitted changes` | Commit first. |
+| `GitHub's master has commits this one doesn't` | Someone pushed since your last pull: `git pull`, then deploy again. |
 | `On <branch>: deploys go from master` | Merge into `master` first ([git-workflow.md](../rules/git-workflow.md)). |
 | `Another deploy is running` | Wait, or close the terminal that runs it. |
 | `composer ci:check failed` | Run `composer ci:check` locally and fix it. Never skip a check to deploy. |

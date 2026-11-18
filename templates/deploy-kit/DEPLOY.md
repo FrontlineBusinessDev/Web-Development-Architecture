@@ -6,7 +6,7 @@ Only `php artisan deploy` deploys. A plain `git push` to `master` deploys nothin
 
 ```
 php artisan deploy  ->  composer ci:check + tests on PostgreSQL + build, on your PC
-                    ->  docker save | gzip | ssh <server> docker load
+                    ->  scripts/send-image.sh: only the layers the server lacks, over SSH
                     ->  git push origin master  ->  Coolify API: start the deployer
                     ->  deployer finds __APP_SLUG__-pc:<commit> and rolls it out
 ```

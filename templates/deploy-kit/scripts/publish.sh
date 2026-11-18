@@ -45,6 +45,9 @@ on_server docker version --format '{{.Server.Version}}' >/dev/null || { echo "Ca
 branch=$(git rev-parse --abbrev-ref HEAD)
 [ "$branch" = master ] || { echo "On ${branch}: deploys go from master."; exit 1; }
 git diff --quiet HEAD || { echo "Uncommitted changes: commit them first (the image is built from the commit)."; exit 1; }
+# Before the build, not at the push: a master behind GitHub's would build and send, then fail to push.
+git fetch -q origin master
+git merge-base --is-ancestor origin/master HEAD || { echo "GitHub's master has commits this one doesn't: git pull first."; exit 1; }
 # The name deploy/coolify-deploy.sh looks for.
 repo=__APP_SLUG__-pc
 tag="${repo}:$(git rev-parse --short=12 HEAD)"
@@ -67,10 +70,11 @@ else
         on_server docker tag "$id" "$tag"
         echo "Same image as one already on ${DEPLOY_SSH#*@}: tagged it ${tag} there."
     else
-        echo "Sending ${tag} to ${DEPLOY_SSH#*@} (a few hundred MB, started $(date +%H:%M))..."
+        echo "Sending ${tag} to ${DEPLOY_SSH#*@} (started $(date +%H:%M))..."
         SECONDS=0
-        # The image counts as sent once the server has it, even if the connection broke at the very end.
-        docker save "$tag" | gzip -1 | on_server docker load || true
+        # Only the layers the server lacks. The image counts as sent once the server has it, even if
+        # the connection broke at the very end.
+        bash scripts/send-image.sh "$tag" "$DEPLOY_SSH" || true
         [ "$(on_server_has "$tag" || true)" = yes ] || { echo "Sending ${tag} failed after $((SECONDS / 60)) min: run php artisan deploy again."; exit 1; }
         echo "Sent in $((SECONDS / 60)) min."
     fi
