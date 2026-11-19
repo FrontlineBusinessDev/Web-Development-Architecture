@@ -37,6 +37,7 @@ Other apps use the same pattern under their own names:
 - Every tenant-owned table has the tenant id, first in its indexes and unique keys ([database](database.md)).
 - The tenant id is **never fillable** and never taken from request input. Resolve it from the session, the host or the API key.
 - Another tenant's record is a **404**, for read, update and delete.
+- **Spatie on Octane:** set `permission.register_octane_reset_listener` to `true`. The permission registrar outlives a request under Octane and otherwise keeps the role → permission list it first loaded, so a role made later (a new tenant, a reset sample tenant, a custom role) has no permissions on the workers that loaded before it, and its people get 403 on some requests only (FBS People QA 2026-11-19; People `9ea0cc38`, Learn `c7ef9b7b`). The cache store must be shared across web containers (database or Redis).
 - `User` and Spatie `Role` have **no** global scope (sign-in must find any email; a role scope poisons Spatie's permission cache). Filter them with the tenant's `constrain($query)` helper, never `where('company_id', $id)` with an id that may be null.
 - Bulk inserts and raw `DB::table()` writes skip the trait: set the tenant id yourself.
 - Turning a scope off (`withoutGlobalScope`) needs a comment saying why. Guest and public routes find the record across tenants on a globally unique key, then run the rest inside `Tenant::run($record->tenant_id, …)`.
