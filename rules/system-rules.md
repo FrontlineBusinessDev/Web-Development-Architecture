@@ -93,6 +93,7 @@ Search for `## Rule N.` to jump to a rule.
 71. Coming back to the tab brings fresh data: nobody refreshes the page
 72. A record shared with other FBS apps says so before it is changed or removed
 73. One approval is enough: what one FBS app approved is final in the others
+74. Every connection between FBS apps is two-way: a shared record is edited in either app and reaches the other
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -1904,6 +1905,25 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Reference (FBS Pay):** People's people (after HR's FBS Pay review in People, `fbs_pay_review`), cutoff time, approved overtime and leave, claims and `time` day records are written approved (`SyncEmployees`, `SyncCutoff`, `SyncAdjustments`, `FbsSync\TimeIn`); the old "Review new people first" switch is gone (2026-11-19), and a person it left waiting is added when People sends them again or applied from the leftover list. FBS Work's hours (`pay_item`, `approved` false) still get one approval in Pay's Approvals.
 - **Check:** Approve a person for FBS Pay in FBS People: they appear in FBS Pay at once, with nothing waiting in Pay. Approve overtime in People: it is approved in Pay. Log hours in FBS Work: they wait once, in Pay's Approvals.
 
+## Rule 74. Every connection between FBS apps is two-way: a shared record is edited in either app and reaches the other
+
+- **Rule:** When two FBS apps are connected, every record they share (a person and their shared fields, pay, time, leave, a customer, a product, a project or task) can be edited in either app, and the change reaches the other app. No connection is send-only, and no shared field is read-only in an app because another app "manages" it.
+- **Why:** Owner, Nov 19, 2026: the connections were built one way at a time (FBS Learn sends staff to FBS People, People sends people to FBS Pay), so a person fixing a teacher's mobile number or a day's time in the app they work in was told to go to another app. Each app must have the other's data available and editable where the person is (rule 69), with one record behind it.
+- **Do:**
+    - **Send and take every shared type both ways** through the shared-record contract (`integrations/contracts/fbs-record.v1.md`: `PUT /api/fbs/connector/changes`, the hub's connector token, the center app forwarding). A new connection lists, for each shared type, that both apps give it and take it.
+    - **Edit in place:** a shared field is an ordinary editable field in every connected app. Before the save, say which apps it also changes (rule 72).
+    - **One record, two copies kept in step:** match by the shared external id; the later change wins per field; a change that came from another app is never sent back to it (loop guard).
+    - **Results stay with the app that computes them:** a priced or computed result (a payslip line, a payroll total, a stock balance) goes to the other apps read-only, and is corrected by editing its inputs in either app, which then flow both ways.
+    - **Locks are about time, not ownership:** a change inside a finalized pay run or locked cutoff is answered `locked` (rule 46) in every app, never refused because "another app manages it".
+    - **Approvals follow rule 73:** what one app approved arrives approved.
+    - **Each app's switches still hold** (`fbs-hub-switch.v1`): "Linked by FBS Suites" off pauses both directions; nothing is lost, changes wait and go when it is on again.
+- **Don't:**
+    - Build a send-only connector, or a receive-only one, for a type people edit.
+    - Lock a shared field with "Managed in FBS X" or "From FBS X" so it can only be changed in the other app.
+    - Tell a person to go to the other app to change a shared field.
+- **Reference:** the `person` type of fbs-record.v1 (FBS People is the center; Pay, Learn, Connect, Work and Stock edit and take it), salary between FBS People and FBS Pay, and `time` from People to Pay and from Work to People (`fbs-suites-mcp/docs/superpowers/plans/2026-11-18-every-app-two-way-sync.md`). **Still one way on 2026-11-19, to be made two-way:** FBS Learn's staff connector into People (`learn-people-staff.v1`; People locks name, email, mobile, type and hire date "From FBS Learn", `App\FbsLearn\Managed`), FBS Learn's time and leave into People (`learn-people-time.v1`; People makes those days read-only, `App\FbsLearn\TimeSource`), and the class-coverage pay item from Learn through People to Pay (a priced result in Pay, so read-only there by the rule above; the coverage itself is edited in Learn only, and People shows it nowhere yet).
+- **Check:** Change a shared field of a connected record in each app in turn: the other app shows the change within the sync delay, with no field locked and no "go to the other app" note. Turn "Linked by FBS Suites" off, edit in one app, turn it on: the change arrives. A payslip line is read-only in People and changes when its inputs change.
+
 ---
 
 ## Design profile
@@ -2041,3 +2061,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-13:** Rule 71 added (owner): coming back to the tab or back online reloads what went stale, through one data client setting, so nobody refreshes the page.
 - **2026-11-18:** Rule 72 added (owner): a record connected to other FBS apps asks in the app's modal, naming the apps and what happens there, before a change to a shared field, an archive or a delete is saved.
 - **2026-11-19:** Rule 73 added (owner): one approval is enough; what one FBS app approved is final in the others (FBS Pay no longer reviews people FBS People already approved).
+- **2026-11-19:** Rule 74 added (owner): every connection between FBS apps is two-way; a shared record is edited in either app and reaches the other, with no "managed in another app" locks. FBS Learn's staff and time connectors into FBS People are listed as still one way.
