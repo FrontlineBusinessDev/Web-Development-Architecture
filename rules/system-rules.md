@@ -92,6 +92,7 @@ Search for `## Rule N.` to jump to a rule.
 70. Public pages share one look: the best public page is the reference
 71. Coming back to the tab brings fresh data: nobody refreshes the page
 72. A record shared with other FBS apps says so before it is changed or removed
+73. One approval is enough: what one FBS app approved is final in the others
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -1887,6 +1888,22 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Reference:** to be built first in FBS Pay and FBS People with the two-way sync (`fbs-suites-mcp/docs/superpowers/plans/2026-11-18-every-app-two-way-sync.md`, Task 5): the server answers which apps a record is connected to with the record (`connected_apps` from `fbs_changes.targets` and the external id), and the edit, archive and delete forms open the confirm modal from it.
 - **Check:** Edit a shared field of a connected record: the modal names the apps and the field; cancel changes nothing. Edit an app-only field: no modal. Archive and delete: the modal says the other apps mark it inactive and keep it.
 
+## Rule 73. One approval is enough: what one FBS app approved is final in the others
+
+- **Rule:** A request or record that was approved in the FBS app where it was made (leave, overtime, time corrections, claims, a new person cleared for payroll, a pay change) arrives in the other connected apps already approved. The receiving app writes it as approved and never asks anyone to approve it again.
+- **Why:** Owner, Nov 19, 2026: FBS People's people going to FBS Pay waited for a second review in Pay after HR had already approved them in People. Two approvals of the same thing double the work, and the two can disagree. The app where the work is done owns the decision (rule 47).
+- **Do:**
+    - **Write approved changes as approved:** the receiver sets the status, the decider (the connector) and the time, and marks where it came from ("From FBS People").
+    - **Only ask where nobody approved yet:** a change from an app with no approval for it (FBS Work's logged hours have no time approval) gets its one approval in the receiving app, through its approval engine (rule 47). The sender says which with `approved` (fbs-record.v1).
+    - **Locks still win:** a change inside a finalized pay run is answered `locked` (rule 46), not queued for approval.
+    - **Data problems are not approvals:** a record the receiver can't match or save is `held` or `refused` for an admin to fix (link, ignore, fix the source); that is not a second approval.
+    - **Show the source:** the receiving app shows who approved it and in which app, read-only.
+- **Don't:**
+    - Add a "review before it arrives" switch or queue for changes the source app already approved.
+    - Re-open, re-approve or reject in the receiving app something the source approved; correct it in the source, and the correction arrives the same way.
+- **Reference (FBS Pay):** People's people (after HR's FBS Pay review in People, `fbs_pay_review`), cutoff time, approved overtime and leave, claims and `time` day records are written approved (`SyncEmployees`, `SyncCutoff`, `SyncAdjustments`, `FbsSync\TimeIn`); the old "Review new people first" switch is gone (2026-11-19), and a person it left waiting is added when People sends them again or applied from the leftover list. FBS Work's hours (`pay_item`, `approved` false) still get one approval in Pay's Approvals.
+- **Check:** Approve a person for FBS Pay in FBS People: they appear in FBS Pay at once, with nothing waiting in Pay. Approve overtime in People: it is approved in Pay. Log hours in FBS Work: they wait once, in Pay's Approvals.
+
 ---
 
 ## Design profile
@@ -2023,3 +2040,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-13:** Rule 70 added (owner): public pages share one look; the best existing public page (People's careers page) is the reference and every other public page is built from its parts through one shared frame.
 - **2026-11-13:** Rule 71 added (owner): coming back to the tab or back online reloads what went stale, through one data client setting, so nobody refreshes the page.
 - **2026-11-18:** Rule 72 added (owner): a record connected to other FBS apps asks in the app's modal, naming the apps and what happens there, before a change to a shared field, an archive or a delete is saved.
+- **2026-11-19:** Rule 73 added (owner): one approval is enough; what one FBS app approved is final in the others (FBS Pay no longer reviews people FBS People already approved).
