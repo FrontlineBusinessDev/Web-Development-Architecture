@@ -47,8 +47,10 @@ All under `/api/v1/connector`, bearer connector key. Every write sends an `Idemp
 | `PUT cutoffs` | One locked cutoff: `period`, each person's `days` and `summary`, `overtime`, `leave` | `data` counts; 422 `errors.package` lists every problem; 409 when the period is held |
 | `PUT adjustments` | Claims (`claim:{id}`), HMO premiums (`hmo:{Y-m}:{enrollment}`) as `amount`; leave conversions (`leave-conversion:{year}:{employee}:{type}`) as `days` | per row, like employees |
 | `DELETE adjustments/{ref}` | Withdraw an item | 409 once a run paid it |
+| `PUT loans` | Loans and cash advances HR approved (`people-loan:{id}`): `type` (loan, cash_advance), `label`, `principal`, `monthly_deduction`, `start_date`; Pay deducts them on its own schedule (FBS Connected Data phase 2, 2026-11-21) | per row, like employees; a loan already being repaid is refused |
+| `GET remittances?since=Y-m` | Government remittances per agency (sss, philhealth, pagibig, bir) and month: `employee_share`, `employer_share`, `total`, `status` (not_filed, filed, paid), `reference_no`, `paid_on`. Company totals only (phase 2, 2026-11-21) | `data` |
 | `GET payroll?since=Y-m-d` | Runs finalized since then (default 31 days) | `data` |
-| `GET payroll/{period}` | A finalized run: per line `id`, `external_id`, `gross_pay`, `total_deductions`, `net_pay`, `url`, `paid_refs` | 404 unless finalized |
+| `GET payroll/{period}` | A finalized run: per line `id`, `external_id`, `gross_pay`, `total_deductions`, `net_pay`, `url`, `paid_refs`, and `loans: [{ref, balance}]` for People's loans | 404 unless finalized |
 
 - **Solo parent (RA 11861):** an employee row may carry `soloParent: {"idNumber": "…", "idExpiry": "Y-m-d"} | null`. Sent with a value: People owns it and Pay grants that year's Solo Parent Leave when the ID is valid. `null`: not a solo parent, Pay clears its own. Left out (an older People): Pay keeps what it has. People sends it only when both the ID number and its expiry are set (People `App\FbsPay\EmployeeRow`, Pay `App\Connector\SyncEmployees` with `App\Support\SoloParent`).
 - **Cutoffs:** a whole package or nothing. Pay refuses it when someone is unknown, a date is outside the period, it has no overtime rate for a day, or the days do not add up to People's `summary` (late, undertime, absences, overtime minutes). Sending the period again replaces it. A run approved or finalized over those days holds it (409), but only a run of those people's own payroll groups or a run with no group.
@@ -59,7 +61,7 @@ All under `/api/v1/connector`, bearer connector key. Every write sends an `Idemp
 ## 4. Pay back (Pay to People)
 
 - Pay signs its webhooks like the hub: `X-FBS-Signature: t=…,v1=HMAC-SHA256(secret, "t.body")`, plus `X-FBS-Event` and `X-FBS-Delivery`. People refuses a signature more than 5 minutes off and keeps each delivery id, so a retry is a no-op.
-- On `payroll.finalized` (`data.id` is the run), People pulls `GET payroll/{period}` and keeps an overview per line. It marks the claims in `paid_refs` paid, with the run's payroll number as the reference. It sets final pay to Released for whoever's last day the run covers, and tells each person their payslip is ready (rule 25).
+- On `payroll.finalized` (`data.id` is the run), People pulls `GET payroll/{period}` and keeps an overview per line. It marks the claims in `paid_refs` paid, with the run's payroll number as the reference. It sets final pay to Released for whoever's last day the run covers (HR's offboarding sheet shows that payslip), keeps each People loan's balance, pulls `GET remittances` for Insights › Compliance, and tells each person their payslip is ready (rule 25).
 - People keeps a payslip link only when it is on the connection's own Pay address.
 - Pay's payslip PDF is not sent: it opens with a birth-date password, and People sends no birth dates.
 
