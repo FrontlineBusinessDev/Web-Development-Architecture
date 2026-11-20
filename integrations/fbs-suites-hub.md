@@ -245,6 +245,7 @@ These events tell **the same org's** other apps that something happened. The rec
 |---|---|---|---|
 | `people.employee.separated` | People, when an employee becomes separated or inactive, for companies linked to FBS Learn | Learn (`app-learn`) | Notifies the School Admins to review that staff member; Learn never changes them itself |
 | `people.employee.changed` | People, when an employee who came from Learn changes | Learn (`app-learn`) | Logged; reserved for refreshing `people_external_id` |
+| `person.erased` | People, when its retention purge erases a former employee (only People starts an erasure; owner 2026-11-20), for companies linked to FBS Learn | Learn (`app-learn`); Pay, Connect, Work, Stock later (Phase B) | Asks the admins to erase their copy or keep it (Learn: Settings › School › FBS People, "Erased in FBS People"); never erased automatically. Hub spec `2026-11-20-person-erased` |
 
 Example:
 
