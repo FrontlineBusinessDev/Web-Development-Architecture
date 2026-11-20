@@ -26,7 +26,7 @@ Built for `person`, 2026-11-18; `holiday`, `branch` and `leave_type` 2026-11-20 
   - `superseded`: an equal or later change of each field is already here;
   - `held`: no such record here; it waits for a person to link it;
   - `refused`: a bad shape, or a type this app does not take;
-  - `locked`: inside a finalized pay period, or a suggestion already decided in the app (`work_item`).
+  - `locked`: inside a finalized pay period, or a suggestion already decided in the app (`work_item`), or a billable row already on an invoice (`money_item` credit_sale / billable_hours).
 - Refusals of the whole call: 401 `bad_token` / `replayed`, 403 `scope`, 404 `no_tenant`, 422 `bad_request`.
 
 ## Rules every app follows
