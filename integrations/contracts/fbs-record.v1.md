@@ -2,7 +2,7 @@
 
 How FBS apps keep shared records the same (owner 2026-11-18: any connected app may edit a shared field, and the change reaches every other connected app). Plan: `mcp-fbs-suites/docs/superpowers/plans/2026-11-18-every-app-two-way-sync.md`. Template: `templates/connector/`. Tokens: `mcp-fbs-suites/docs/contracts/fbs-connector-token.v1.md`. Rules 7, 18, 21, 33, 46, 47.
 
-Built for `person`, 2026-11-18 (personal fields, government ids, bank, gap fill and `department` 2026-11-19: People, Pay, Learn): FBS People (the center), FBS Pay (with salary), FBS Learn (staff), FBS Work (workspace members), FBS Stock (store owners) and FBS Connect (staff accounts, never the client portal). The other types follow the plan.
+Built for `person`, 2026-11-18; `holiday`, `branch` and `leave_type` 2026-11-20 (below) (personal fields, government ids, bank, gap fill and `department` 2026-11-19: People, Pay, Learn): FBS People (the center), FBS Pay (with salary), FBS Learn (staff), FBS Work (workspace members), FBS Stock (store owners) and FBS Connect (staff accounts, never the client portal). The other types follow the plan.
 
 ## Send changes
 
@@ -72,6 +72,16 @@ Type `department`, People the center, between People, Pay and Learn (`SyncTypes`
 - Never two departments of one name in an app. A change id already taken is `unchanged`; an equal state is `superseded`. No field times: departments are matched by name, and the last arrival wins.
 - The loop guard and forwarding are those of `person`: a department saved from another app's change is never sent back, and People passes each one it took to the other linked apps.
 - An app's own Department pages and pickers list the shared ones like any other.
+
+## Holidays and shared lists (built 2026-11-20, FBS Connected Data phase 1)
+
+Spec: `mcp-fbs-suites/docs/superpowers/specs/2026-11-20-connected-data-phase-1.md`. FBS People is the center of all three (owner decision 22). Each is kept once: an app with the same list sends its own changes to People and takes People's, which People passes on under its own id (`people:{company}:{type}:{id}`). The receiver keeps the sender's id against its own row (the change's `match.id`), so later changes find it; a first change is matched by date and type (holiday), by code then name (leave type) or by name (branch). Later change wins; a change no later than the last one taken for that row is `superseded`. Nothing is deleted: `status: inactive` switches the row off (a received holiday is removed in People, archived in Pay and Learn).
+
+| Type | Apps | Fields |
+|---|---|---|
+| `holiday` | People ⇄ Pay, People → Learn | `date` (Y-m-d), `name`, `type` (`regular`, `special_non_working`, `special_working`), `status`. Company-wide holidays only: a branch's or an entity's own holiday, Pay's `double_holiday` and People's holidays made by the FBS Learn connector ("No classes") stay in their app. Learn keeps them as published Holiday events, never touches an event the school made, makes none for a day the school already marked or for a special working day, and sends none. |
+| `branch` | People ⇄ Pay | `name`, `address`, `status`. Pay refuses a new branch over its plan's one-branch limit. |
+| `leave_type` | People ⇄ Pay, People → Learn | `code`, `name`, `paid`, `days_per_year`, `status`. Company-wide types only (not an entity's own). Pay's leave types have no code or off switch (matched by name; `inactive` changes nothing there). Learn keeps them as leave categories. |
 
 ## Tally (nightly check, Task 6)
 
