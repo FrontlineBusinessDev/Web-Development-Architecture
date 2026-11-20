@@ -2,7 +2,7 @@
 
 What every FBS app shows behind its top-left logo: the FBS apps the customer's organisation has (open them), and the other FBS apps, greyed, with what each does, how it would connect, and a way to subscribe.
 
-- **Applies to:** every FBS app with a sidebar logo. Built first in FBS People; the others follow one app at a time.
+- **Applies to:** every FBS app with a sidebar logo. Built in FBS People and FBS Pay; Learn, Work, Stock, Connect and the CRM follow one app at a time.
 - **Source:** FBS CRM (`laravel-fbs-crm`) only. Not FBS Connect, and not the FBS Suites hub (the hub keeps its own technical link data, `app_org_tenants` and `connector-peers`, which the launcher never reads).
 - **Owner decision:** 2026-11-21.
 - **Rules:** 3 (skeleton while it loads), 12 (the token is a key), 14 (Test Drive sample), 41 (floating layer), 60 (ask before Request), 63 (an app the customer lacks stays visible with the way to get it), 75 (pull before you plan).
@@ -63,7 +63,7 @@ Body: `app`, `tenant`, `tenant_name`, `wants` (an active app key, not `app`), `n
     - **Your FBS apps:** this app ("You're here") and the apps the organisation has, in the app's brand colour, with "Connected: …" and an Open link in a new tab.
     - **More FBS apps:** greyed, each with what it does, "Would connect: …", **Request** (asks first, then "FBS will contact you"), and **Subscribe and pay** when the app is `self_serve` (opens that app's own sign-up and billing in a new tab). People without admin rights see "Ask your admin to add it."
     - The Test Drive answers from a sample and sends nothing.
-- **Reference:** FBS People `resources/js/components/kit3/shell/brand-launcher.tsx`, `app-launcher.tsx`, `app-launcher-api.ts`, `app-launcher-sample.ts`; `app/Http/Controllers/ShellAppsController.php`; tests `tests/Feature/MultiCompany/AppLauncherTest.php`. FBS CRM `app/Support/Launcher/Launcher.php`, tests `tests/Feature/Launcher/LauncherTest.php`.
+- **Reference:** FBS People `resources/js/components/kit3/shell/brand-launcher.tsx`, `app-launcher.tsx`, `app-launcher-api.ts`, `app-launcher-sample.ts`; `app/Http/Controllers/ShellAppsController.php`; tests `tests/Feature/MultiCompany/AppLauncherTest.php`. FBS Pay (ops kit, react-router) `resources/js/ops/components/layout/AppLauncher.tsx`, `lib/services/launcherService.ts`, Test Drive `demo/modules/launcher.ts`; `ShellAppsController` on `api/shell/apps` (`notifications.view|ess.view` to read, `settings.company.edit` to request); tests `tests/Feature/AppLauncherTest.php`, `tests/js/launcher.test.mts`. FBS CRM `app/Support/Launcher/Launcher.php`, tests `tests/Feature/Launcher/LauncherTest.php`.
 
 ## 4. Adding an app
 
