@@ -445,7 +445,7 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 **Accounting export (Connected Data phase 6, pick 43, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-21-connected-data-phase-6.md`):**
 
 - Integrations › Accounting in the hub gives org admins a Xero manual journal CSV for a month: FBS Pay payroll and FBS Stock sales, one balanced journal per tenant, with the org's own account codes. The hub never posts to Xero and keeps nothing of the export. Connect is left out: it sends its invoices to Xero itself.
-- It uses two more service-key tools, also a contract (same rule as above): Pay `payroll_journal {month}` (sums of the finalized runs paid in the month: `gross_pay`, `net_pay`, `withholding_tax`, each SSS / PhilHealth / Pag-IBIG share, `runs`, `headcount`) and Stock `sales_summary` with `credit_collected` (utang paid back in the range).
+- It uses two more service-key tools, also a contract (same rule as above): Pay `payroll_journal {month}` (sums of the finalized runs paid in the month, plus the finalized 13th month runs generated in it: `gross_pay`, `net_pay`, `withholding_tax`, each SSS / PhilHealth / Pag-IBIG share, `runs`, `thirteenth_month_runs`, `headcount`) and Stock `sales_summary` with `credit_collected` (utang paid back in the range).
 
 **Proposal tools by app (Phase 7, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-phase-7-cross-app-proposals.md`):**
 
