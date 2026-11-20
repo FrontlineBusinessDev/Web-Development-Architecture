@@ -16,6 +16,7 @@ How every FBS project names branches, writes commits, reviews changes, keeps sec
 
 - Work lands on `master` in one of two ways: committed straight to `master` (the owner's own sessions, as FBS People does, rule 56), or through a pull request from a branch. Either way every commit on `master` passes the checks.
 - **AI sessions commit and push straight to the project's default branch** (`master`, or the one named under "Known differences today"). They never create a branch, not even the `claude/...` branch the tool gives a session (owner's decision, 2026-11-07). Each project's `CLAUDE.md` repeats this with its own default branch.
+- **Pull first (rule 75):** before research, a plan, a review or a change, run `git pull --ff-only` on the default branch of every repo you will read or change. Never pull over uncommitted work; a pull that cannot fast-forward stops for the owner.
 - Keep branches short-lived. Merge `master` into your branch, or rebase your own unshared branch onto it, before asking for review.
 - Delete a branch once it is merged. A merged pull request is finished: follow-up work starts a new branch from the latest `master`.
 - CI or tooling that names a branch (a GitHub workflow, a deploy script, `DEPLOY_BRANCH`) names `master`.

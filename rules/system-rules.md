@@ -94,6 +94,7 @@ Search for `## Rule N.` to jump to a rule.
 72. A record shared with other FBS apps says so before it is changed or removed
 73. One approval is enough: what one FBS app approved is final in the others
 74. Every connection between FBS apps is two-way: a shared record is edited in either app and reaches the other
+75. Pull before you plan: read the latest default branch of every repo you rely on
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -1924,6 +1925,22 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Reference:** the `person` type of fbs-record.v1 (FBS People is the center; Pay, Learn, Connect, Work and Stock edit and take it), salary between FBS People and FBS Pay, and `time` from People to Pay and from Work to People (`fbs-suites-mcp/docs/superpowers/plans/2026-11-18-every-app-two-way-sync.md`). **FBS Learn and FBS People (made two-way 2026-11-19):** People no longer locks Learn's staff fields; a People edit goes to Learn through fbs-record.v1 `person` (employment types mapped both ways), and Learn's staff connector writes only the fields Learn changed since its last row (`app_employees.learn_row`), so it never reverts a People edit. Learn-timed people's punches, time requests and leave are editable in People; the days People changed go to Learn as `time` with `attendance` (`App\FbsSync\LearnTime`), and leave goes both ways (`TimeType`, Learn's `TimeIn`). The People → Learn half rides on fbs-record.v1, so it needs the hub link ("Linked by FBS Suites", Real tenants or the FBS Sample). **Still one way:** the class-coverage pay item from Learn through People to Pay (a priced result in Pay, read-only there by the rule above; the coverage itself is edited in Learn).
 - **Check:** Change a shared field of a connected record in each app in turn: the other app shows the change within the sync delay, with no field locked and no "go to the other app" note. Turn "Linked by FBS Suites" off, edit in one app, turn it on: the change arrives. A payslip line is read-only in People and changes when its inputs change.
 
+## Rule 75. Pull before you plan: read the latest default branch of every repo you rely on
+
+- **Rule:** Before research, a plan, a review or a change, pull the latest default branch of every repo you will read or change: the project itself, this repo, and each other FBS app the work touches. Plan only from what is on the remote today.
+- **Why:** Owner, Nov 21, 2026: an app-launcher plan was researched in FBS People, FBS CRM, FBS Suites and this repo while all four were behind their remote, so the findings could have described code that had already changed.
+- **Do:**
+    - Run `git pull --ff-only` on the default branch of each repo before the first read, and again before a plan's first change if time has passed.
+    - Say in the plan which repos were pulled, and at which commit.
+    - If a repo has uncommitted work, leave it as it is: read it, say so in the plan, and never pull, stash or reset over it.
+    - If a pull cannot fast-forward, stop and ask the owner before merging or rebasing.
+    - Re-check a plan's findings after the pull when they were gathered earlier.
+- **Don't:**
+    - Plan, review or build from a stale clone.
+    - Pull over someone's uncommitted changes, or switch their branch to pull.
+- **Reference (FBS People):** the FBS app launcher plan (2026-11-21) pulled `laravel-fbs-people`, `laravel-fbs-crm` and this repo first, and read `mcp-fbs-suites` as is because it had an uncommitted file.
+- **Check:** Every plan names the repos it pulled. `git status -sb` in each shows no "behind" when the work starts.
+
 ---
 
 ## Design profile
@@ -2063,3 +2080,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-19:** Rule 73 added (owner): one approval is enough; what one FBS app approved is final in the others (FBS Pay no longer reviews people FBS People already approved).
 - **2026-11-19:** Rule 74 added (owner): every connection between FBS apps is two-way; a shared record is edited in either app and reaches the other, with no "managed in another app" locks. FBS Learn's staff and time connectors into FBS People are listed as still one way.
 - **2026-11-19:** Rule 74: FBS Learn and FBS People made two-way (staff and time); fbs-record.v1 `time` gains People → Learn days (`attendance`).
+- **2026-11-21:** Rule 75 added (owner): pull the latest default branch of every repo before research, a plan, a review or a change; never pull over uncommitted work.
