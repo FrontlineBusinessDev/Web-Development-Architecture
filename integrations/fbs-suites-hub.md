@@ -153,6 +153,11 @@ Spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-advanced-too
 - **App → hub:** send `tenant.switch_changed` (section 4) whenever your admin flips one of the three.
 - **Missed messages:** your MCP `whoami` adds `"switches": {"ai": bool, "link": bool, "events": bool}` (your `admin_on` values), readable with the org service token. The hub reads it nightly and corrects its copy (audited `switch.drift`). Until you add it, the hub skips you quietly.
 
+**Company profile (built 2026-11-20, FBS Connected Data phase 1 §3).** Contract `mcp-fbs-suites/docs/contracts/fbs-hub-profile.v1.md`. FBS Suites keeps one company profile per org (Integrations › Company profile) and is its center.
+- **Hub → app:** `POST {app}/api/fbs-hub/profile`, signed like `/api/fbs-hub/switch`, `{id, event: "hub.profile", version: 1, app, tenant_ref, profile: {...}}`, the whole profile after every change, only while the tenant's `link` switch is on. Write the fields your app keeps as received (FBS Suites already settled which change wins), mark the save as received so it never goes back, and answer `{success: true, data: {taken: [...]}}`; 404 `no_tenant` for a demo or closed tenant.
+- **App → hub:** when your admin changes a kept field, `POST {FBS Suites}/api/fbs-id/profile` (Basic with your FBS ID client) `{tenant, fields, changed_at}`; later change wins per field.
+- Each app's settings say beside these fields that they are shared through FBS Suites (rule 72). Each app's field mapping is in the contract.
+
 ## 3. The envelope
 
 Every event has these top-level keys, then its own blocks:
