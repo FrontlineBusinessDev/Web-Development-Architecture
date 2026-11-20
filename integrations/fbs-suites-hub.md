@@ -440,6 +440,12 @@ The tools an MCP endpoint lists are the same classes as the app's in-app agent (
 - Every night at 02:30 Asia/Manila the hub calls one aggregate tool per app with the org service token: People `workforce_metrics`, Pay `company_totals`, Learn `school_summary`, Connect `pipeline_summary`, Work `workspace_totals`, Stock `sales_summary` (Work and Stock for yesterday).
 - These tool names and the fields the hub reads are a contract: rename a field only with a new field next to the old one. The hub keeps only listed numeric fields (`App\Hub\SuiteMetrics::TOOLS`), never text.
 - Learn can add `teaching_minutes_week` to `school_summary`; the hub reads it when it is there.
+- Org admins see their own org's latest figures on the hub Dashboard (**Your suite**, Connected Data phase 6, pick 46); members never do.
+
+**Accounting export (Connected Data phase 6, pick 43, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-21-connected-data-phase-6.md`):**
+
+- Integrations › Accounting in the hub gives org admins a Xero manual journal CSV for a month: FBS Pay payroll and FBS Stock sales, one balanced journal per tenant, with the org's own account codes. The hub never posts to Xero and keeps nothing of the export. Connect is left out: it sends its invoices to Xero itself.
+- It uses two more service-key tools, also a contract (same rule as above): Pay `payroll_journal {month}` (sums of the finalized runs paid in the month: `gross_pay`, `net_pay`, `withholding_tax`, each SSS / PhilHealth / Pag-IBIG share, `runs`, `headcount`) and Stock `sales_summary` with `credit_collected` (utang paid back in the range).
 
 **Proposal tools by app (Phase 7, spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-phase-7-cross-app-proposals.md`):**
 
