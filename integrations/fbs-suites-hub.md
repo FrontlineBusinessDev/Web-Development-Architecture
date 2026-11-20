@@ -329,7 +329,7 @@ Added by spec `mcp-fbs-suites/docs/superpowers/specs/2026-11-18-multi-tenant-adv
 | FBS Stock | `stock` | `store` | `Store` |
 
 - The key is hard-coded in `config/services.php`, not read from the environment, so the URL is `{FBS_HUB_URL}/hooks/{key}`.
-- The same keys are listed in the hub (`SuiteApp::KEYS`) and the CRM (`SignupIntake::APPS`). A new app needs all three.
+- The same keys are listed in the hub (`SuiteApp::KEYS`) and the CRM (`SignupIntake::APPS`). A new app needs all three, plus its row in FBS CRM › Settings › FBS apps for the app launcher ([fbs-app-launcher.md](fbs-app-launcher.md)).
 
 ## 6. Sender rules (every app)
 

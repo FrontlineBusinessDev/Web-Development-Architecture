@@ -28,6 +28,7 @@ This repo is the source of truth. Every project's `CLAUDE.md` links here. When a
 | How do I deploy and roll back? | [deployment/publish-and-rollout.md](deployment/publish-and-rollout.md) |
 | Which checks must pass before a deploy? | [quality/testing-and-ci.md](quality/testing-and-ci.md) |
 | How does an app talk to the FBS Suites hub and the CRM, and where are its AI (MCP) keys made? | [integrations/fbs-suites-hub.md](integrations/fbs-suites-hub.md) |
+| What does an app show behind its logo (the FBS apps a customer has, and the others to subscribe to)? | [integrations/fbs-app-launcher.md](integrations/fbs-app-launcher.md) |
 | How does an app have an upload checked for viruses before it stores it? | [integrations/fbs-suites-scanner.md](integrations/fbs-suites-scanner.md) |
 | How do I add an in-app AI agent (Lumi with tools, proposals, credits)? | [integrations/in-app-ai-agent.md](integrations/in-app-ai-agent.md) |
 | How do I add monthly and yearly subscriptions (Stripe outside the Philippines, Xendit inside)? | [integrations/subscriptions-stripe-xendit.md](integrations/subscriptions-stripe-xendit.md) |

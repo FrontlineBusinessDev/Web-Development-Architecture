@@ -116,6 +116,7 @@ Every floating layer renders in a portal at the end of `<body>`, flips and shift
 - **Destructive confirm:** says what will change and how many records, uses the danger tone, and may ask for a reason.
 - **Dialog over a dialog:** reuses the open backdrop (no second dark layer); the one underneath dims to match the page; the new one sits at `--z-stacked`.
 - Never the browser's `confirm`, `alert` or `prompt`.
+- **App launcher at the logo:** a popover beside the sidebar logo (hover about 300 ms, or the chevron by click or keyboard; the phone drawer's header has the chevron). Cards in two groups, "Your FBS apps" in each app's brand colour and "More FBS apps" greyed with Request and, when the app allows it, Subscribe and pay. See [../integrations/fbs-app-launcher.md](../integrations/fbs-app-launcher.md).
 
 ## Lists, stats and charts
 
