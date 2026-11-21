@@ -144,7 +144,7 @@ A change is done when every item of [rule 22](../rules/system-rules.md#rule-22-d
 
 | App | Differs |
 | --- | --- |
-| People | `ci:check` has no audits; the checks are not in the image build; 3,489-error PHPStan baseline (shrinks only); the 300-line rule is not enforced; GitHub workflows on `main` while it deploys from `master`. |
+| People | `ci:check` has no audits; the checks are not in the image build; a 901-error PHPStan baseline (shrinks only); the 300-line rule is not enforced. GitHub Actions `tests.yml` runs `ci:check` on `master` (PHP 8.4) since 2026-11-21 and passes. |
 | CRM | Closest to the standard (audits, no PHPStan baseline, both 300-line checks), but `vp check` fails repo-wide, so it runs `vp lint` only; checks run in GitHub Actions, not the build. |
 | Connect | No audits in `ci:check`; no 300-line check; GitHub Actions only. |
 | Pay | `resources/js/ops/**` and `resources/js/landing/**` outside the formatter. Meets the 300-line rule with no baseline (JS lint and `tests/Unit/PhpFileSizeTest.php`, 2026-11-08). |
