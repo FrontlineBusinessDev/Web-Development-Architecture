@@ -53,6 +53,10 @@ Token-only (a browser session is refused). The token is made in FBS CRM › Deve
 
 Body: `app`, `tenant`, `tenant_name`, `wants` (an active app key, not `app`), `name`, `email` (the person asking). The CRM makes a `requested` row and a lead (`source = fbs-{app}-launcher`; the new-lead alert tells staff). Asking again while the request is open returns the same row (200 instead of 201).
 
+### `PUT /api/v1/launcher/sample` (the hub only, launcher Part A, 2026-11-21)
+
+The FBS Sample sends no hub events, so the hub tells the CRM its tenants itself: after Sample On and every Reset, its `fbs.crm` step sends `{ company: "FBS Sample Company", apps: { pay: "18", people: "14", ... } }` with the CRM destination's intake token (ability `intake.signups`, not the launcher token). The CRM keeps one client of that name, makes or moves each app + ref row to it as `subscribed`, deletes its rows for refs no longer sent (tenants a reset removed) and touches nothing else (`App\Support\Launcher\SampleTenants`). A refusal shows on Platform › Sample org and never stops the sample's own steps.
+
 ## 3. In each app
 
 - **Server:** one small client (People: `App\FbsCrm\Launcher`) with a 5 s timeout and a 10-minute cache per tenant. On any error it returns an empty list: the shell never breaks. Off while the address or token is empty.
