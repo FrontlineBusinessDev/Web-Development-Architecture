@@ -48,6 +48,7 @@ Token-only (a browser session is refused). The token is made in FBS CRM › Deve
 - The organisation is found from the asking tenant's own row; when that row belongs to a client, every row of that client counts.
 - An unknown tenant gets the whole catalog with nothing subscribed, never a 404.
 - `connects_here` is how that app connects to the asking one.
+- `open_url` (added 2026-11-22) is `{url}/login?sso=1`, null without a `url`. A card the organisation has links there, not to `url`: an app's `/` is often a public landing page that never asks FBS ID. Each app's `/login` treats `sso=1` as "ask FBS ID with `prompt=none` again, even if this browser session already tried", never after the app's own sign-out, idle timeout or FBS ID's back-channel sign-out in that session.
 
 ### `POST /api/v1/launcher/requests`
 
