@@ -7,7 +7,7 @@ How an FBS app tells the rest of the suite that something happened (a sign-up, a
   - `fbs-suites-mcp`: `docs/superpowers/specs/2026-11-05-mcp-fbs-suites-design.md` (Webhook hub), `app/Hub/{Signature,Router,HookRefusal,HookCheck}.php`, `app/Http/Controllers/HookController.php`, `app/Jobs/DeliverEvent.php`, `app/Coolify/*` (Platform › Coolify), migrations `2026_11_10_000100_route_demo_opened_to_crm` and `2026_11_12_000100_route_subscription_paid_to_crm`.
   - The senders `app/Support/SuiteHub.php`, `app/Jobs/SendSuiteHubEvent.php` and `app/Http/Controllers/SuiteHubCheckController.php` in People, Stock, Work, Learn, Pay and Connect.
   - `laravel-fbs-crm`: `routes/api.php`, `app/Http/Requests/Api/SignupIntakeRequest.php`, `app/Support/Intake/*`.
-- **Last updated:** 2026-11-19 (FBS Sample `reset` and Reset sample data, section 2.2). Before: 2026-11-18 (planned: several tenants per org, zero setup and two-value switches §2.4, new events §4, gateway features §11, client webhooks §12). Before: 2026-11-18 (FBS Sample `accounts` and the shared password, section 2.2). Before: 2026-11-17 (connectors carry records, events ids only; the gateway's `fbs__guide` and daily cap). Before: 2026-11-10 (only proved emails for `tenant.signed_up` and `demo.opened`)
+- **Last updated:** 2026-11-21 (optional `demo.from_app` on `demo.opened`, section 4; the demo hop). Before: 2026-11-19 (FBS Sample `reset` and Reset sample data, section 2.2). Before: 2026-11-18 (planned: several tenants per org, zero setup and two-value switches §2.4, new events §4, gateway features §11, client webhooks §12). Before: 2026-11-18 (FBS Sample `accounts` and the shared password, section 2.2). Before: 2026-11-17 (connectors carry records, events ids only; the gateway's `fbs__guide` and daily cap). Before: 2026-11-10 (only proved emails for `tenant.signed_up` and `demo.opened`)
 
 Copy the sender from [`templates/hub/`](../templates/hub/). When you add or change an event, update this file in the same piece of work.
 
@@ -227,12 +227,13 @@ A live-demo visitor left their details and agreed to be contacted. There is no t
 {"id":"<uuid>","event":"demo.opened","version":1,"occurred_at":"<ISO 8601>","app":"learn",
  "tenant":{"ref":null,"name":"Sample School","type":"school","email":null,"phone":null,"country":null,"website":null},
  "contact":{"first_name":"Ana","last_name":"Cruz","email":"ana@example.com","phone":null,"job_title":null},
- "demo":{"visits":1,"consented_at":"<ISO 8601>"}}
+ "demo":{"visits":1,"consented_at":"<ISO 8601>","from_app":"people"}}
 ```
 
 - `contact.email` and `demo.consented_at` are required by the CRM. Send only visitors who ticked the consent box.
 - **Only proved emails (owner, 2026-11-10):** send only after the visitor typed the code emailed to them (6 digits, 10 minutes, 5 tries). Nothing about the visitor is stored before that (People: `App\Demo\LeadVerification`; Pay: its Test Drive code).
 - `demo.visits` is at least 1.
+- `demo.from_app` (optional, 2026-11-21): the app key whose demo the visitor came from through the launcher's **Try the demo** (the demo hop, [fbs-demo-pass.md](fbs-demo-pass.md)). One of the app keys in section 5, never `app` itself; leave it out otherwise. The CRM keeps its one lead per email per app as before and notes "Came from the FBS {App} demo" on the deal.
 - Send once per lead. Later page views or beacons send nothing.
 - Does not make an FBS ID.
 - **Sent by:** People, Connect, Learn, Stock, Work and Pay (`DemoController`).
@@ -400,7 +401,7 @@ Each app reads both from its own **keys page** (its platform / developer setting
 - A lead with no client and no department shows on every department's Leads board, and Admin and Developer see every department's leads (`isUnassignedProspect` in the CRM's `resources/js/lib/prospect.ts`).
 - Middleware: `auth:sanctum`, `token-only` (a browser session is refused), `active`, `abilities:intake.signups`, `throttle:120,1`.
 - The token is made in CRM › Developer › Integrations, stored hashed and shown once. Paste it into the hub's `crm` destination.
-- Validation (`SignupIntakeRequest`): `version` must be 1; `event` must be in `SignupIntake::EVENTS`; `app` must be in `SignupIntake::APPS`; `tenant.type` is `company|school|business|workspace|store`; `signup.method` is `web|google|staff`; `payment.provider` is `stripe|paymongo|manual`.
+- Validation (`SignupIntakeRequest`): `version` must be 1; `event` must be in `SignupIntake::EVENTS`; `app` must be in `SignupIntake::APPS`; `tenant.type` is `company|school|business|workspace|store`; `signup.method` is `web|google|staff`; `payment.provider` is `stripe|paymongo|manual`; `demo.from_app`, when sent, is in `SignupIntake::APPS` and not `app`.
 - Idempotent on the event id (`deals.source_event_id`, unique).
 - Matching: a contact with the same email (then its company); else a company with the same email or website domain (free-mail domains never match); else a new lead. One open deal per company and app, so a resend adds nothing twice.
 
