@@ -61,7 +61,7 @@ Built for `person`, 2026-11-18; `holiday`, `branch` and `leave_type` 2026-11-20 
 
 ## Fixtures (plan gap G15)
 
-A type's fields are pinned by a JSON schema kept in `mcp-fbs-suites/docs/contracts/` and copied byte for byte into each side's `tests/Fixtures/contracts/`: the sender checks what it records against `$defs`, the receiver accepts every `examples` entry. Change the schema there first, then both copies in the same work. So far: `learn-people-school.v1.json` (`evaluation`, `benefit`; FBS Learn → FBS People, 2026-11-21) and `pay-work-cost.v1.json` (`cost_rate`; FBS Pay → FBS Work, 2026-11-21). The other types are still pinned only by each side's own tests.
+A type's fields are pinned by a JSON schema kept in `mcp-fbs-suites/docs/contracts/` and copied byte for byte into each side's `tests/Fixtures/contracts/`: the sender checks what it records against `$defs`, the receiver accepts every `examples` entry. Change the schema there first, then both copies in the same work. So far: `learn-people-school.v1.json` (`evaluation`, `benefit`; FBS Learn → FBS People, 2026-11-21), `pay-work-cost.v1.json` (`cost_rate`; FBS Pay → FBS Work) and `shared-lists.v1.json` (`branch`, `leave_type`; both ways between FBS People and FBS Pay, Learn's leave types not yet), all 2026-11-21. People and Pay check with one `contractErrors($file, $def, $fields)` test helper. The other types are still pinned only by each side's own tests.
 
 ## Filling gaps (owner 2026-11-19)
 
