@@ -61,7 +61,23 @@ Built for `person`, 2026-11-18; `holiday`, `branch` and `leave_type` 2026-11-20 
 
 ## Fixtures (plan gap G15)
 
-A type's fields are pinned by a JSON schema kept in `mcp-fbs-suites/docs/contracts/` and copied byte for byte into each side's `tests/Fixtures/contracts/`: the sender checks what it records against `$defs`, the receiver accepts every `examples` entry. Change the schema there first, then both copies in the same work. So far: `learn-people-school.v1.json` (`evaluation`, `benefit`; FBS Learn → FBS People, 2026-11-21), `pay-work-cost.v1.json` (`cost_rate`; FBS Pay → FBS Work), `shared-lists.v1.json` (`branch`, `leave_type`; both ways between FBS People and FBS Pay, Learn's leave types not yet), `departments.v1.json` (`department`; People, Pay and Learn), `holidays.v1.json` (`holiday`; People ⇄ Pay, People → Learn and Work; a change carries the changed fields plus `date` and `type`) and `stock-connect-product.v1.json` (`product`; Stock → Connect; Stock now sends `price` as a 2-decimal string, as the money rule above says, and Connect takes either), all 2026-11-21. People, Pay and Learn check with one `contractErrors($file, $def, $fields)` test helper. The other types are still pinned only by each side's own tests.
+Every type's fields are pinned by a JSON schema kept in `mcp-fbs-suites/docs/contracts/` and copied byte for byte into each side's `tests/Fixtures/contracts/`: the sender checks what it records against `$defs` (most sync test files check every change of the type they record, after each test), the receiver accepts the `examples` sent to it. Change the schema there first, then every copy in the same work. A type with several shapes has one `$def` per shape (`kind`, or the shape's marker field). Built 2026-11-21:
+
+| File | Types | Apps |
+|---|---|---|
+| `person.v1.json` | `person` | all six (`compensation:{date}` as `patternProperties`) |
+| `time.v1.json` | `time` (`leave`, `attendance`, `pay_day`, `work_day`, `stock_day`) | People, Pay, Learn, Work, Stock |
+| `pay-items.v1.json` | `pay_item` (`hours`, `cash_variance`, `tuition_deduction`) | Work → Pay; Stock, Learn → People |
+| `money-items.v1.json` | `money_item` (`store_day`, `customer_balance`, `credit_sale`, `billable_hours`) | Stock, Work → Connect |
+| `connect-out.v1.json` | `customer`, `work_item` | Connect → Work, Stock |
+| `stock-connect-product.v1.json` | `product` | Stock → Connect (Stock now sends `price` as a 2-decimal string, as the money rule above says; Connect takes either) |
+| `departments.v1.json` | `department` | People, Pay, Learn |
+| `holidays.v1.json` | `holiday` | People ⇄ Pay, People → Learn, Work (a change carries the changed fields plus `date` and `type`) |
+| `shared-lists.v1.json` | `branch`, `leave_type` | People ⇄ Pay, People → Learn |
+| `pay-work-cost.v1.json` | `cost_rate` | Pay → Work |
+| `learn-people-school.v1.json` | `evaluation`, `benefit` | Learn → People |
+
+Each app checks with the same `contractErrors($file, $def, $fields)` test helper (`tests/Support/contracts.php`; FBS Pay: `tests/Helpers.php`): required, no extra keys (`patternProperties` allowed), `$ref`, `enum`, `pattern`, `type`, `minimum` / `maximum`. A new type or field: add it to the schema and the copies in the same work as the code.
 
 ## Filling gaps (owner 2026-11-19)
 
