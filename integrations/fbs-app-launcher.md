@@ -77,6 +77,7 @@ The FBS Sample sends no hub events, so the hub tells the CRM its tenants itself:
 - **Meaning:** this browser probably has an FBS ID session. Never trust it for anything but deciding to try one `prompt=none` trip. A guest on an app's bare `/` with no `fbs_sso` gets the app's own sign-in page, so bots and new visitors are never sent to FBS ID.
 - **Set** by FBS ID when its browser session starts or is used: the session hop (`/fbs-id/session`, good ticket), a password / Google / Microsoft sign-in on FBS ID itself, and `/oauth/authorize` answering a code to a signed-in person.
 - **Cleared** (expired on the same domain) on FBS ID sign-out, `GET /oauth/logout`, and `/oauth/authorize?prompt=none` answering `login_required`, so a stale hint costs one trip. `POST /api/fbs-id/sign-out` is server to server and cannot clear it; the next `prompt=none` trip does.
+- **App side (Part 1b, built in all six apps):** a guest's bare `/` with `fbs_sso=1` and no silent-sign-in flag yet in the session makes the one `prompt=none` trip (`SilentSignIn::fromLanding`); a refusal comes back to `/` (session `fbsid.silent_back`, `SilentSignIn::back`), not the sign-in form; never after a try or a sign-out. Each app lists `fbs_sso` in `encryptCookies(except: …)`. People `9d987fb6`, Pay `a898740a`, Learn `f30fdcda`, Connect `a9bee24d`, Work `b19e26a`, Stock `cacfcd8`; tests in each app's `FbsIdSilentSignInTest`.
 
 ## 4. Adding an app
 
