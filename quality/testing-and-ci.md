@@ -60,7 +60,7 @@ One command, the same everywhere. Order: fast and cheap first, tests last.
 }
 ```
 
-`package.json` scripts: `"check": "vp check"`, `"types:check": "tsc --noEmit"`, and `"test": "vp test run"` when there are JS tests. A script `ci:check` calls must exist: a missing npm script fails the build.
+`package.json` scripts: `"check": "vp check"`, `"types:check": "tsc --noEmit"`, and `"test": "vp test run"` when there are JS tests. A script `ci:check` calls must exist: a missing npm script fails the build. In GitHub Actions, set `LARAVEL_BYPASS_ENV_CHECK: 1` on the step that runs `ci:check`: Vitest loads `vite.config.ts`, and `laravel-vite-plugin` refuses to start when `CI` is set (FBS Suites MCP hit this 2026-11-21).
 
 Run the formatter over the whole repo once, in its own commit, before turning the format check on ([coding standards](../rules/coding-standards.md#1-formatting)).
 
