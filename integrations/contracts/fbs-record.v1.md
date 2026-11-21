@@ -77,7 +77,7 @@ Every type's fields are pinned by a JSON schema kept in `mcp-fbs-suites/docs/con
 | `pay-work-cost.v1.json` | `cost_rate` | Pay → Work |
 | `learn-people-school.v1.json` | `evaluation`, `benefit` | Learn → People |
 
-Each app checks with the same `contractErrors($file, $def, $fields)` test helper (`tests/Support/contracts.php`; FBS Pay: `tests/Helpers.php`): required, no extra keys (`patternProperties` allowed), `$ref`, `enum`, `pattern`, `type`, `minimum` / `maximum`. A new type or field: add it to the schema and the copies in the same work as the code. The hub's `tests/Feature/ContractCopiesTest.php` fails when an app copy in a checkout next to the hub differs from `docs/contracts/` (skipped where none is checked out), and each app leaves `tests/Fixtures/contracts/**` out of its formatter so the copies stay byte for byte.
+Each app checks with the same `contractErrors($file, $def, $fields)` test helper (`tests/Support/contracts.php`; FBS Pay: `tests/Helpers.php`): required, no extra keys (`patternProperties` allowed), `$ref`, `enum`, `pattern`, `type`, `minimum` / `maximum`. A new type or field: add it to the schema and the copies in the same work as the code. The hub's `tests/Feature/ContractCopiesTest.php` fails when an app copy in a checkout next to the hub differs from `docs/contracts/` (skipped where none is checked out; in CI the hub's `contract-copies` workflow does the same on every push, pull request and daily, reading the app repos with the secret `FBS_APPS_READ_TOKEN`), and each app leaves `tests/Fixtures/contracts/**` out of its formatter so the copies stay byte for byte.
 
 ## Filling gaps (owner 2026-11-19)
 
