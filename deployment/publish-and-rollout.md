@@ -77,7 +77,7 @@ What `scripts/publish.sh` does:
 2. Reads `.env.deploy` and refuses when a key is missing, or when the deployer uuid is the app's.
 3. Checks Docker locally and over SSH (`BatchMode`, keep-alives), the branch (`master`), a clean tree, and that GitHub's `master` has nothing this one lacks (checked before the build, so a push can't be refused after it).
 4. Names the image `<slug>-pc:<first 12 characters of the commit>`. If the server already has it, skips to step 7.
-5. Builds it: `git archive HEAD` into the deployer image, which runs `deploy/build-image.sh` against the PC's Docker:
+5. Builds it: `git archive HEAD` written to a temporary file (`git archive -o "$ctx" HEAD`, then `docker build … - <"$ctx"`; never `git archive | docker build -`, whose pipe never ends under Git Bash on Windows, so the build hangs), into the deployer image, which runs `deploy/build-image.sh` against the PC's Docker:
     1. the `checks` stage (`composer ci:check`);
     2. the test suite on a throwaway PostgreSQL 18;
     3. when `ASSET_URL` is set, the Vite build, uploaded to `{bucket}/{AWS_BUCKET_FOLDER}/build` (new files only);
