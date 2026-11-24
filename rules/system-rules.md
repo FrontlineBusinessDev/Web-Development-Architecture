@@ -95,6 +95,7 @@ Search for `## Rule N.` to jump to a rule.
 73. One approval is enough: what one FBS app approved is final in the others
 74. Every connection between FBS apps is two-way: a shared record is edited in either app and reaches the other
 75. Pull before you plan: read the latest default branch of every repo you rely on
+76. Check the workflows after every push: a red GitHub Actions run is fixed before the work is called done
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
