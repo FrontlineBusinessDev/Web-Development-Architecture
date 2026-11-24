@@ -96,6 +96,8 @@ Search for `## Rule N.` to jump to a rule.
 74. Every connection between FBS apps is two-way: a shared record is edited in either app and reaches the other
 75. Pull before you plan: read the latest default branch of every repo you rely on
 76. Check the workflows after every push: a red GitHub Actions run is fixed before the work is called done
+77. Every list is paged, searchable and filterable
+78. A person's login lives on the person
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -1959,6 +1961,36 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Reference (FBS People):** `.github/workflows/tests.yml` runs `composer ci:check` on `master`; on 2026-11-24 its red runs were the bundle budget (`company-templates`, fixed by loading the edit sheet when opened) and PHPStan (`pwd_expires_on` typed in `Employee`'s `@property` lines). FBS Suites' `contract-copies.yml` compares each app's `person.v1.json` with the hub's.
 - **Check:** `gh run list -L 5` on each repo a piece of work pushed to shows the latest run green, and the report says so.
 
+## Rule 77. Every list is paged, searchable and filterable
+
+- **Rule:** Every list of records in every FBS app (a table, a list of rows, a board panel with a row per record) is paged on the server, has a search box and has the filters its records need, from the first version. No list shows everyone at once, however few records there are today.
+- **Why:** Owner, Nov 24, 2026: FBS People's Hiring › Probation listed 52 people with no pager, search or filter, so HR had to scroll to find one person. Lists grow with the tenant, and rule 24's budget ("never an unbounded list") was being met by cutting the list at its first page without telling anyone.
+- **Do:**
+    - Page on the server: 25 rows by default, at most 100 (rule 24), with the total shown ("52 people on probation") and a pager below the list.
+    - Search the fields people look for (name, number, email, title), on the server, so it covers every page.
+    - Add a filter for each way the list is worked (status, group, branch, department, role, date range), each with its count when it is cheap (rule 53: one, several or any).
+    - Keep the page, search and filters in the URL (rule 52), so a link or Back opens the same view.
+    - Reuse the app's list pieces: FBS People `ListQuery` on the server and `PagedPanel` (`components/kit3/table/paged-panel.tsx`) with `useListState` / `serializeListState` on the client; the other apps their own list query and table toolbar.
+    - A short fixed list (the four steps of a stepper, a plan's three tiers) is not a list of records and needs none of this.
+- **Don't:**
+    - Ship a list that loads every row, or one that silently shows only the first page with no pager.
+    - Search or filter only the page already loaded in the browser.
+- **Reference (FBS People):** `People\ProbationController::data` (`ListQuery` with search, the `group` filter and sorts) and `screens/people/probation-live.tsx` (`PagedPanel`, 2026-11-24).
+- **Check:** open the list with more rows than one page: the pager, the total, the search box and the filters are there, and a search finds a record on a later page.
+
+## Rule 78. A person's login lives on the person
+
+- **Rule:** In an app with an employee or member record (FBS People's employees, FBS Learn's staff and students, FBS Work's members), giving someone a login and deleting it are actions on that person's own record (an option button: Give login when they have none, Delete login when they have one). The tenant's Users or Settings › Users page lists the logins and changes their role and access, but never invites or deletes one.
+- **Why:** Owner, Nov 24, 2026: HR found the person first and then had to go to Company › Users to invite them, where the picker hid why an email could not be used. The login belongs to the person, and the record already shows who they are.
+- **Do:**
+    - Give login: email a link to set their password, or set one now (where the app allows it). An email that already holds a platform account gets an account that shares its password and FBS ID, and no email is sent (structure/tenancy-and-auth.md "One email, several accounts").
+    - Delete login: ask first in the app's modal (rule 60), then remove the tenant account and keep the record, so a login can be given again. Never the tenant's Owner, never your own, and never a platform account on the same email. An account whose rows the tenant keeps (a restrict foreign key) is refused with "archive them instead".
+    - Record both in the tenant's audit log.
+    - On the Users page, point to the people list instead of an Invite button.
+- **Don't:** keep an Invite or Delete user action on the Users or Settings page.
+- **Reference (FBS People):** Person 360's header (`screens/people/person/person-login.tsx`), `POST people/employees/{id}/invite` and `POST people/employees/{id}/login/delete` (`EmployeeLoginDeleteController`); Company › Users' header links to People.
+- **Check:** a person without a login shows Give login on their record, one with a login shows Delete login, and the Users page has neither.
+
 ---
 
 ## Design profile
@@ -2100,3 +2132,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-19:** Rule 74: FBS Learn and FBS People made two-way (staff and time); fbs-record.v1 `time` gains People → Learn days (`attendance`).
 - **2026-11-21:** Rule 75 added (owner): pull the latest default branch of every repo before research, a plan, a review or a change; never pull over uncommitted work.
 - **2026-11-24:** Rule 76 added (owner): check every workflow a push started and fix a red run before calling the work done.
+- **2026-11-24:** Rule 77 added (owner): every list is paged on the server, searchable and filterable. Rule 78 added (owner): a person's login is given and deleted on their own record, never on the Users page.
