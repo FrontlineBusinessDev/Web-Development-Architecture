@@ -1941,6 +1941,23 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Reference (FBS People):** the FBS app launcher plan (2026-11-21) pulled `laravel-fbs-people`, `laravel-fbs-crm` and this repo first, and read `mcp-fbs-suites` as is because it had an uncommitted file.
 - **Check:** Every plan names the repos it pulled. `git status -sb` in each shows no "behind" when the work starts.
 
+## Rule 76. Check the workflows after every push: a red GitHub Actions run is fixed before the work is called done
+
+- **Rule:** After every push, check every workflow the push started in that repo (and the hub's `contract copies` when a contract copy changed) until each one finishes. A red run is fixed before the work is reported done, whoever's commit broke it. The deploy still never waits for GitHub Actions (rule 22); this rule is about not leaving `master` red.
+- **Why:** Owner, Nov 24, 2026: FBS People's `tests` stayed red for five pushes (bundle budget, then PHPStan) and FBS Suites' `tests` and `contract copies` for four, while every push was reported done.
+- **Do:**
+    - After pushing, run `gh run list -L 5` in the repo, wait for the runs the push started, and read a failure with `gh run view <id> --log-failed`.
+    - Fix the cause on the default branch and push again; then check the new run.
+    - When an app changes a contract copy (`tests/Fixtures/contracts/`), change the hub's `docs/contracts/` file first and copy it to every app (rule 66), then check the hub's `contract copies` run.
+    - Before starting new work in a repo, look at its latest runs; a red `master` is fixed first or named in the plan.
+    - Say in the report which runs passed, and name any still running.
+- **Don't:**
+    - Report work done while a run it started is red or unread.
+    - Skip, disable or loosen a check, a baseline or a budget to turn a run green (rule 49).
+    - Leave someone else's red run on the branch you push to without fixing it or telling the owner.
+- **Reference (FBS People):** `.github/workflows/tests.yml` runs `composer ci:check` on `master`; on 2026-11-24 its red runs were the bundle budget (`company-templates`, fixed by loading the edit sheet when opened) and PHPStan (`pwd_expires_on` typed in `Employee`'s `@property` lines). FBS Suites' `contract-copies.yml` compares each app's `person.v1.json` with the hub's.
+- **Check:** `gh run list -L 5` on each repo a piece of work pushed to shows the latest run green, and the report says so.
+
 ---
 
 ## Design profile
@@ -2081,3 +2098,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-19:** Rule 74 added (owner): every connection between FBS apps is two-way; a shared record is edited in either app and reaches the other, with no "managed in another app" locks. FBS Learn's staff and time connectors into FBS People are listed as still one way.
 - **2026-11-19:** Rule 74: FBS Learn and FBS People made two-way (staff and time); fbs-record.v1 `time` gains People → Learn days (`attendance`).
 - **2026-11-21:** Rule 75 added (owner): pull the latest default branch of every repo before research, a plan, a review or a change; never pull over uncommitted work.
+- **2026-11-24:** Rule 76 added (owner): check every workflow a push started and fix a red run before calling the work done.

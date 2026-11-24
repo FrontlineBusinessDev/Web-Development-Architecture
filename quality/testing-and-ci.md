@@ -15,7 +15,7 @@ Related: [rule 22 (definition of done)](../rules/system-rules.md#rule-22-definit
 | Your PC, before each commit | `composer ci:check` | Habit. A red run is not committed. |
 | The Docker build (`checks` stage) | `composer ci:check` | **Yes.** A failure fails the image build; nothing deploys. |
 | `deploy/build-image.sh`, after `checks` | the test suite on PostgreSQL 18 | **Yes.** A failure stops the deploy. |
-| GitHub Actions | optional quick feedback on a push | **No.** The deploy never waits for it. If a workflow stays, it watches `master` and runs the same `composer ci:check`. |
+| GitHub Actions | feedback on every push to `master` | **No.** The deploy never waits for it. If a workflow stays, it watches `master` and runs the same `composer ci:check`. Every push is checked there and a red run is fixed before the work is done ([rule 76](../rules/system-rules.md#rule-76-check-the-workflows-after-every-push-a-red-github-actions-run-is-fixed-before-the-work-is-called-done)). |
 
 The build runs on whichever machine runs `php artisan deploy` (or on the server when it builds), so the same code always meets the same checks.
 
