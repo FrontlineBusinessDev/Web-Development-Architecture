@@ -51,6 +51,7 @@ Other apps use the same pattern under their own names:
 - They work in the platform console (`/console` in People, `/platform` in Learn and Connect), guarded by `EnsurePlatformStaff`. Console routes run with **no current tenant**, so cross-tenant queries lift the scope explicitly.
 - Entering a tenant needs a reason, is time-limited, and shows in that tenant's audit log.
 - `platform_role`, tenant role and `status` columns are never fillable.
+- **Primary platform account (owner 2026-11-24):** `contact@frontlinebusiness.com.ph` is the primary platform account in every FBS app, for developer and platform use, at the app's top platform role (People: owner; Pay: `super_admin`; Learn, Connect and FBS Suites: their developer or system admin role; Work: `super_admin`; Stock: `admin`; CRM: Developer). It is a constant beside the platform roles (People `PlatformRole::PRIMARY_EMAIL`), seeded outside production, and made in production with the app's create-staff command (People `platform:user`) only on the owner's go. One email is one account (`users.email` is unique), so a person's own company account uses their own email, and the account chooser below moves between the two.
 
 ## Sign-in
 
@@ -93,6 +94,18 @@ One account for every FBS app, like a Google account across Gmail and Drive (own
 - **Built in every app** (2026-11-16/17): Pay, Connect, Stock, Work, People, Learn and the CRM (staff and client-portal users; a portal user's `tenant_ref` is the client company id). Each app's settings page is listed in MCP `docs/fbs-id-setup.md`.
 - **Tenant hosts** (a school host, a company's own domain): cookies there don't reach the callback, so the callback stays on `APP_URL`. On a tenant host the password check, the two-step code and FBS sign-out still go through FBS ID server to server; Google / Microsoft come back through the app's own cross-host hand-off (Learn `/auth/google/start` + `/auth/google/complete`).
 - **Never through FBS ID:** demo / test-drive / sandbox accounts, and users of a company that requires SAML SSO (People) — refused with the app's existing SSO message.
+
+### Account chooser (switch accounts in the header)
+
+Owner 2026-11-24: a person who holds more than one account in an app (the platform account and their company account, or two companies) switches between them from the account menu, like Google's account chooser. They stay separate users (rule 7), and each proves its own sign-in, two-step included (rule 29). Reference: FBS People `App\Support\AccountChooser`, `AccountChooserController`, `kit3/shell/account-switch.ts`, `components/kept-accounts.tsx`, test `AccountChooserTest`.
+
+- **Kept list:** a `Login` event listener adds the user id, stamped with `microtime(true)`, to the session (`accounts.signed_in`), whatever the way in (password, FBS ID, Google, SAML, two-step). Signing out invalidates the session, so every account goes ("Sign out of all accounts" when there is more than one).
+- **Share** the list as `auth.accounts` (`{id, name, email, kind, current}`; `kind` is "Platform · <role>" or the tenant's name). List only accounts that may still sign in: active, not SAML-only, and not signed out everywhere by FBS ID since their stamp (the back-channel mark).
+- **`POST /account/switch {id}`** (throttled, guests too): only an id in the list. Start a fresh session (`invalidate`, `regenerateToken`, put the list back, forget the remember-me cookie, `forgetUser`) and `Auth::login` the account, so its `Login` listeners run (tenant, audit, FBS ID `since`) and nothing of the previous account follows (an entered tenant, View as, a pending step). Fire no `Logout` event: a switch is not a sign-out (no demo purge, no FBS ID sign-out). Then the app's normal after-sign-in landing. Refused (not kept, or it can no longer sign in): drop it from the list and say "Sign in to that account again".
+- **`POST /account/add`** (signed in): the same fresh session without signing anyone in, then mark the browser as signed out for silent sign-in (or `/login` would quietly sign the same FBS ID back in), then `/login`. The sign-in page shows "Continue as <name>" for each kept account.
+- **Menu:** the account menu lists the other kept accounts (name and `kind`), then Add another account. The client clears its caches before each switch, as on sign-out (rule 18). Never in a demo or Test Drive.
+- **SPA apps** (Sanctum, CRM and Connect): the same endpoints answer JSON (`{redirect}`), and the SPA reloads its user after a switch.
+- **Built:** FBS People `de6b6161`.
 
 ## Roles and permissions
 
