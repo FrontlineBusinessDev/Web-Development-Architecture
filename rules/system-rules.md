@@ -95,7 +95,7 @@ Search for `## Rule N.` to jump to a rule.
 73. One approval is enough: what one FBS app approved is final in the others
 74. Every connection between FBS apps is two-way: a shared record is edited in either app and reaches the other
 75. Pull before you plan: read the latest default branch of every repo you rely on
-76. Check the workflows after every push: a red GitHub Actions run is fixed before the work is called done
+76. Run the full CI check before every push, then check the workflows: a red GitHub Actions run never reaches master
 77. Every list is paged, searchable and filterable
 78. A person's login lives on the person
 
@@ -1944,17 +1944,20 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Reference (FBS People):** the FBS app launcher plan (2026-11-21) pulled `laravel-fbs-people`, `laravel-fbs-crm` and this repo first, and read `mcp-fbs-suites` as is because it had an uncommitted file.
 - **Check:** Every plan names the repos it pulled. `git status -sb` in each shows no "behind" when the work starts.
 
-## Rule 76. Check the workflows after every push: a red GitHub Actions run is fixed before the work is called done
+## Rule 76. Run the full CI check before every push, then check the workflows: a red GitHub Actions run never reaches master
 
 - **Rule:** After every push, check every workflow the push started in that repo (and the hub's `contract copies` when a contract copy changed) until each one finishes. A red run is fixed before the work is reported done, whoever's commit broke it. The deploy still never waits for GitHub Actions (rule 22); this rule is about not leaving `master` red.
-- **Why:** Owner, Nov 24, 2026: FBS People's `tests` stayed red for five pushes (bundle budget, then PHPStan) and FBS Suites' `tests` and `contract copies` for four, while every push was reported done.
+- **Why:** Owner, Nov 24, 2026 (again the same evening: nine red FBS People runs in a row emailed the team, each fixing the last one's failure after the push): FBS People's `tests` stayed red for five pushes (bundle budget, then PHPStan) and FBS Suites' `tests` and `contract copies` for four, while every push was reported done.
 - **Do:**
+    - **Before every push (owner, Nov 24, 2026):** run the repo's full CI gate locally, the same command its workflow runs (`composer ci:check` in the Laravel apps: lint, types, tests, PHPStan, the bundle budget and `composer audit`), on exactly what you are pushing. Push only when it passes. A small fix is no exception: each red run emails the whole team.
+    - **Only your own changes:** when another session or person has uncommitted work in the same checkout, run the gate in a clean worktree of the branch plus your change (`git worktree add`, with `vendor` and `node_modules` linked), so their half-done work neither fails your check nor hides a failure of yours.
     - After pushing, run `gh run list -L 5` in the repo, wait for the runs the push started, and read a failure with `gh run view <id> --log-failed`.
     - Fix the cause on the default branch and push again; then check the new run.
     - When an app changes a contract copy (`tests/Fixtures/contracts/`), change the hub's `docs/contracts/` file first and copy it to every app (rule 66), then check the hub's `contract copies` run.
     - Before starting new work in a repo, look at its latest runs; a red `master` is fixed first or named in the plan.
     - Say in the report which runs passed, and name any still running.
 - **Don't:**
+    - Push to "see if CI passes": CI confirms a green local gate, it never replaces it.
     - Report work done while a run it started is red or unread.
     - Skip, disable or loosen a check, a baseline or a budget to turn a run green (rule 49).
     - Leave someone else's red run on the branch you push to without fixing it or telling the owner.
@@ -2132,4 +2135,5 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-19:** Rule 74: FBS Learn and FBS People made two-way (staff and time); fbs-record.v1 `time` gains People → Learn days (`attendance`).
 - **2026-11-21:** Rule 75 added (owner): pull the latest default branch of every repo before research, a plan, a review or a change; never pull over uncommitted work.
 - **2026-11-24:** Rule 76 added (owner): check every workflow a push started and fix a red run before calling the work done.
+- **2026-11-24:** Rule 76 (owner): run the full CI gate locally before every push (in a clean worktree when the checkout holds someone else's work); push only when it passes.
 - **2026-11-24:** Rule 77 added (owner): every list is paged on the server, searchable and filterable. Rule 78 added (owner): a person's login is given and deleted on their own record, never on the Users page.
