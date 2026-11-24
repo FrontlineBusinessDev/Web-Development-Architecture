@@ -105,7 +105,7 @@ Owner 2026-11-24: a person who holds more than one account in an app (the platfo
 - **`POST /account/add`** (signed in): the same fresh session without signing anyone in, then mark the browser as signed out for silent sign-in (or `/login` would quietly sign the same FBS ID back in), then `/login`. The sign-in page shows "Continue as <name>" for each kept account.
 - **Menu:** the account menu lists the other kept accounts (name and `kind`), then Add another account. The client clears its caches before each switch, as on sign-out (rule 18). Never in a demo or Test Drive.
 - **SPA apps** (Sanctum, CRM and Connect): the same endpoints answer JSON (`{redirect}`), and the SPA reloads its user after a switch.
-- **Built:** FBS People `de6b6161`.
+- **Built:** FBS People `de6b6161`, FBS Pay `601bdbc0`, FBS Learn `1d6901e3` (all eight role top bars; `/login/{slug}` too), FBS Connect `9dbb2961`, FBS Work `0dae408` (sidebar switcher; a switch ends View as), FBS Stock `63cf571`, FBS CRM `5237491` (`GET /api/user` answers `{user, accounts}`; staff and client portal), FBS Suites `38cc586` (keeps each account's FBS ID proof: `fbsid.amr`, `auth_time`, `hd`, so `prompt=none` answers for the switched-to account). FBS Suites `de988b9`: a Google / Microsoft sign-in or the emailed code marks the FBS ID email verified, or apps never link an FBS ID made without a proved email (contact@ in the CRM).
 
 ## Roles and permissions
 
