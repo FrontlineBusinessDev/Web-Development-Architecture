@@ -487,7 +487,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - Email keys or paste them into tickets.
     - Reuse a production key in staging.
 - **Reference (FBS Pay):** `App\Support\Secrets` (`platform_secrets`, encrypted, last four only, `PlatformAudit` on every change) behind Platform › Keys & secrets, with the FBS ID group (`FBS_ID_ISSUER`, `FBS_ID_CLIENT_ID`, `FBS_ID_CLIENT_SECRET`) read by `App\FbsId\FbsId`.
-- **Reference (FBS People):** Today the outside keys (`AWS_*` for Spaces, the gateways, the AI provider, mail, and `VAPID_*` for push) come from `.env`. `App\Models\Setting` (`app_settings`) stores platform settings as plain JSON, so keys need an encrypted store: an encrypted cast or a separate secrets table, behind a secrets service that config reads from. The console page is drawn on the canvas as Settings › Keys & secrets, with a Rotate a key sheet.
+- **Reference (FBS People):** `App\Support\Secrets` (`app_secrets`, encrypted, last four only) behind Console › Settings › Keys & secrets, written over `.env` per request and job. The AI provider's key can also be changed where the AI settings are, Console › AI & agents › Providers & models (owner, 2026-11-25): the same secrets row, checked with the provider before it is saved, with a Test button, beside the default model, a model per agent and the per-person limits (`App\Ai\AiSettings`, applied per request and job like the keys). A key shown on a feature's own page still lives in the one secrets store.
 - **Check:**
     - `.env` holds only the start-up values.
     - Rotating a key on the page takes effect without a deploy.

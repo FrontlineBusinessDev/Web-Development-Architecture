@@ -144,6 +144,7 @@ No new direct writes.
 - **Model:** read from the platform console (`PlatformAi::modelFor($tenant)`), with a default in `config/ai.php`. The current default is `claude-opus-5-5`; a cheaper model per plan (`claude-sonnet-5-5`, `claude-haiku-5-5`) is an owner's decision, recorded in the app's plan, and needs the evals to pass on it first (rule 20).
 - **Price table** per model in config, overridable in the console. A model with no price row costs 0 and alerts the platform rather than failing the turn.
 - **Key:** stored encrypted in the console's secrets store (rule 12), shown as last 4 only, `.env` only as a fallback. No key = AI off (section 8), never an error page.
+- **One settings page:** the key (Change, checked with the provider before it is saved, and Test), the default model, a model per agent or feature and the per-person limits sit together on the console's AI page (People: Console › AI & agents › Providers & models; Connect: Platform › AI › Settings), applied on the next run without a restart and audited without the key. A worker's queue name stays a deploy value.
 
 ### 6.2 Request settings (current API, Nov 2026)
 
