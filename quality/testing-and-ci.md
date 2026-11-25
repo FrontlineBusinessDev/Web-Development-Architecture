@@ -148,7 +148,8 @@ A change is done when every item of [rule 22](../rules/system-rules.md#rule-22-d
 | CRM | Closest to the standard (audits, no PHPStan baseline, both 300-line checks), but `vp check` fails repo-wide, so it runs `vp lint` only; checks run in GitHub Actions, not the build. |
 | Connect | No audits in `ci:check`; no 300-line check; GitHub Actions only. |
 | Pay | `resources/js/ops/**` and `resources/js/landing/**` outside the formatter. Meets the 300-line rule with no baseline (JS lint and `tests/Unit/PhpFileSizeTest.php`, 2026-11-08). |
-| Learn, FCA-SMS | `ci:check` calls npm scripts that do not exist (`lint:check`, `format:check`); oxlint, not `vp`; FCA-SMS `types:check` checks nothing (`tsc --noEmit` on an empty root config). Learn's build runs only its demo checks. FCA-SMS is the only app testing on PostgreSQL today (GitHub Actions). |
+| Learn | `ci:check` passes since 2026-11-25: `lint:check` (oxlint, warnings are errors; oxlint, not `vp`), `tsc -b`, both audits, Pint, PHPStan (Larastan level 7 with a shrink-only baseline of 8134 errors) and Pest. No JS formatter yet, so no format step. No GitHub workflow: run it before each push. Learn's build runs only its demo checks. |
+| FCA-SMS | `ci:check` calls npm scripts that do not exist (`lint:check`, `format:check`); oxlint, not `vp`; `types:check` checks nothing (`tsc --noEmit` on an empty root config). The only app testing on PostgreSQL today (GitHub Actions). |
 | FBS Suites MCP | Runs every step since 2026-11-21: JS unit tests (`vp test run resources/js`), both audits, Larastan level 7 with no baseline. GitHub Actions `tests.yml` runs `ci:check` on `master` (PHP 8.4) and makes throwaway Passport keys first. |
 | Stock, Work | PHPUnit, not Pest; no `ci:check`, no Larastan, no JS linter (Work has `tsc`). Stock is JavaScript. |
 | All | Coverage is not measured (`coverage: none`). |
