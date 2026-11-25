@@ -1151,6 +1151,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Why:** Uploads are the slowest thing people do, often on mobile data. Without progress they tap again, leave the page or think it froze, and files end up doubled or lost.
 - **Do:**
     - **One shared upload component and hook** for every file field and drop zone, built on the API layer (rule 38).
+    - **Every file field is a drop zone** (owner 2026-11-25): a dashed area people drag a file onto, which highlights while a file is over it, with a choose button inside it as the fallback for phones and keyboards, and the types and size limit written under it. After a pick it shows the file's name and size with Remove (or Replace). This covers imports too, even when the file is only read in the browser.
     - **Check before sending:**
         - type, size and count, against the same limits the server uses
         - show the limits next to the field ("PDF, JPG or PNG, up to 5 MB")
@@ -1171,6 +1172,7 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Don't:**
     - Upload with `fetch`: it can't report upload progress. Use the axios `onUploadProgress` in the API layer.
     - Show a spinner with no percent for an upload.
+    - Put a bare `<input type="file">` (the browser's "Choose File · No file chosen") on a page.
     - Clear the form or the other files because one file failed.
     - Rely on the browser's checks alone: the server checks the size, the real type by content, and the scan (rule 10).
 - **Reference (FBS People):**
@@ -1208,13 +1210,17 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
     - **Pause and resume:** a job paused by the person, a deploy (rule 23) or an outage resumes from its checkpoint, by Resume or on its own once a worker is back.
     - **Finish:** the toast shows the result ("118 new, 14 updated, 2 skipped"), and the bell keeps it with a link (rule 25). An export's file is a short-lived signed link (rule 10), kept for a set time such as 7 days.
     - **Limits:** one running import per record type per tenant. Exports follow permissions and are logged (rules 18 and 27).
+    - **Re-import picks what it overwrites** (owner 2026-11-25): when a file's rows match records already there, the check lists each column the file fills with how many records it would change, and only the columns people tick overwrite; the others keep what the app has. Rows with no ticked change are counted as unchanged, not updated. New records still take every column.
+    - **Dates are read the way people pick:** a date like 05/02/2018 is ambiguous, so the import asks whether the file is month first or day first and shows how each date column's first value is read ("05/02/2018 read as 5 Feb 2018"). A date that does not exist in that order is an error on the row, never a guess. The template asks for YYYY-MM-DD.
 - **Don't:**
     - Run an import or a large export inside a web request.
     - Keep progress only in the browser, where a refresh loses it.
     - Restart a job from the first row after a pause, a drop or a failure.
     - Leave half an import saved with no way to undo it.
+    - Let a re-import overwrite every filled column of records already there without asking which.
 - **Reference (FBS People):**
     - **Today:**
+        - every file field is the shared drop zone (`components/kit3/upload/drop-zone.tsx`, through `FilePick` or `UploadField`); the import sheet uses it with the re-import field list and the date order (`screens/company/import-overwrite.tsx`, `App\People\ImportRow`)
         - imports run inside the request: `Company\ImportController@store` saves all good rows in one transaction as an `ImportBatch` (`app_import_batches`), which can be undone within `ImportBatch::UNDO_HOURS`
         - exports stream inside the request (`App\Support\Csv::download`, `ListQuery::csv`)
         - toasts are sonner through `resources/js/lib/toast.ts`, which has no progress toast
