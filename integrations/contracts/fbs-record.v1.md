@@ -103,7 +103,7 @@ Spec: `mcp-fbs-suites/docs/superpowers/specs/2026-11-20-connected-data-phase-1.m
 | Type | Apps | Fields |
 |---|---|---|
 | `holiday` | People ⇄ Pay, People → Learn, People → Work (shown on People) | `date` (Y-m-d), `name`, `type` (`regular`, `special_non_working`, `special_working`), `status`. Company-wide holidays only: a branch's or an entity's own holiday, Pay's `double_holiday` and People's holidays made by the FBS Learn connector ("No classes") stay in their app. Learn keeps them as published Holiday events, never touches an event the school made, makes none for a day the school already marked or for a special working day, and sends none. |
-| `branch` | People ⇄ Pay | `name`, `address`, `status`. Pay refuses a new branch over its plan's one-branch limit. |
+| `branch` | People ⇄ Pay | `name`, `address`, `status`, `is_head_office` (boolean; the company's one head office, People-set or Pay-set; a new row sends it only when true, and the receiver clears the flag on its other branches). Pay refuses a new branch over its plan's one-branch limit. |
 | `leave_type` | People ⇄ Pay, People → Learn | `code`, `name`, `paid`, `days_per_year`, `status`. Company-wide types only (not an entity's own). Pay's leave types have no code or off switch (matched by name; `inactive` changes nothing there). Learn keeps them as leave categories. |
 
 ## Tally (nightly check, Task 6)
