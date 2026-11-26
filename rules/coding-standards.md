@@ -19,7 +19,7 @@ Formatting is never argued about in review: the tools decide, and the build chec
 | TS / TSX / CSS | the Vite+ formatter (`vp fmt`): print width 80, 4 spaces, single quotes, semicolons, Tailwind classes sorted | People and CRM `vite.config.ts` `fmt:` |
 | JS lint | `vp lint` (oxlint inside Vite+) with warnings treated as errors; projects not on Vite+ use `oxlint` directly | CRM (0 warnings), Learn (`oxlint`) |
 
-- Run the formatter on a whole repo once, in its own commit, before turning on the format check. FBS CRM's `vp check` fails on every file because that step was skipped.
+- Run the formatter on a whole repo once, in its own commit, before turning on the format check. Where a repo has a max-lines baseline (rule 51), the same commit sets the reformatted files' entries to their new sizes, since no code grew; FBS CRM did this on 2026-11-26.
 - Generated folders (`resources/js/actions`, `resources/js/routes`, `resources/js/wayfinder`, `components/ui` from shadcn) are left out of the formatter, as People does.
 
 ## 2. Naming

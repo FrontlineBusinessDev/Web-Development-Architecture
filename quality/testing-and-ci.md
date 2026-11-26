@@ -145,7 +145,7 @@ A change is done when every item of [rule 22](../rules/system-rules.md#rule-22-d
 | App | Differs |
 | --- | --- |
 | People | `ci:check` has no audits; the checks are not in the image build; a 901-error PHPStan baseline (shrinks only); the 300-line rule is not enforced. GitHub Actions `tests.yml` runs `ci:check` on `master` (PHP 8.4) since 2026-11-21 and passes. |
-| CRM | Closest to the standard (audits, no PHPStan baseline, both 300-line checks), but `vp check` fails repo-wide, so it runs `vp lint` only; checks run in GitHub Actions, not the build. |
+| CRM | Closest to the standard (audits, no PHPStan baseline, both 300-line checks), formatted once on 2026-11-26, so `ci:check` runs `vp check` (format + lint); the reformat set 98 files' max-lines baseline entries to their formatted sizes; checks run in GitHub Actions, not the build. |
 | Connect | `ci:check` passes since 2026-11-26 (repo formatted once, `graphify-out` and `resources/lumi` outside the formatter; no lint warnings; PHPStan level 7 with a shrink-only baseline of 1473 errors). `tests.yml` runs on `master` with PHP 8.4 (it listened on `main` and never ran). No audits in `ci:check`; no 300-line check. |
 | Pay | `resources/js/ops/**` and `resources/js/landing/**` outside the formatter. Meets the 300-line rule with no baseline (JS lint and `tests/Unit/PhpFileSizeTest.php`, 2026-11-08). |
 | Learn | `ci:check` passes since 2026-11-25: `lint:check` (oxlint, warnings are errors; oxlint, not `vp`), `tsc -b`, both audits, Pint, PHPStan (Larastan level 7 with a shrink-only baseline of 8134 errors) and Pest. No JS formatter yet, so no format step. No GitHub workflow: run it before each push. Learn's build runs only its demo checks. |
