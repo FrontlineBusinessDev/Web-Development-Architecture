@@ -20,12 +20,13 @@ Built for `person`, 2026-11-18; `holiday`, `branch` and `leave_type` 2026-11-20 
 ```
 
 - At most 500 changes. Only the fields that changed. Money as 2-decimal strings in major units.
-- Answer `{success: true, message: "", data: {answers: {change_id: answer}}}`. The answer is one of:
+- Answer `{success: true, message: "", data: {answers: {change_id: answer}, reasons?: {change_id: {field: reason}}}}`. The answer is one of:
   - `accepted`;
+  - `partial` (audit B16, 2026-11-26; People and Pay `person`): some fields taken, others refused; `reasons` names each refused field and why, in words for a person. A sender treats it as answered and keeps the reasons for its Shared setup card (nothing is refused silently, A19);
   - `unchanged`: that change id was taken before;
   - `superseded`: an equal or later change of each field is already here;
   - `held`: no such record here; it waits for a person to link it;
-  - `refused`: a bad shape, or a type this app does not take;
+  - `refused`: a bad shape, a type this app does not take, or every field refused (`reasons` says why for the fields when the shape was fine);
   - `locked`: inside a finalized pay period, or a suggestion already decided in the app (`work_item`), or a billable row already on an invoice (`money_item` credit_sale / billable_hours).
 - Refusals of the whole call: 401 `bad_token` / `replayed`, 403 `scope`, 404 `no_tenant`, 422 `bad_request`.
 
