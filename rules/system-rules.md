@@ -98,6 +98,7 @@ Search for `## Rule N.` to jump to a rule.
 76. Run the full CI check before every push, then check the workflows: a red GitHub Actions run never reaches master
 77. Every list is paged, searchable and filterable
 78. A person's login lives on the person
+79. Connected assistants and FBS Suites are FBS staff's only
 
 Design profile: D1 Shell, D2 Grid and cards, D3 Type, D4 Color, D5 Controls, D6 Lists and tables, D7 Stats and charts, D8 Steppers, inboxes, dialogs, D9 Pickers, loading and empty states, D10 Copy, AI and tours, D11 Dark mode and phone, D12 Each app's product profile.
 
@@ -2000,6 +2001,18 @@ Add new rules at the end with the next number (see [Adding a rule](#adding-a-rul
 - **Reference (FBS People):** Person 360's header (`screens/people/person/person-login.tsx`), `POST people/employees/{id}/invite` and `POST people/employees/{id}/login/delete` (`EmployeeLoginDeleteController`); Company › Users' header links to People.
 - **Check:** a person without a login shows Give login on their record, one with a login shows Delete login, and the Users page has neither.
 
+## Rule 79. Connected assistants and FBS Suites are FBS staff's only
+
+- **Rule:** No client (a tenant's admin, HR or employee) sees or makes a personal AI key: no Connected assistants card, no personal MCP token, no gateway key or App links page. Only FBS staff (platform accounts) make them, on the platform side: each app's console AI keys for FBS Suites, and the FBS Suites console, where staff set up and manage every org centrally (Platform › Orgs › Manage).
+- **Why:** Owner, Nov 26, 2026: clients were signing in to FBS Suites and pasting their own app keys. One set of links and keys, set up by staff, keeps every app's records the same and lets staff see each other's setup.
+- **Do:**
+    - Hide the card or page from every tenant account, and refuse its endpoints on the server (403), not only in the menu.
+    - Keep the client's own sign-in (FBS ID) working, and their AI connector through FBS Suites where the app offers one.
+    - Let a key a client made before still be revoked until it expires.
+- **Don't:** show a Connected assistants, API key or App links screen to a tenant account, or let one make a personal MCP token.
+- **Reference (FBS People):** Me › Profile › Settings has no Connected assistants (`screens/me/settings/panels.tsx`), and `settings/assistants` data and store answer 403 (`Settings\AssistantController::platformOnly`); staff keys are on Console › My settings › AI keys for FBS Suites. FBS Suites: `EnsureStaffConsole` and `App\Support\ManagedOrg`.
+- **Check:** sign in as a tenant admin: no assistants card or key page, and the endpoints answer 403.
+
 ---
 
 ## Design profile
@@ -2143,3 +2156,4 @@ Keep rules general enough for every FBS project; put anything specific to one pr
 - **2026-11-24:** Rule 76 added (owner): check every workflow a push started and fix a red run before calling the work done.
 - **2026-11-24:** Rule 76 (owner): run the full CI gate locally before every push (in a clean worktree when the checkout holds someone else's work); push only when it passes.
 - **2026-11-24:** Rule 77 added (owner): every list is paged on the server, searchable and filterable. Rule 78 added (owner): a person's login is given and deleted on their own record, never on the Users page.
+- **2026-11-26:** Rule 79 added (owner): Connected assistants, personal MCP tokens, gateway keys and the FBS Suites console are FBS staff's only; staff manage every org centrally (FBS Suites Platform › Orgs › Manage), and clients keep FBS ID sign-in.
