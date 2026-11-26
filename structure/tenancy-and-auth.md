@@ -64,7 +64,7 @@ Other apps use the same pattern under their own names:
 | Two-step sign-in | Fortify two-factor (authenticator app) | **Required** for owners, admins and platform staff before admin pages |
 | Passkeys | Fortify passkeys | Offered to everyone |
 | Google, Microsoft | Through FBS ID: one Google client and one Microsoft app registration, in FBS Suites only. The app's buttons send `idp_hint` (below) | Signs in **existing** accounts only, unless the product's sign-up flow says otherwise; a tenant may limit it to its own Workspace domain or Entra tenant. Before an app has its FBS ID side, its own Socialite client |
-| Password reset, invites | Fortify reset links | Expire and work once. An invite is the user row plus a reset link |
+| Password reset, invites | Fortify reset links | Expire and work once. An invite is the user row plus a reset link. Each app resets in its own pages and never sends anyone to FBS ID's page (owner 2026-11-26): the new password goes to FBS ID's `POST /api/fbs-id/password/set` with `proof` `email_link` (the reset or activation link) or `signed_in` + the linked `sub` (the person's own change form); with a proof FBS ID takes it for any account, platform staff included. A password set for someone else (HR) sends no proof and keeps the same-org rule |
 | Sessions | Redis | Ended on password change, role removal or deactivation; `SESSION_SECURE_COOKIE=true` |
 
 - Changing email, password or two-step settings asks for the password again and emails the person.
